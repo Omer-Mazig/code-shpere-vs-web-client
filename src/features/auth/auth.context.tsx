@@ -2,7 +2,6 @@ import React from "react";
 import { setAccessToken } from "@/lib/api-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AuthUser } from "./auth.types";
-import type { RoleType } from "./auth.types";
 import { authQueryOptionsFactory } from "./auth-query-options-factory";
 import { authApi, type RegisterPayload } from "./auth.api";
 import { setUnauthorizedHandler } from "./auth.session";
@@ -16,7 +15,6 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
-  hasRole: (roles: RoleType[]) => boolean;
 };
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(
@@ -160,14 +158,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = React.useCallback(() => logoutMutation(), [logoutMutation]);
 
-  const hasRole = React.useCallback(
-    (roles: RoleType[]) => {
-      if (!user) return false;
-      return roles.some((role) => user.roles.includes(role));
-    },
-    [user],
-  );
-
   const value = React.useMemo<AuthContextValue>(
     () => ({
       user,
@@ -176,9 +166,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       login,
       register,
       logout,
-      hasRole,
     }),
-    [user, isLoading, login, register, logout, hasRole],
+    [user, isLoading, login, register, logout],
   );
 
   if (isLoading) {
