@@ -1,9 +1,20 @@
-export function App() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="font-medium">Hello World</div>
-    </div>
-  )
-}
+import { Toaster } from "sonner";
+import { router } from "./lib/router/router";
+import { RouterProvider } from "react-router-dom";
+import { useIsMobile } from "./hooks/use-mobile";
 
-export default App
+export const App = () => {
+  const isMobile = useIsMobile();
+
+  return (
+    <>
+      <RouterProvider router={router} />
+
+      <Toaster
+        position={isMobile ? "bottom-center" : "bottom-right"}
+        richColors
+        closeButton
+      />
+    </>
+  );
+};

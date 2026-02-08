@@ -1,0 +1,197 @@
+import React from "react";
+import { setAccessToken } from "@/lib/api-client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { AuthUser } from "./auth.types";
+import type { RoleType } from "./auth.types";
+import { authQueryOptionsFactory } from "./auth-query-options-factory";
+import { authApi, type RegisterPayload } from "./auth.api";
+import { setUnauthorizedHandler } from "./auth.session";
+import { AppLoader } from "@/components/shared/app-loader";
+import { AUTH_PATHS } from "@/lib/routes.constants";
+
+type AuthContextValue = {
+  user: AuthUser | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
+  logout: () => Promise<void>;
+  hasRole: (roles: RoleType[]) => boolean;
+};
+
+const AuthContext = React.createContext<AuthContextValue | undefined>(
+  undefined,
+);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = useQueryClient();
+  const channelRef = React.useRef<BroadcastChannel | null>(null);
+  const { data: session, isLoading } = useQuery(
+    authQueryOptionsFactory.session(),
+  );
+  const user = session?.accessToken && session.user ? session.user : null;
+
+  const clearSession = React.useCallback(
+    (redirectToLogin = false) => {
+      setAccessToken(null);
+      queryClient.setQueryData(
+        authQueryOptionsFactory.session().queryKey,
+        undefined,
+      );
+      if (redirectToLogin) {
+        const currentPath = window.location.pathname;
+        if (!currentPath.startsWith(AUTH_PATHS.AUTH)) {
+          window.location.assign(AUTH_PATHS.SIGN_IN);
+        }
+      }
+    },
+    [queryClient],
+  );
+
+  const broadcastLogout = React.useCallback(() => {
+    channelRef.current?.postMessage({ type: "logout" });
+    try {
+      localStorage.setItem("auth:logout", String(Date.now()));
+    } catch {
+      // Ignore storage failures (private mode, disabled storage, etc.)
+    }
+  }, []);
+
+  const handleUnauthorized = React.useCallback(() => {
+    clearSession(false);
+    broadcastLogout();
+  }, [broadcastLogout, clearSession]);
+
+  React.useEffect(() => {
+    setUnauthorizedHandler(handleUnauthorized);
+    return () => setUnauthorizedHandler(null);
+  }, [handleUnauthorized]);
+
+  React.useEffect(() => {
+    if ("BroadcastChannel" in window) {
+      const channel = new BroadcastChannel("auth");
+      channelRef.current = channel;
+
+      channel.onmessage = (event) => {
+        if (event.data?.type === "logout") {
+          clearSession(true);
+        }
+      };
+    }
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "auth:logout") {
+        clearSession(true);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      channelRef.current?.close();
+      channelRef.current = null;
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [clearSession]);
+
+  const { mutateAsync: loginMutation } = useMutation({
+    mutationKey: ["auth", "login"],
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      authApi.login(email, password),
+    onSuccess: (data) => {
+      if (data.accessToken && data.user) {
+        setAccessToken(data.accessToken);
+        queryClient.setQueryData(
+          authQueryOptionsFactory.session().queryKey,
+          data,
+        );
+      } else {
+        setAccessToken(null);
+        queryClient.setQueryData(
+          authQueryOptionsFactory.session().queryKey,
+          undefined,
+        );
+      }
+    },
+  });
+
+  const { mutateAsync: registerMutation } = useMutation({
+    mutationKey: ["auth", "register"],
+    mutationFn: (payload: RegisterPayload) => authApi.register(payload),
+    onSuccess: (data) => {
+      if (data.accessToken && data.user) {
+        setAccessToken(data.accessToken);
+        queryClient.setQueryData(
+          authQueryOptionsFactory.session().queryKey,
+          data,
+        );
+      } else {
+        setAccessToken(null);
+        queryClient.setQueryData(
+          authQueryOptionsFactory.session().queryKey,
+          undefined,
+        );
+      }
+    },
+  });
+
+  const { mutateAsync: logoutMutation } = useMutation({
+    mutationKey: ["auth", "logout"],
+    mutationFn: () => authApi.logout(),
+    onSettled: () => {
+      clearSession(true);
+      broadcastLogout();
+    },
+  });
+
+  const login = React.useCallback(
+    async (email: string, password: string) => {
+      await loginMutation({ email, password });
+    },
+    [loginMutation],
+  );
+
+  const register = React.useCallback(
+    async (payload: RegisterPayload) => {
+      await registerMutation(payload);
+    },
+    [registerMutation],
+  );
+
+  const logout = React.useCallback(() => logoutMutation(), [logoutMutation]);
+
+  const hasRole = React.useCallback(
+    (roles: RoleType[]) => {
+      if (!user) return false;
+      return roles.some((role) => user.roles.includes(role));
+    },
+    [user],
+  );
+
+  const value = React.useMemo<AuthContextValue>(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated: Boolean(user),
+      login,
+      register,
+      logout,
+      hasRole,
+    }),
+    [user, isLoading, login, register, logout, hasRole],
+  );
+
+  if (isLoading) {
+    return <AppLoader message="Loading session..." />;
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = React.useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return context;
+};
