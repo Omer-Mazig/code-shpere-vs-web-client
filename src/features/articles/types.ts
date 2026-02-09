@@ -13,6 +13,8 @@ export type Article = {
   coverImageUrl: string | null;
   isPublished: boolean;
   author: ArticleAuthor | null;
+  likesCount: number;
+  isLiked: boolean;
   createdAt: string;
   updatedAt: string;
 };

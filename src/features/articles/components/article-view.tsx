@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import type { Article } from "../types";
+import { LikeButton } from "@/features/interactions/components/like-button";
 
 type ArticleViewProps = {
   article: Article;
@@ -75,6 +76,15 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
             </p>
           );
         })}
+      </div>
+
+      <div className="mt-8 border-t pt-4">
+        <LikeButton
+          targetId={article.id}
+          targetType="ARTICLE"
+          isLiked={article.isLiked}
+          likesCount={article.likesCount}
+        />
       </div>
     </article>
   );

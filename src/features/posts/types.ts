@@ -9,6 +9,8 @@ export type Post = {
   id: string;
   content: string;
   author: PostAuthor;
+  likesCount: number;
+  isLiked: boolean;
   createdAt: string;
   updatedAt: string;
 };

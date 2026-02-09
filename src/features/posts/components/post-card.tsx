@@ -46,7 +46,11 @@ export const PostCard = ({ post }: PostCardProps) => {
 
       {/* Actions */}
       <div className="mt-3 border-t pt-2">
-        <PostActions postId={post.id} />
+        <PostActions
+          postId={post.id}
+          isLiked={post.isLiked}
+          likesCount={post.likesCount}
+        />
       </div>
     </div>
   );
