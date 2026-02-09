@@ -8,7 +8,7 @@ export type PostAuthor = {
 export type Post = {
   id: string;
   content: string;
-  author: PostAuthor | null;
+  author: PostAuthor;
   createdAt: string;
   updatedAt: string;
 };

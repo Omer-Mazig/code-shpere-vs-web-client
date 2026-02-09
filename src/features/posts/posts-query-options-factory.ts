@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { postsApi } from "./posts.api";
 import type { PostQueryDto } from "./types";
 
@@ -12,14 +12,18 @@ export const postsQueryOptionsFactory = {
       queryKey: [...postsQueryOptionsFactory.all().queryKey, "feed"],
     }),
 
-  // ["posts", "feed", postQueryDto]
-  feedList: (postQueryDto?: Partial<PostQueryDto>) =>
-    queryOptions({
+  // ["posts", "feed", postQueryDto] — infinite query
+  feedList: (postQueryDto?: Partial<Omit<PostQueryDto, "page">>) =>
+    infiniteQueryOptions({
       queryKey: [
         ...postsQueryOptionsFactory.feedLists().queryKey,
         postQueryDto,
       ],
-      queryFn: () => postsApi.getFeed(postQueryDto),
+      queryFn: ({ pageParam }) =>
+        postsApi.getFeed({ ...postQueryDto, page: pageParam }),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) =>
+        lastPage.meta.hasNextPage ? lastPage.meta.page + 1 : undefined,
       staleTime: 1000 * 60 * 5, // 5 minutes
     }),
 
