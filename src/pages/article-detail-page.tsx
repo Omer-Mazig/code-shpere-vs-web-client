@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { articlesQueryOptionsFactory } from "@/features/articles/articles-query-options-factory";
 import { ArticleView } from "@/features/articles/components/article-view";
 import { CommentsSection } from "@/features/comments/components/comments-section";
@@ -9,28 +9,9 @@ import { Button } from "@/components/ui/button";
 
 export const ArticleDetailPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { data: article, isLoading } = useQuery(
+  const { data: article } = useSuspenseQuery(
     articlesQueryOptionsFactory.details(slug!),
   );
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto max-w-3xl px-4 py-6">
-        <Skeleton className="h-64 w-full rounded-lg mb-4" />
-        <Skeleton className="h-8 w-2/3 mb-4" />
-        <Skeleton className="h-4 w-full mb-2" />
-        <Skeleton className="h-4 w-5/6" />
-      </div>
-    );
-  }
-
-  if (!article) {
-    return (
-      <div className="container mx-auto max-w-3xl px-4 py-6">
-        <p className="text-muted-foreground">Article not found.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-6">
@@ -50,3 +31,17 @@ export const ArticleDetailPage = () => {
     </div>
   );
 };
+
+export const ArticleDetailSkeleton = () => (
+  <div className="container mx-auto max-w-3xl px-4 py-6">
+    <Skeleton className="h-9 w-36 mb-4" />
+    <div className="flex flex-col gap-8">
+      <div>
+        <Skeleton className="h-64 w-full rounded-lg mb-4" />
+        <Skeleton className="h-8 w-2/3 mb-4" />
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-5/6" />
+      </div>
+    </div>
+  </div>
+);

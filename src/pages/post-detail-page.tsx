@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-factory";
 import { PostCard } from "@/features/posts/components/post-card";
 import { CommentsSection } from "@/features/comments/components/comments-section";
@@ -9,25 +9,9 @@ import { Button } from "@/components/ui/button";
 
 export const PostDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: post, isLoading } = useQuery(
+  const { data: post } = useSuspenseQuery(
     postsQueryOptionsFactory.details(id!),
   );
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto max-w-2xl px-4 py-6">
-        <Skeleton className="h-48 w-full rounded-lg" />
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div className="container mx-auto max-w-2xl px-4 py-6">
-        <p className="text-muted-foreground">Post not found.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-6">
@@ -45,3 +29,10 @@ export const PostDetailPage = () => {
     </div>
   );
 };
+
+export const PostDetailSkeleton = () => (
+  <div className="container mx-auto max-w-2xl px-4 py-6">
+    <Skeleton className="h-9 w-32 mb-4" />
+    <Skeleton className="h-48 w-full rounded-lg" />
+  </div>
+);

@@ -1,5 +1,7 @@
 import { CreatePostForm } from "@/features/posts/components/create-post-form";
-import { PostFeed } from "@/features/posts/components/post-feed";
+import { PostFeed, FeedSkeleton } from "@/features/posts/components/post-feed";
+import { QueryBoundary } from "@/components/errors/query-boundary";
+import { InlineErrorFallback } from "@/components/errors/inline-error-fallback";
 
 export const FeedPage = () => {
   return (
@@ -7,7 +9,12 @@ export const FeedPage = () => {
       <h1 className="text-2xl font-bold mb-6">Feed</h1>
       <div className="flex flex-col gap-6">
         <CreatePostForm />
-        <PostFeed />
+        <QueryBoundary
+          fallback={<FeedSkeleton />}
+          ErrorFallback={InlineErrorFallback}
+        >
+          <PostFeed />
+        </QueryBoundary>
       </div>
     </div>
   );
