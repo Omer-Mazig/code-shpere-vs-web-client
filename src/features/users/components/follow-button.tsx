@@ -29,14 +29,11 @@ export const FollowButton = ({ userId, isFollowing }: FollowButtonProps) => {
     }
   };
 
-  const isPending = followMutation.isPending || unfollowMutation.isPending;
-
   return (
     <Button
       variant={isFollowing ? "outline" : "default"}
       size="sm"
       onClick={handleClick}
-      disabled={isPending}
     >
       {isFollowing ? "Unfollow" : "Follow"}
     </Button>

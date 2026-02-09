@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient, setAccessToken } from "@/lib/api-client";
 import type { AuthSession } from "./auth.types";
 
 export type RegisterPayload = {
@@ -25,6 +25,9 @@ export const authApi = {
 
   refreshSession: async (): Promise<AuthSession> => {
     const response = await apiClient.post("/auth/refresh");
+    if (response.data?.accessToken) {
+      setAccessToken(response.data.accessToken);
+    }
     return response.data;
   },
 };
