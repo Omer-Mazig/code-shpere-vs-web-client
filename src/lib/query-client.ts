@@ -38,51 +38,42 @@ export const queryClientInstance = new QueryClient({
 });
 
 /**
- * Handles retry logic for API calls.
- * @param failureCount - The number of times the call has failed.
- * @param error - The error object.
- * @param retryLimit - The maximum number of retries.
- * @returns True if the call should be retried, false otherwise.
+ * Determines whether a failed query should be retried.
+ *
+ * Only transient errors are retried — network failures and server 5xx.
+ * Client errors (4xx) and validation errors are deterministic: the
+ * same request would produce the same failure, so retrying is pointless.
  */
 export const handleRetry = (
   failureCount: number,
   error: unknown,
   retryLimit: number = 3,
 ): boolean => {
-  if (failureCount >= retryLimit) {
-    return false;
+  if (failureCount >= retryLimit) return false;
+
+  // Validation errors are deterministic — retrying won't help
+  if (error instanceof ZodError) return false;
+
+  if (axios.isAxiosError(error)) {
+    // Request was cancelled (e.g., component unmounted) — don't retry
+    if (error.code === "ERR_CANCELED") return false;
+
+    const status = error.response?.status;
+
+    // No response — network error (ECONNREFUSED, timeout, etc.), transient
+    if (!status) return true;
+
+    // 408 Request Timeout / 429 Too Many Requests — transient despite being 4xx
+    if (status === 408 || status === 429) return true;
+
+    // All other 4xx — client error, deterministic, won't resolve on retry
+    if (status >= 400 && status < 500) return false;
+
+    // 5xx — server error, transient
+    return true;
   }
 
-  if (error instanceof ZodError) {
-    return false;
-  }
-
-  if (
-    axios.isAxiosError(error) &&
-    "response" in error &&
-    error.response &&
-    "status" in error.response
-  ) {
-    if (error.response.status === 400) {
-      return false;
-    }
-    if (error.response.status === 401) {
-      return false;
-    }
-    if (error.response.status === 403) {
-      return false;
-    }
-    if (error.response.status === 404) {
-      return false;
-    }
-    if (error.response.status === 413) {
-      return false;
-    }
-    if (error.response.status === 429) {
-      return true;
-    }
-  }
-
+  // Unknown error type — retry in case it's transient
   return true;
 };
 
