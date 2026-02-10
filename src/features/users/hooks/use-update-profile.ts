@@ -8,8 +8,8 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["users", "updateProfile"],
-    mutationFn: (dto: UpdateProfileDto) => usersApi.updateProfile(dto),
+    mutationKey: ["users", "updateMyProfile"],
+    mutationFn: (dto: UpdateProfileDto) => usersApi.updateMyProfile(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: usersQueryOptionsFactory.allProfiles().queryKey,

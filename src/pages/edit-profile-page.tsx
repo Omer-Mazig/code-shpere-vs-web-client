@@ -14,7 +14,7 @@ export const EditProfilePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: profile, isLoading } = useQuery(
-    usersQueryOptionsFactory.profile(user!.id),
+    usersQueryOptionsFactory.myProfile(),
   );
   const updateProfile = useUpdateProfile();
 

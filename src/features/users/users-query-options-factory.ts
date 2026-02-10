@@ -11,11 +11,22 @@ export const usersQueryOptionsFactory = {
       queryKey: [...usersQueryOptionsFactory.all().queryKey, "profile"],
     }),
 
-  // ["users", "profile", userId]
-  profile: (userId: string) =>
+  // ["users", "profile", "me"]
+  myProfile: () =>
     queryOptions({
-      queryKey: [...usersQueryOptionsFactory.allProfiles().queryKey, userId],
-      queryFn: () => usersApi.getProfile(userId),
+      queryKey: [...usersQueryOptionsFactory.allProfiles().queryKey, "me"],
+      queryFn: () => usersApi.getMyProfile(),
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    }),
+
+  // ["users", "profile", targetUserId]
+  profile: (targetUserId: string) =>
+    queryOptions({
+      queryKey: [
+        ...usersQueryOptionsFactory.allProfiles().queryKey,
+        targetUserId,
+      ],
+      queryFn: () => usersApi.getProfile(targetUserId),
       staleTime: 1000 * 60 * 5, // 5 minutes
     }),
 

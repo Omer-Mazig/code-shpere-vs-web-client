@@ -3,12 +3,17 @@ import type { PaginatedResponse } from "@/lib/types";
 import type { UserProfile, UpdateProfileDto, FollowUser } from "./types";
 
 export const usersApi = {
-  getProfile: async (userId: string): Promise<UserProfile> => {
-    const response = await apiClient.get(`/users/${userId}`);
+  getMyProfile: async (): Promise<UserProfile> => {
+    const response = await apiClient.get("/users/me");
     return response.data;
   },
 
-  updateProfile: async (dto: UpdateProfileDto): Promise<UserProfile> => {
+  getProfile: async (targetUserId: string): Promise<UserProfile> => {
+    const response = await apiClient.get(`/users/${targetUserId}`);
+    return response.data;
+  },
+
+  updateMyProfile: async (dto: UpdateProfileDto): Promise<UserProfile> => {
     const response = await apiClient.patch("/users/me", dto);
     return response.data;
   },
