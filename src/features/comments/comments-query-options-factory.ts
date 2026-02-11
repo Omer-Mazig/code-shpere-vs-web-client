@@ -45,4 +45,36 @@ export const commentsQueryOptionsFactory = {
         lastPage.meta.hasNextPage ? lastPage.meta.page + 1 : undefined,
       staleTime: 1000 * 60 * 2,
     }),
+
+  // ["comments", "mention-candidates", targetId, parentId]
+  mentionCandidatesPool: (targetId: string, parentId: string) =>
+    queryOptions({
+      queryKey: [
+        ...commentsQueryOptionsFactory.all().queryKey,
+        "mention-candidates",
+        targetId,
+        parentId,
+      ],
+      queryFn: () => commentsApi.getMentionCandidates(targetId, parentId),
+      staleTime: 1000 * 60 * 5,
+    }),
+
+  // ["comments", "mention-candidates-search", targetId, parentId, query]
+  mentionCandidatesSearch: (
+    targetId: string,
+    parentId: string,
+    query: string,
+  ) =>
+    queryOptions({
+      queryKey: [
+        ...commentsQueryOptionsFactory.all().queryKey,
+        "mention-candidates-search",
+        targetId,
+        parentId,
+        query,
+      ],
+      queryFn: () =>
+        commentsApi.getMentionCandidates(targetId, parentId, query),
+      staleTime: 1000 * 30,
+    }),
 };

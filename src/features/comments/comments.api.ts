@@ -1,6 +1,11 @@
 import { apiClient } from "@/lib/api-client";
 import type { PaginatedResponse } from "@/lib/types";
-import type { Comment, CreateCommentDto, UpdateCommentDto } from "./types";
+import type {
+  Comment,
+  CommentMentionCandidate,
+  CreateCommentDto,
+  UpdateCommentDto,
+} from "./types";
 
 export const commentsApi = {
   getComments: async (
@@ -24,6 +29,20 @@ export const commentsApi = {
     const response = await apiClient.get(`/interactions/comments/${commentId}/replies`, {
       params: { page, limit },
     });
+    return response.data.payload;
+  },
+
+  getMentionCandidates: async (
+    targetId: string,
+    parentId: string,
+    query?: string,
+  ): Promise<CommentMentionCandidate[]> => {
+    const response = await apiClient.get(
+      "/interactions/comments/mention-candidates",
+      {
+        params: { targetId, parentId, query },
+      },
+    );
     return response.data.payload;
   },
 

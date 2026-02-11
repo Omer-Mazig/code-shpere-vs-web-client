@@ -5,6 +5,13 @@ export type CommentAuthor = {
   avatarUrl: string | null;
 };
 
+export type CommentMentionCandidate = {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+};
+
 export type Comment = {
   id: string;
   content: string;
