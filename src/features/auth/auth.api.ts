@@ -11,12 +11,12 @@ export type RegisterPayload = {
 export const authApi = {
   login: async (email: string, password: string): Promise<AuthSession> => {
     const response = await apiClient.post("/auth/login", { email, password });
-    return response.data;
+    return response.data.payload;
   },
 
   register: async (payload: RegisterPayload): Promise<AuthSession> => {
     const response = await apiClient.post("/auth/register", payload);
-    return response.data;
+    return response.data.payload;
   },
 
   logout: async (): Promise<void> => {
@@ -25,9 +25,10 @@ export const authApi = {
 
   refreshSession: async (): Promise<AuthSession> => {
     const response = await apiClient.post("/auth/refresh");
-    if (response.data?.accessToken) {
-      setAccessToken(response.data.accessToken);
+    const session = response.data.payload;
+    if (session?.accessToken) {
+      setAccessToken(session.accessToken);
     }
-    return response.data;
+    return session;
   },
 };

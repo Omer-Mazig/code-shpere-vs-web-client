@@ -5,17 +5,17 @@ import type { UserProfile, UpdateProfileDto, FollowUser } from "./types";
 export const usersApi = {
   getMyProfile: async (): Promise<UserProfile> => {
     const response = await apiClient.get("/users/me");
-    return response.data;
+    return response.data.payload;
   },
 
   getProfile: async (targetUserId: string): Promise<UserProfile> => {
     const response = await apiClient.get(`/users/${targetUserId}`);
-    return response.data;
+    return response.data.payload;
   },
 
   updateMyProfile: async (dto: UpdateProfileDto): Promise<UserProfile> => {
     const response = await apiClient.patch("/users/me", dto);
-    return response.data;
+    return response.data.payload;
   },
 
   follow: async (userId: string): Promise<void> => {
@@ -34,7 +34,7 @@ export const usersApi = {
     const response = await apiClient.get(`/users/${userId}/followers`, {
       params: { page, limit },
     });
-    return response.data;
+    return response.data.payload;
   },
 
   getFollowing: async (
@@ -45,6 +45,6 @@ export const usersApi = {
     const response = await apiClient.get(`/users/${userId}/following`, {
       params: { page, limit },
     });
-    return response.data;
+    return response.data.payload;
   },
 };

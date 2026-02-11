@@ -12,12 +12,12 @@ export const commentsApi = {
     const response = await apiClient.get("/interactions/comments", {
       params: { targetId, targetType, page, limit },
     });
-    return response.data;
+    return response.data.payload;
   },
 
   addComment: async (dto: CreateCommentDto): Promise<Comment> => {
     const response = await apiClient.post("/interactions/comments", dto);
-    return response.data;
+    return response.data.payload;
   },
 
   updateComment: async (
@@ -28,7 +28,7 @@ export const commentsApi = {
       `/interactions/comments/${id}`,
       dto,
     );
-    return response.data;
+    return response.data.payload;
   },
 
   deleteComment: async (id: string): Promise<void> => {

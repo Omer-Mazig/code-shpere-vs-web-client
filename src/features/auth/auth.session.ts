@@ -20,8 +20,9 @@ export const refreshAccessToken = async (): Promise<RefreshResult> => {
   refreshPromise = apiClient
     .post("/auth/refresh")
     .then((response) => {
-      const nextAccessToken = response.data?.accessToken ?? null;
-      const nextUser = response.data?.user ?? null;
+      const payload = response.data?.payload;
+      const nextAccessToken = payload?.accessToken ?? null;
+      const nextUser = payload?.user ?? null;
       return { accessToken: nextAccessToken, user: nextUser };
     })
     .catch((error) => {
