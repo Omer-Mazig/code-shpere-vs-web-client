@@ -7,7 +7,7 @@ import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 
 type LikeButtonProps = {
   targetId: string;
-  targetType: "POST" | "ARTICLE";
+  targetType: "POST" | "ARTICLE" | "COMMENT";
   isLiked: boolean;
   likesCount: number;
 };

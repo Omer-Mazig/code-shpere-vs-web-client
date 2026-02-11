@@ -1,7 +1,9 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
-import { CommentItem } from "./comment-item";
 import { CommentForm } from "./comment-form";
+import { CommentItem } from "./comment-item";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QueryBoundary } from "@/components/errors/query-boundary";
 import { InlineErrorFallback } from "@/components/errors/inline-error-fallback";
@@ -18,23 +20,37 @@ export const CommentsSection = ({
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-semibold">Comments</h3>
-      <CommentForm targetId={targetId} targetType={targetType} />
+      <CommentForm
+        targetId={targetId}
+        targetType={targetType}
+      />
       <QueryBoundary
         fallback={<CommentsSkeleton />}
         ErrorFallback={InlineErrorFallback}
       >
-        <CommentsList targetId={targetId} targetType={targetType} />
+        <CommentsList
+          targetId={targetId}
+          targetType={targetType}
+        />
       </QueryBoundary>
     </div>
   );
 };
 
 const CommentsList = ({ targetId, targetType }: CommentsSectionProps) => {
-  const { data } = useSuspenseQuery(
-    commentsQueryOptionsFactory.forTarget(targetId, targetType),
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
+    useInfiniteQuery(commentsQueryOptionsFactory.thread(targetId, targetType));
+
+  const comments = useMemo(
+    () => data?.pages.flatMap((page) => page.items) ?? [],
+    [data],
   );
 
-  if (data.items.length === 0) {
+  if (isFetching && comments.length === 0) {
+    return <CommentsSkeleton />;
+  }
+
+  if (comments.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
         No comments yet. Be the first to comment!
@@ -43,10 +59,30 @@ const CommentsList = ({ targetId, targetType }: CommentsSectionProps) => {
   }
 
   return (
-    <div className="divide-y">
-      {data.items.map((comment) => (
-        <CommentItem key={comment.id} comment={comment} />
-      ))}
+    <div className="space-y-4">
+      <div className="divide-y">
+        {comments.map((comment) => (
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            targetId={targetId}
+            targetType={targetType}
+          />
+        ))}
+      </div>
+
+      {hasNextPage && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => fetchNextPage()}
+          disabled={isFetchingNextPage}
+          className="w-full"
+        >
+          {isFetchingNextPage ? "Loading..." : "Load more comments"}
+        </Button>
+      )}
     </div>
   );
 };
@@ -54,7 +90,10 @@ const CommentsList = ({ targetId, targetType }: CommentsSectionProps) => {
 const CommentsSkeleton = () => (
   <div className="flex flex-col gap-3">
     {Array.from({ length: 3 }).map((_, i) => (
-      <div key={i} className="flex gap-3 py-3">
+      <div
+        key={i}
+        className="flex gap-3 py-3"
+      >
         <Skeleton className="h-8 w-8 rounded-full" />
         <div className="flex-1 space-y-1">
           <Skeleton className="h-4 w-24" />

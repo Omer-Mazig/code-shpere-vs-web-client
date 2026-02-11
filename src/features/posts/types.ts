@@ -5,12 +5,21 @@ export type PostAuthor = {
   avatarUrl: string | null;
 };
 
+export type PostCommentPreview = {
+  id: string;
+  content: string;
+  createdAt: string;
+  author: PostAuthor | null;
+};
+
 export type Post = {
   id: string;
   content: string;
   author: PostAuthor;
   likesCount: number;
   isLiked: boolean;
+  commentsCount: number;
+  latestComment: PostCommentPreview | null;
   createdAt: string;
   updatedAt: string;
 };

@@ -8,6 +8,7 @@ type PostActionsProps = {
   postId: string;
   isLiked: boolean;
   likesCount: number;
+  commentsCount: number;
   onCommentClick?: () => void;
 };
 
@@ -15,6 +16,7 @@ export const PostActions = ({
   postId,
   isLiked,
   likesCount,
+  commentsCount,
   onCommentClick,
 }: PostActionsProps) => {
   const { isAuthenticated } = useAuth();
@@ -41,10 +43,10 @@ export const PostActions = ({
         variant="ghost"
         size="sm"
         className="gap-2 text-muted-foreground"
-        onClick={() => handleAction(() => onCommentClick?.())}
+        onClick={() => onCommentClick?.()}
       >
         <MessageCircle className="h-4 w-4" />
-        <span className="text-xs">Comment</span>
+        <span className="text-xs">{commentsCount}</span>
       </Button>
 
       <Button

@@ -8,9 +8,21 @@ export const commentsApi = {
     targetType: "POST" | "ARTICLE",
     page = 1,
     limit = 20,
+    parentId?: string,
   ): Promise<PaginatedResponse<Comment>> => {
     const response = await apiClient.get("/interactions/comments", {
-      params: { targetId, targetType, page, limit },
+      params: { targetId, targetType, page, limit, parentId },
+    });
+    return response.data.payload;
+  },
+
+  getReplies: async (
+    commentId: string,
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResponse<Comment>> => {
+    const response = await apiClient.get(`/interactions/comments/${commentId}/replies`, {
+      params: { page, limit },
     });
     return response.data.payload;
   },

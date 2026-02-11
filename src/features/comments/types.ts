@@ -11,6 +11,10 @@ export type Comment = {
   targetId: string;
   targetType: "POST" | "ARTICLE";
   parentId: string | null;
+  depth: number;
+  likesCount: number;
+  isLiked: boolean;
+  repliesCount: number;
   author: CommentAuthor | null;
   createdAt: string;
   updatedAt: string;

@@ -4,6 +4,7 @@ import { interactionsApi } from "../interactions.api";
 import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-factory";
 import { articlesQueryOptionsFactory } from "@/features/articles/articles-query-options-factory";
 import { toast } from "sonner";
+import { commentsQueryOptionsFactory } from "@/features/comments/comments-query-options-factory";
 
 /**
  * Recursively traverses query cache data structures (single items,
@@ -60,14 +61,16 @@ function updateLikeInData(
 
 export function useToggleLike(
   targetId: string,
-  targetType: "POST" | "ARTICLE",
+  targetType: "POST" | "ARTICLE" | "COMMENT",
 ) {
   const queryClient = useQueryClient();
 
   const rootQueryKey =
     targetType === "POST"
       ? postsQueryOptionsFactory.all().queryKey
-      : articlesQueryOptionsFactory.all().queryKey;
+      : targetType === "ARTICLE"
+        ? articlesQueryOptionsFactory.all().queryKey
+        : commentsQueryOptionsFactory.all().queryKey;
 
   const mutation = useMutation({
     mutationFn: ({ action }: { action: "like" | "unlike" }) => {

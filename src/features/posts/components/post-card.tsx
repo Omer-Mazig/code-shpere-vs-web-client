@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import type { Post } from "../types";
 import { PostActions } from "./post-actions";
@@ -8,6 +8,8 @@ type PostCardProps = {
 };
 
 export const PostCard = ({ post }: PostCardProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="rounded-lg border bg-card p-4">
       {/* Author */}
@@ -44,12 +46,35 @@ export const PostCard = ({ post }: PostCardProps) => {
         </p>
       </Link>
 
+      {post.latestComment && (
+        <div className="mt-3 rounded-md bg-muted/40 p-3 text-sm">
+          <span className="font-medium">
+            {post.latestComment.author?.displayName ??
+              post.latestComment.author?.username ??
+              "Unknown"}
+          </span>
+          <span className="text-muted-foreground"> commented: </span>
+          <span className="line-clamp-2">{post.latestComment.content}</span>
+        </div>
+      )}
+
+      {post.commentsCount > 0 && (
+        <Link
+          to={`/feed/${post.id}`}
+          className="mt-2 block text-xs text-muted-foreground hover:underline"
+        >
+          Show all comments ({post.commentsCount})
+        </Link>
+      )}
+
       {/* Actions */}
       <div className="mt-3 border-t pt-2">
         <PostActions
           postId={post.id}
           isLiked={post.isLiked}
           likesCount={post.likesCount}
+          commentsCount={post.commentsCount}
+          onCommentClick={() => navigate(`/feed/${post.id}`)}
         />
       </div>
     </div>
