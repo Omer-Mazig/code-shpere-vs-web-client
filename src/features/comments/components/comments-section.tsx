@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
-import { CommentForm } from "./comment-form";
 import { CommentItem } from "./comment-item";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QueryBoundary } from "@/components/errors/query-boundary";
 import { InlineErrorFallback } from "@/components/errors/inline-error-fallback";
+import { CommentForm } from "./comment-form";
 
 type CommentsSectionProps = {
   targetId: string;
