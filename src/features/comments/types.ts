@@ -22,6 +22,7 @@ export type Comment = {
   likesCount: number;
   isLiked: boolean;
   repliesCount: number;
+  mentionedUsers: CommentMentionCandidate[];
   author: CommentAuthor | null;
   createdAt: string;
   updatedAt: string;

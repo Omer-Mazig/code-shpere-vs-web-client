@@ -4,8 +4,8 @@ import { formatDistanceToNow } from "date-fns";
 import { MessageCircle } from "lucide-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
-import { CommentForm } from "./comment-form";
 import { LikeButton } from "@/features/interactions/components/like-button";
+import { CommentForm } from "./comment-form";
 import { Button } from "@/components/ui/button";
 import type { Comment } from "../types";
 
@@ -16,6 +16,37 @@ type CommentItemProps = {
 };
 
 const MAX_DEPTH = 2;
+const COMMENT_MENTION_REGEX = /(@[a-zA-Z0-9_-]{3,30})/g;
+
+const renderCommentContent = (comment: Comment) => {
+  const mentionMap = new Map(
+    comment.mentionedUsers.map((user) => [user.username.toLowerCase(), user]),
+  );
+  const parts = comment.content.split(COMMENT_MENTION_REGEX);
+
+  return parts.map((part, index) => {
+    const mentionMatch = /^@([a-zA-Z0-9_-]{3,30})$/.exec(part);
+    if (!mentionMatch) {
+      return <span key={`${comment.id}-part-${index}`}>{part}</span>;
+    }
+
+    const username = mentionMatch[1].toLowerCase();
+    const mentionedUser = mentionMap.get(username);
+    if (!mentionedUser) {
+      return <span key={`${comment.id}-part-${index}`}>{part}</span>;
+    }
+
+    return (
+      <Link
+        key={`${comment.id}-part-${index}`}
+        to={`/profile/${mentionedUser.id}`}
+        className="text-primary hover:underline"
+      >
+        @{mentionedUser.username}
+      </Link>
+    );
+  });
+};
 
 export const CommentItem = ({
   comment,
@@ -27,15 +58,11 @@ export const CommentItem = ({
 
   const canReply = comment.depth < MAX_DEPTH;
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    ...commentsQueryOptionsFactory.replies(comment.id),
-    enabled: isRepliesOpen && comment.repliesCount > 0,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      ...commentsQueryOptionsFactory.replies(comment.id),
+      enabled: isRepliesOpen && comment.repliesCount > 0,
+    });
 
   const replies = useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
@@ -70,7 +97,9 @@ export const CommentItem = ({
               })}
             </span>
           </div>
-          <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+          <p className="text-sm whitespace-pre-wrap">
+            {renderCommentContent(comment)}
+          </p>
 
           <div className="flex items-center gap-2">
             <LikeButton
