@@ -6,9 +6,23 @@ import { CommentsSection } from "@/features/comments/components/comments-section
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageErrorFallback } from "@/components/errors/page-error-fallback";
+import { QueryBoundary } from "@/components/errors/query-boundary";
 
 export const PostDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
+  return (
+    <QueryBoundary
+      fallback={<PostDetailSkeleton />}
+      ErrorFallback={PageErrorFallback}
+      resetKeys={[id]}
+    >
+      <PostDetailPageContent id={id} />
+    </QueryBoundary>
+  );
+};
+
+const PostDetailPageContent = ({ id }: { id: string | undefined }) => {
   const { data: post } = useSuspenseQuery(
     postsQueryOptionsFactory.details(id!),
   );
@@ -16,7 +30,11 @@ export const PostDetailPage = () => {
   return (
     <div className="container mx-auto max-w-2xl px-4 py-6">
       <Link to="/feed">
-        <Button variant="ghost" size="sm" className="mb-4 gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mb-4 gap-2"
+        >
           <ArrowLeft className="h-4 w-4" />
           Back to Feed
         </Button>
@@ -24,7 +42,10 @@ export const PostDetailPage = () => {
 
       <div className="flex flex-col gap-6">
         <PostDetailCard post={post} />
-        <CommentsSection targetId={post.id} targetType="POST" />
+        <CommentsSection
+          targetId={post.id}
+          targetType="POST"
+        />
       </div>
     </div>
   );
