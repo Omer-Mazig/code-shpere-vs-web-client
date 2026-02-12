@@ -15,8 +15,7 @@ export type ProfileActiveTab =
   | "posts"
   | "articles"
   | "followers"
-  | "following"
-  | "settings";
+  | "following";
 
 type ProfileContextValue = {
   profile: UserProfile;

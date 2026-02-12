@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
 import { useAuth } from "@/features/auth/auth.context";
@@ -45,10 +45,6 @@ export const ProfilePage = ({ activeTab, children }: ProfilePageProps) => {
         <p className="text-muted-foreground">User not found.</p>
       </div>
     );
-  }
-
-  if (activeTab === "settings" && !isOwnProfile) {
-    return <Navigate to={`/profile/${profileId}/posts`} replace />;
   }
 
   return (

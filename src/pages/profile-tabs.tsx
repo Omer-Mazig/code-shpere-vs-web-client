@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ArticleList } from "@/features/articles/components/article-list";
+import { useAuth } from "@/features/auth/auth.context";
 import { FollowersList } from "@/features/users/components/followers-list";
 import { ProfilePosts } from "@/features/users/components/profile-posts";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
@@ -144,9 +145,28 @@ export const ProfileFollowingTabPage = () => {
 };
 
 export const ProfileSettingsTabPage = () => {
+  const { id } = useParams<{ id: string }>();
+  const { user, isAuthenticated } = useAuth();
+
+  if (!id) {
+    return <Navigate to="/feed" replace />;
+  }
+
+  const isOwnProfile = isAuthenticated && user?.id === id;
+  if (!isOwnProfile) {
+    return <Navigate to={`/profile/${id}/posts`} replace />;
+  }
+
   return (
-    <ProfilePage activeTab="settings">
-      {() => (
+    <div className="container mx-auto max-w-3xl px-4 py-6">
+      <div className="space-y-5">
+        <header className="space-y-1">
+          <h1 className="text-2xl font-semibold">Settings</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage profile and account preferences.
+          </p>
+        </header>
+
         <div className="space-y-5">
           <section className="rounded-lg border p-4">
             <h3 className="font-medium">Notification management</h3>
@@ -173,10 +193,11 @@ export const ProfileSettingsTabPage = () => {
             </p>
           </section>
         </div>
-      )}
-    </ProfilePage>
+      </div>
+    </div>
   );
 };
+
 
 export const ProfileIndexRedirectPage = () => {
   const { id } = useParams<{ id: string }>();
