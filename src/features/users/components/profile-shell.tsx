@@ -92,19 +92,24 @@ const Header = ({ actions }: HeaderProps) => {
   ).toUpperCase();
 
   return (
-    <div className="px-5 pb-5">
-      <div className="-mt-12 flex flex-col gap-4 md:-mt-14">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="flex items-end gap-4">
-            <Avatar initials={initials} imageUrl={profile.avatarUrl} />
-            <div className="pb-1">
+    <div className="px-5 pb-5 pt-2">
+      <div className="-mt-8 flex flex-col gap-4 md:-mt-10">
+        <div className="flex flex-row gap-4 justify-between items-center">
+          <div className="flex items-center gap-4">
+            <Avatar
+              initials={initials}
+              imageUrl={profile.avatarUrl}
+            />
+            <div>
               <h1 className="text-2xl font-semibold">
                 {profile.displayName ?? profile.username}
               </h1>
-              <p className="text-sm text-muted-foreground">@{profile.username}</p>
+              <p className="text-sm text-muted-foreground">
+                @{profile.username}
+              </p>
             </div>
           </div>
-          {actions && <div className="md:pt-2">{actions}</div>}
+          {actions && <div className="z-10 md:pt-2 self-center">{actions}</div>}
         </div>
         <div className="flex flex-col gap-3">
           {profile.bio && (
@@ -173,7 +178,7 @@ const Avatar = ({ initials, imageUrl }: AvatarProps) => {
   const altLabel = profile.displayName ?? profile.username;
 
   return (
-    <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-card bg-primary text-primary-foreground md:h-28 md:w-28">
+    <div className="z-10 h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-card bg-primary text-primary-foreground md:h-28 md:w-28">
       {imageUrl ? (
         <img
           src={imageUrl}
