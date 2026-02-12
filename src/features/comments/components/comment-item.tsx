@@ -15,7 +15,6 @@ type CommentItemProps = {
   targetType: "POST" | "ARTICLE";
 };
 
-const MAX_DEPTH = 2;
 const COMMENT_MENTION_REGEX = /(@[a-zA-Z0-9_-]{3,30})/g;
 
 const renderCommentContent = (comment: Comment) => {
@@ -56,7 +55,8 @@ export const CommentItem = ({
   const [isReplying, setIsReplying] = useState(false);
   const [isRepliesOpen, setIsRepliesOpen] = useState(false);
 
-  const canReply = comment.depth < MAX_DEPTH;
+  const isTopLevelComment = comment.parentId === null;
+  const canReply = isTopLevelComment;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
@@ -122,7 +122,7 @@ export const CommentItem = ({
               </Button>
             )}
 
-            {comment.repliesCount > 0 && (
+            {isTopLevelComment && comment.repliesCount > 0 && (
               <Button
                 type="button"
                 variant="ghost"
