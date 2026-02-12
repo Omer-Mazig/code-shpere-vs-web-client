@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-factory";
-import { PostCard } from "@/features/posts/components/post-card";
+import { PostDetailCard } from "@/features/posts/components/post-detail-card";
 import { CommentsSection } from "@/features/comments/components/comments-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
@@ -23,7 +23,7 @@ export const PostDetailPage = () => {
       </Link>
 
       <div className="flex flex-col gap-6">
-        <PostCard post={post} />
+        <PostDetailCard post={post} />
         <CommentsSection targetId={post.id} targetType="POST" />
       </div>
     </div>

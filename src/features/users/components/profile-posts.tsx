@@ -5,5 +5,5 @@ type ProfilePostsProps = {
 };
 
 export const ProfilePosts = ({ userId }: ProfilePostsProps) => {
-  return <PostFeed queryDto={{ authorId: userId }} />;
+  return <PostFeed queryDto={{ authorId: userId }} variant="profile" />;
 };

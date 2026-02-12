@@ -1,16 +1,18 @@
 import { useEffect } from "react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { postsQueryOptionsFactory } from "../posts-query-options-factory";
-import { PostCard } from "./post-card";
+import { PostFeedCard } from "./post-feed-card";
+import { PostProfileCard } from "./post-profile-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import type { PostQueryDto } from "../types";
 
 type PostFeedProps = {
   queryDto?: Partial<Omit<PostQueryDto, "page">>;
+  variant?: "feed" | "profile";
 };
 
-export const PostFeed = ({ queryDto }: PostFeedProps) => {
+export const PostFeed = ({ queryDto, variant = "feed" }: PostFeedProps) => {
   const {
     data,
     fetchNextPage,
@@ -43,7 +45,11 @@ export const PostFeed = ({ queryDto }: PostFeedProps) => {
   return (
     <div className="flex flex-col gap-4">
       {allPosts.map((post) => (
-        <PostCard key={post.id} post={post} />
+          variant === "profile" ? (
+            <PostProfileCard key={post.id} post={post} />
+          ) : (
+            <PostFeedCard key={post.id} post={post} />
+          )
       ))}
 
       {/* Sentinel element — triggers next page fetch when scrolled into view */}
