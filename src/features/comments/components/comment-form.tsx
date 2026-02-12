@@ -2,6 +2,9 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCreateComment } from "../hooks/use-create-comment";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import type { CommentMentionCandidate } from "../types";
@@ -53,7 +56,8 @@ export const CommentForm = ({
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
   const createComment = useCreateComment();
 
-  const canMentionInThisForm = targetType === "POST" && Boolean(parentId);
+  const canMentionInThisForm = targetType === "POST";
+  const isReplyForm = Boolean(parentId);
   const mentionContext = React.useMemo(
     () =>
       canMentionInThisForm ? getMentionContext(content, cursorPosition) : null,
@@ -61,10 +65,10 @@ export const CommentForm = ({
   );
 
   React.useEffect(() => {
-    if (canMentionInThisForm && mentionContext && !hasMentionTriggered) {
+    if (canMentionInThisForm && isReplyForm && mentionContext && !hasMentionTriggered) {
       setHasMentionTriggered(true);
     }
-  }, [canMentionInThisForm, mentionContext, hasMentionTriggered]);
+  }, [canMentionInThisForm, isReplyForm, mentionContext, hasMentionTriggered]);
 
   React.useEffect(() => {
     const query = mentionContext?.query?.trim() ?? "";
@@ -74,13 +78,14 @@ export const CommentForm = ({
     return () => window.clearTimeout(timeout);
   }, [mentionContext?.query]);
 
-  const { data: mentionCandidatesPool = [] } = useQuery({
-    ...commentsQueryOptionsFactory.mentionCandidatesPool(
-      targetId,
-      parentId ?? "",
-    ),
+  const {
+    data: mentionCandidatesPool = [],
+    isLoading: isPoolLoading,
+    isFetching: isPoolFetching,
+  } = useQuery({
+    ...commentsQueryOptionsFactory.mentionCandidatesPool(targetId, parentId),
     // Fetch once on first @ in reply forms.
-    enabled: canMentionInThisForm && hasMentionTriggered,
+    enabled: canMentionInThisForm && isReplyForm && hasMentionTriggered,
   });
 
   const localFilteredCandidates = React.useMemo(() => {
@@ -97,28 +102,38 @@ export const CommentForm = ({
     });
   }, [mentionCandidatesPool, mentionContext]);
 
+  const hasTypedMentionQuery = (mentionContext?.query.trim().length ?? 0) > 0;
   const shouldUseFallbackSearch =
     canMentionInThisForm &&
     Boolean(mentionContext) &&
     isMentionListOpen &&
-    hasMentionTriggered &&
-    localFilteredCandidates.length === 0 &&
+    hasTypedMentionQuery &&
     debouncedMentionQuery.length > 0;
 
-  const { data: fallbackMentionCandidates = [] } = useQuery({
+  const {
+    data: fallbackMentionCandidates = [],
+    isLoading: isFallbackLoading,
+    isFetching: isFallbackFetching,
+  } = useQuery({
     ...commentsQueryOptionsFactory.mentionCandidatesSearch(
       targetId,
-      parentId ?? "",
+      parentId,
       debouncedMentionQuery,
     ),
-    // Debounced fallback only when local filtering has no hits.
+    // Debounced fallback for mutual-follow search after query typing.
     enabled: shouldUseFallbackSearch,
   });
 
-  const mentionCandidates =
-    localFilteredCandidates.length > 0
-      ? localFilteredCandidates
-      : fallbackMentionCandidates;
+  const mentionCandidates = React.useMemo(() => {
+    const merged = isReplyForm
+      ? [...localFilteredCandidates, ...fallbackMentionCandidates]
+      : [...fallbackMentionCandidates];
+    const deduped = new Map<string, CommentMentionCandidate>();
+    for (const candidate of merged) {
+      deduped.set(candidate.id, candidate);
+    }
+    return Array.from(deduped.values());
+  }, [isReplyForm, localFilteredCandidates, fallbackMentionCandidates]);
 
   const insertMention = (candidate: CommentMentionCandidate) => {
     if (!mentionContext) return;
@@ -164,11 +179,17 @@ export const CommentForm = ({
     onSuccess?.();
   };
 
+  const isMentionLoading =
+    (isReplyForm && isPoolLoading) || (!isReplyForm && isFallbackLoading);
+  const isMentionRefetching =
+    (mentionCandidates.length > 0 && isPoolFetching) ||
+    (mentionCandidates.length > 0 && isFallbackFetching);
+
   const showMentionDropdown =
     canMentionInThisForm &&
     Boolean(mentionContext) &&
     isMentionListOpen &&
-    mentionCandidates.length > 0;
+    (mentionCandidates.length > 0 || isMentionLoading);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
@@ -197,24 +218,57 @@ export const CommentForm = ({
 
         {showMentionDropdown && (
           <div className="absolute z-20 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
-            {mentionCandidates.map((candidate) => (
-              <button
-                key={candidate.id}
-                type="button"
-                className="flex w-full items-center justify-between rounded px-2 py-1 text-left text-sm hover:bg-accent"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  insertMention(candidate);
-                }}
-              >
-                <span className="font-medium">
-                  {candidate.displayName ?? candidate.username}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  @{candidate.username}
-                </span>
-              </button>
-            ))}
+            {isMentionLoading && mentionCandidates.length === 0
+              ? Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={`mention-skeleton-${index}`}
+                    className="flex items-center gap-2 rounded px-2 py-1"
+                  >
+                    <Skeleton className="h-7 w-7 rounded-full" />
+                    <div className="flex-1 space-y-1">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  </div>
+                ))
+              : mentionCandidates.map((candidate) => (
+                  <button
+                    key={candidate.id}
+                    type="button"
+                    className="flex w-full items-center justify-between gap-2 rounded px-2 py-1 text-left text-sm hover:bg-accent"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      insertMention(candidate);
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Avatar size="sm">
+                        <AvatarImage
+                          src={candidate.avatarUrl ?? undefined}
+                          alt={candidate.displayName ?? candidate.username}
+                        />
+                        <AvatarFallback>
+                          {(candidate.displayName?.[0] ??
+                            candidate.username[0] ??
+                            "?").toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="font-medium leading-tight">
+                          {candidate.displayName ?? candidate.username}
+                        </span>
+                        <span className="text-xs text-muted-foreground leading-tight">
+                          @{candidate.username}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+            {isMentionRefetching && (
+              <div className="flex items-center justify-center px-2 py-1.5">
+                <Spinner className="size-3.5 text-muted-foreground" />
+              </div>
+            )}
           </div>
         )}
       </div>

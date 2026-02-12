@@ -47,7 +47,7 @@ export const commentsQueryOptionsFactory = {
     }),
 
   // ["comments", "mention-candidates", targetId, parentId]
-  mentionCandidatesPool: (targetId: string, parentId: string) =>
+  mentionCandidatesPool: (targetId: string, parentId?: string) =>
     queryOptions({
       queryKey: [
         ...commentsQueryOptionsFactory.all().queryKey,
@@ -62,7 +62,7 @@ export const commentsQueryOptionsFactory = {
   // ["comments", "mention-candidates-search", targetId, parentId, query]
   mentionCandidatesSearch: (
     targetId: string,
-    parentId: string,
+    parentId: string | undefined,
     query: string,
   ) =>
     queryOptions({

@@ -34,7 +34,7 @@ export const commentsApi = {
 
   getMentionCandidates: async (
     targetId: string,
-    parentId: string,
+    parentId?: string,
     query?: string,
   ): Promise<CommentMentionCandidate[]> => {
     const response = await apiClient.get(
