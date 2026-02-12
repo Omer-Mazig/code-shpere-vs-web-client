@@ -1,19 +1,58 @@
-import type { ReactNode } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
+import { Calendar, Github, Globe, MapPin } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import type { UserProfile } from "../types";
 
 export type ProfileTab = {
-  key: string;
+  key: ProfileActiveTab;
   label: string;
   to: string;
 };
 
-type RootProps = {
-  children: ReactNode;
+export type ProfileActiveTab =
+  | "posts"
+  | "articles"
+  | "followers"
+  | "following"
+  | "settings";
+
+type ProfileContextValue = {
+  profile: UserProfile;
+  activeTab: ProfileActiveTab;
+  tabs: ProfileTab[];
 };
 
-const Root = ({ children }: RootProps) => {
-  return <div className="flex flex-col overflow-hidden rounded-xl border bg-card">{children}</div>;
+const ProfileContext = React.createContext<ProfileContextValue | undefined>(
+  undefined,
+);
+
+const useProfile = () => {
+  const context = React.useContext(ProfileContext);
+  if (!context) {
+    throw new Error(
+      "Profile compound components must be used within ProfileShell.Root",
+    );
+  }
+  return context;
+};
+
+type RootProps = {
+  profile: UserProfile;
+  activeTab: ProfileActiveTab;
+  tabs: ProfileTab[];
+  children: React.ReactNode;
+};
+
+const Root = ({ profile, activeTab, tabs, children }: RootProps) => {
+  return (
+    <ProfileContext.Provider value={{ profile, activeTab, tabs }}>
+      <div className="flex flex-col overflow-hidden rounded-xl border bg-card">
+        {children}
+      </div>
+    </ProfileContext.Provider>
+  );
 };
 
 type CoverProps = {
@@ -21,12 +60,16 @@ type CoverProps = {
 };
 
 const Cover = ({ imageUrl }: CoverProps) => {
+  const { profile } = useProfile();
+  const resolvedImage = imageUrl ?? null;
+  const altLabel = profile.displayName ?? profile.username;
+
   return (
     <div className="relative h-40 w-full overflow-hidden border-b bg-muted md:h-52">
-      {imageUrl ? (
+      {resolvedImage ? (
         <img
-          src={imageUrl}
-          alt="Profile cover"
+          src={resolvedImage}
+          alt={`${altLabel} cover`}
           className="h-full w-full object-cover"
         />
       ) : (
@@ -37,26 +80,84 @@ const Cover = ({ imageUrl }: CoverProps) => {
 };
 
 type HeaderProps = {
-  avatar: ReactNode;
-  identity: ReactNode;
-  actions?: ReactNode;
-  metadata?: ReactNode;
-  stats: ReactNode;
+  actions?: React.ReactNode;
 };
 
-const Header = ({ avatar, identity, actions, metadata, stats }: HeaderProps) => {
+const Header = ({ actions }: HeaderProps) => {
+  const { profile } = useProfile();
+  const initials = (
+    profile.displayName?.[0] ??
+    profile.username[0] ??
+    "?"
+  ).toUpperCase();
+
   return (
     <div className="px-5 pb-5">
       <div className="-mt-12 flex flex-col gap-4 md:-mt-14">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="flex items-end gap-4">
-            {avatar}
-            <div className="pb-1">{identity}</div>
+            <Avatar initials={initials} imageUrl={profile.avatarUrl} />
+            <div className="pb-1">
+              <h1 className="text-2xl font-semibold">
+                {profile.displayName ?? profile.username}
+              </h1>
+              <p className="text-sm text-muted-foreground">@{profile.username}</p>
+            </div>
           </div>
           {actions && <div className="md:pt-2">{actions}</div>}
         </div>
-        {metadata}
-        {stats}
+        <div className="flex flex-col gap-3">
+          {profile.bio && (
+            <p className="max-w-2xl text-sm leading-relaxed">{profile.bio}</p>
+          )}
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            {profile.location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                {profile.location}
+              </span>
+            )}
+            {profile.website && (
+              <a
+                href={profile.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:text-foreground"
+              >
+                <Globe className="h-4 w-4" />
+                Website
+              </a>
+            )}
+            {profile.github && (
+              <a
+                href={`https://github.com/${profile.github}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:text-foreground"
+              >
+                <Github className="h-4 w-4" />
+                {profile.github}
+              </a>
+            )}
+            <span className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              Joined{" "}
+              {formatDistanceToNow(new Date(profile.createdAt), {
+                addSuffix: true,
+              })}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-6 text-sm">
+          <span>
+            <strong>{profile.followersCount}</strong>{" "}
+            <span className="text-muted-foreground">followers</span>
+          </span>
+          <span>
+            <strong>{profile.followingCount}</strong>{" "}
+            <span className="text-muted-foreground">following</span>
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -68,12 +169,15 @@ type AvatarProps = {
 };
 
 const Avatar = ({ initials, imageUrl }: AvatarProps) => {
+  const { profile } = useProfile();
+  const altLabel = profile.displayName ?? profile.username;
+
   return (
     <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-card bg-primary text-primary-foreground md:h-28 md:w-28">
       {imageUrl ? (
         <img
           src={imageUrl}
-          alt="Profile avatar"
+          alt={`${altLabel} avatar`}
           className="h-full w-full object-cover"
         />
       ) : (
@@ -85,11 +189,8 @@ const Avatar = ({ initials, imageUrl }: AvatarProps) => {
   );
 };
 
-type TabNavProps = {
-  tabs: ProfileTab[];
-};
-
-const TabNav = ({ tabs }: TabNavProps) => {
+const TabNav = () => {
+  const { tabs, activeTab } = useProfile();
   return (
     <div className="border-t px-2">
       <nav className="flex flex-wrap gap-1 py-2">
@@ -97,10 +198,10 @@ const TabNav = ({ tabs }: TabNavProps) => {
           <NavLink
             key={tab.key}
             to={tab.to}
-            className={({ isActive }) =>
+            className={() =>
               cn(
                 "rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors",
-                isActive && "bg-muted text-foreground",
+                activeTab === tab.key && "bg-muted text-foreground",
               )
             }
           >
@@ -113,7 +214,7 @@ const TabNav = ({ tabs }: TabNavProps) => {
 };
 
 type TabContentProps = {
-  children: ReactNode;
+  children: React.ReactNode;
 };
 
 const TabContent = ({ children }: TabContentProps) => {
@@ -121,6 +222,7 @@ const TabContent = ({ children }: TabContentProps) => {
 };
 
 export const ProfileShell = Object.assign(Root, {
+  useProfile,
   Cover,
   Header,
   Avatar,

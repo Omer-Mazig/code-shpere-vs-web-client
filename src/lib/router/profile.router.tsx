@@ -1,10 +1,9 @@
 import type { RouteObject } from "react-router-dom";
-import { Navigate } from "react-router-dom";
-import { ProfilePage } from "@/pages/profile-page";
 import {
   ProfileArticlesTabPage,
   ProfileFollowersTabPage,
   ProfileFollowingTabPage,
+  ProfileIndexRedirectPage,
   ProfilePostsTabPage,
   ProfileSettingsTabPage,
 } from "@/pages/profile-tabs";
@@ -12,32 +11,26 @@ import {
 export const profileRoutes: RouteObject[] = [
   {
     path: "profile/:id",
-    element: <ProfilePage />,
-    children: [
-      {
-        index: true,
-        element: <Navigate to="posts" replace />,
-      },
-      {
-        path: "posts",
-        element: <ProfilePostsTabPage />,
-      },
-      {
-        path: "articles",
-        element: <ProfileArticlesTabPage />,
-      },
-      {
-        path: "followers",
-        element: <ProfileFollowersTabPage />,
-      },
-      {
-        path: "following",
-        element: <ProfileFollowingTabPage />,
-      },
-      {
-        path: "settings",
-        element: <ProfileSettingsTabPage />,
-      },
-    ],
+    element: <ProfileIndexRedirectPage />,
+  },
+  {
+    path: "profile/:id/posts",
+    element: <ProfilePostsTabPage />,
+  },
+  {
+    path: "profile/:id/articles",
+    element: <ProfileArticlesTabPage />,
+  },
+  {
+    path: "profile/:id/followers",
+    element: <ProfileFollowersTabPage />,
+  },
+  {
+    path: "profile/:id/following",
+    element: <ProfileFollowingTabPage />,
+  },
+  {
+    path: "profile/:id/settings",
+    element: <ProfileSettingsTabPage />,
   },
 ];

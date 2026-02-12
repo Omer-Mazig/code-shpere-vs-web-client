@@ -1,4 +1,5 @@
-import { Outlet, useOutletContext, useParams } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
 import { useAuth } from "@/features/auth/auth.context";
@@ -6,31 +7,22 @@ import { MyProfile } from "@/features/users/components/my-profile";
 import { UserProfile } from "@/features/users/components/user-profile";
 import type { UserProfile as UserProfileType } from "@/features/users/types";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { ProfileTab } from "@/features/users/components/profile-shell";
+import type { ProfileActiveTab } from "@/features/users/components/profile-shell";
 
-export type ProfilePageOutletContext = {
-  profileId: string;
-  profile: UserProfileType;
-  isOwnProfile: boolean;
+type ProfilePageProps = {
+  activeTab: ProfileActiveTab;
+  children: (params: {
+    profileId: string;
+    profile: UserProfileType;
+    isOwnProfile: boolean;
+  }) => ReactNode;
 };
 
-export const useProfilePageContext = () =>
-  useOutletContext<ProfilePageOutletContext>();
-
-export const ProfilePage = () => {
+export const ProfilePage = ({ activeTab, children }: ProfilePageProps) => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
   const profileId = id ?? "";
   const isOwnProfile = isAuthenticated && user?.id === profileId;
-  const tabs: ProfileTab[] = [
-    { key: "posts", label: "Posts", to: "posts" },
-    { key: "articles", label: "Articles", to: "articles" },
-    { key: "followers", label: "Followers", to: "followers" },
-    { key: "following", label: "Following", to: "following" },
-    ...(isOwnProfile
-      ? [{ key: "settings", label: "Settings", to: "settings" }]
-      : []),
-  ];
 
   const { data: profile, isLoading } = useQuery({
     ...(isOwnProfile
@@ -55,28 +47,28 @@ export const ProfilePage = () => {
     );
   }
 
+  if (activeTab === "settings" && !isOwnProfile) {
+    return <Navigate to={`/profile/${profileId}/posts`} replace />;
+  }
+
   return (
     <div className="container mx-auto max-w-4xl px-4 py-6">
       <div className="flex flex-col gap-6">
         {isOwnProfile ? (
-          <MyProfile profile={profile} tabs={tabs}>
-            <Outlet
-              context={{
-                profileId,
-                profile,
-                isOwnProfile: true,
-              }}
-            />
+          <MyProfile profile={profile} activeTab={activeTab}>
+            {children({
+              profileId,
+              profile,
+              isOwnProfile,
+            })}
           </MyProfile>
         ) : (
-          <UserProfile profile={profile} tabs={tabs}>
-            <Outlet
-              context={{
-                profileId,
-                profile,
-                isOwnProfile: false,
-              }}
-            />
+          <UserProfile profile={profile} activeTab={activeTab}>
+            {children({
+              profileId,
+              profile,
+              isOwnProfile,
+            })}
           </UserProfile>
         )}
       </div>
