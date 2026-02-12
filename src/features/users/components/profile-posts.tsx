@@ -1,9 +1,9 @@
-import { PostFeed } from "@/features/posts/components/post-feed";
+import { PostProfileFeed } from "@/features/posts/components/post-profile-feed";
 
 type ProfilePostsProps = {
   userId: string;
 };
 
 export const ProfilePosts = ({ userId }: ProfilePostsProps) => {
-  return <PostFeed queryDto={{ authorId: userId }} variant="profile" />;
+  return <PostProfileFeed userId={userId} />;
 };

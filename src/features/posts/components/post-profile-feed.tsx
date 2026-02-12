@@ -1,17 +1,23 @@
 import { useEffect } from "react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { postsQueryOptionsFactory } from "../posts-query-options-factory";
-import { PostFeedCard } from "./post-feed-card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PostProfileCard } from "./post-profile-card";
+import { FeedSkeleton } from "./post-feed";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
- 
-export const PostFeed = () => {
+
+type PostProfileFeedProps = {
+  userId: string;
+};
+
+export const PostProfileFeed = ({ userId }: PostProfileFeedProps) => {
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useSuspenseInfiniteQuery(postsQueryOptionsFactory.feedList());
+  } = useSuspenseInfiniteQuery(
+    postsQueryOptionsFactory.feedList({ authorId: userId }),
+  );
 
   const { ref: loadMoreRef, isIntersecting } = useIntersectionObserver({
     rootMargin: "200px",
@@ -29,7 +35,7 @@ export const PostFeed = () => {
     return (
       <div className="rounded-lg border bg-card p-8 text-center">
         <p className="text-muted-foreground">
-          No posts yet. Be the first to post!
+          This user has not posted yet.
         </p>
       </div>
     );
@@ -38,36 +44,18 @@ export const PostFeed = () => {
   return (
     <div className="flex flex-col gap-4">
       {allPosts.map((post) => (
-        <PostFeedCard key={post.id} post={post} />
+        <PostProfileCard key={post.id} post={post} />
       ))}
 
-      {/* Sentinel element — triggers next page fetch when scrolled into view */}
       <div ref={loadMoreRef} className="h-1" />
 
       {isFetchingNextPage && <FeedSkeleton count={1} />}
 
       {!hasNextPage && (
         <p className="text-center text-sm text-muted-foreground py-4">
-          You've reached the end
+          End of posts
         </p>
       )}
     </div>
   );
 };
-
-export const FeedSkeleton = ({ count = 3 }: { count?: number }) => (
-  <div className="flex flex-col gap-4">
-    {Array.from({ length: count }).map((_, i) => (
-      <div key={i} className="rounded-lg border bg-card p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <div className="flex flex-col gap-1">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-3 w-32" />
-          </div>
-        </div>
-        <Skeleton className="h-16 w-full" />
-      </div>
-    ))}
-  </div>
-);
