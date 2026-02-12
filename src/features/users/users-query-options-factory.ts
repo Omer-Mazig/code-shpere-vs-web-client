@@ -1,5 +1,7 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { usersApi } from "./users.api";
+
+const FOLLOW_CONNECTIONS_LIMIT = 20;
 
 export const usersQueryOptionsFactory = {
   // ["users"]
@@ -32,25 +34,41 @@ export const usersQueryOptionsFactory = {
 
   // ["users", "followers", userId]
   followers: (userId: string) =>
-    queryOptions({
+    infiniteQueryOptions({
       queryKey: [
         ...usersQueryOptionsFactory.all().queryKey,
         "followers",
         userId,
       ],
-      queryFn: () => usersApi.getFollowers(userId),
+      queryFn: ({ pageParam }) =>
+        usersApi.getFollowers(
+          userId,
+          Number(pageParam),
+          FOLLOW_CONNECTIONS_LIMIT,
+        ),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) =>
+        lastPage.meta.hasNextPage ? lastPage.meta.page + 1 : undefined,
       staleTime: 1000 * 60 * 5,
     }),
 
   // ["users", "following", userId]
   following: (userId: string) =>
-    queryOptions({
+    infiniteQueryOptions({
       queryKey: [
         ...usersQueryOptionsFactory.all().queryKey,
         "following",
         userId,
       ],
-      queryFn: () => usersApi.getFollowing(userId),
+      queryFn: ({ pageParam }) =>
+        usersApi.getFollowing(
+          userId,
+          Number(pageParam),
+          FOLLOW_CONNECTIONS_LIMIT,
+        ),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) =>
+        lastPage.meta.hasNextPage ? lastPage.meta.page + 1 : undefined,
       staleTime: 1000 * 60 * 5,
     }),
 };

@@ -18,5 +18,4 @@ export const ARTICLE_PATHS = {
 
 export const PROFILE_PATHS = {
   PROFILE: "/profile/:id",
-  EDIT_PROFILE: "/profile/edit",
 } as const;
