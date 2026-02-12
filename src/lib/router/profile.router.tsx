@@ -1,11 +1,11 @@
 import type { RouteObject } from "react-router-dom";
+import { ProfileSettingsPage } from "@/pages/profile-settings-page";
 import {
   ProfileArticlesTabPage,
   ProfileFollowersTabPage,
   ProfileFollowingTabPage,
   ProfileIndexRedirectPage,
   ProfilePostsTabPage,
-  ProfileSettingsTabPage,
 } from "@/pages/profile-tabs";
 
 export const profileRoutes: RouteObject[] = [
@@ -31,6 +31,6 @@ export const profileRoutes: RouteObject[] = [
   },
   {
     path: "profile/:id/settings",
-    element: <ProfileSettingsTabPage />,
+    element: <ProfileSettingsPage />,
   },
 ];

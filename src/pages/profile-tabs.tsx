@@ -2,7 +2,6 @@ import { useEffect, useMemo } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ArticleList } from "@/features/articles/components/article-list";
-import { useAuth } from "@/features/auth/auth.context";
 import { FollowersList } from "@/features/users/components/followers-list";
 import { ProfilePosts } from "@/features/users/components/profile-posts";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
@@ -143,61 +142,6 @@ export const ProfileFollowingTabPage = () => {
     </ProfilePage>
   );
 };
-
-export const ProfileSettingsTabPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const { user, isAuthenticated } = useAuth();
-
-  if (!id) {
-    return <Navigate to="/feed" replace />;
-  }
-
-  const isOwnProfile = isAuthenticated && user?.id === id;
-  if (!isOwnProfile) {
-    return <Navigate to={`/profile/${id}/posts`} replace />;
-  }
-
-  return (
-    <div className="container mx-auto max-w-3xl px-4 py-6">
-      <div className="space-y-5">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-semibold">Settings</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage profile and account preferences.
-          </p>
-        </header>
-
-        <div className="space-y-5">
-          <section className="rounded-lg border p-4">
-            <h3 className="font-medium">Notification management</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Coming soon. You will be able to manage mention, follow, and
-              content updates preferences here.
-            </p>
-          </section>
-
-          <section className="rounded-lg border p-4">
-            <h3 className="font-medium">General info</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Profile editing controls will live here. We will use section-based
-              draft state with explicit save actions to avoid accidental data
-              loss.
-            </p>
-          </section>
-
-          <section className="rounded-lg border p-4">
-            <h3 className="font-medium">More settings</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Future profile and account preferences will be grouped into
-              dedicated sections as this area expands.
-            </p>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 
 export const ProfileIndexRedirectPage = () => {
   const { id } = useParams<{ id: string }>();
