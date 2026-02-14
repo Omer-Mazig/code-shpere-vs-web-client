@@ -9,7 +9,7 @@ import type { UserProfile as UserProfileType } from "@/features/users/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ProfileActiveTab } from "@/features/users/components/profile-shell";
 
-type ProfilePageProps = {
+type ProfileLayoutRouteGateProps = {
   activeTab: ProfileActiveTab;
   children: (params: {
     profileId: string;
@@ -18,7 +18,10 @@ type ProfilePageProps = {
   }) => ReactNode;
 };
 
-export const ProfilePage = ({ activeTab, children }: ProfilePageProps) => {
+export const ProfileLayoutRouteGate = ({
+  activeTab,
+  children,
+}: ProfileLayoutRouteGateProps) => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
   const profileId = id ?? "";
@@ -51,7 +54,10 @@ export const ProfilePage = ({ activeTab, children }: ProfilePageProps) => {
     <div className="container mx-auto max-w-4xl px-4 py-6">
       <div className="flex flex-col gap-6">
         {isOwnProfile ? (
-          <MyProfile profile={profile} activeTab={activeTab}>
+          <MyProfile
+            profile={profile}
+            activeTab={activeTab}
+          >
             {children({
               profileId,
               profile,
@@ -59,7 +65,10 @@ export const ProfilePage = ({ activeTab, children }: ProfilePageProps) => {
             })}
           </MyProfile>
         ) : (
-          <UserProfile profile={profile} activeTab={activeTab}>
+          <UserProfile
+            profile={profile}
+            activeTab={activeTab}
+          >
             {children({
               profileId,
               profile,

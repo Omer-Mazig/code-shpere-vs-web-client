@@ -7,7 +7,7 @@ import { ProfilePosts } from "@/features/users/components/profile-posts";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProfilePage } from "./profile-page";
+import { ProfileLayoutRouteGate } from "./profile-layout-route-gate";
 
 type ConnectionsMode = "followers" | "following";
 
@@ -49,7 +49,10 @@ const ProfileConnectionsTab = ({
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="flex items-center gap-3 py-2">
+          <div
+            key={index}
+            className="flex items-center gap-3 py-2"
+          >
             <Skeleton className="h-10 w-10 rounded-full" />
             <div className="flex-1 space-y-1">
               <Skeleton className="h-4 w-32" />
@@ -80,12 +83,18 @@ const ProfileConnectionsTab = ({
         }
       />
 
-      <div ref={loadMoreRef} className="h-1" />
+      <div
+        ref={loadMoreRef}
+        className="h-1"
+      />
 
       {isFetchingNextPage && (
         <div className="space-y-2">
           {Array.from({ length: 2 }).map((_, index) => (
-            <div key={index} className="flex items-center gap-3 py-2">
+            <div
+              key={index}
+              className="flex items-center gap-3 py-2"
+            >
               <Skeleton className="h-10 w-10 rounded-full" />
               <div className="flex-1 space-y-1">
                 <Skeleton className="h-4 w-24" />
@@ -107,46 +116,62 @@ const ProfileConnectionsTab = ({
 
 export const ProfileArticlesTabPage = () => {
   return (
-    <ProfilePage activeTab="articles">
+    <ProfileLayoutRouteGate activeTab="articles">
       {({ profileId }) => (
         <ArticleList queryDto={{ authorId: profileId, isPublished: true }} />
       )}
-    </ProfilePage>
+    </ProfileLayoutRouteGate>
   );
 };
 
 export const ProfilePostsTabPage = () => {
   return (
-    <ProfilePage activeTab="posts">
+    <ProfileLayoutRouteGate activeTab="posts">
       {({ profileId }) => <ProfilePosts userId={profileId} />}
-    </ProfilePage>
+    </ProfileLayoutRouteGate>
   );
 };
 
 export const ProfileFollowersTabPage = () => {
   return (
-    <ProfilePage activeTab="followers">
+    <ProfileLayoutRouteGate activeTab="followers">
       {({ profileId }) => (
-        <ProfileConnectionsTab mode="followers" profileId={profileId} />
+        <ProfileConnectionsTab
+          mode="followers"
+          profileId={profileId}
+        />
       )}
-    </ProfilePage>
+    </ProfileLayoutRouteGate>
   );
 };
 
 export const ProfileFollowingTabPage = () => {
   return (
-    <ProfilePage activeTab="following">
+    <ProfileLayoutRouteGate activeTab="following">
       {({ profileId }) => (
-        <ProfileConnectionsTab mode="following" profileId={profileId} />
+        <ProfileConnectionsTab
+          mode="following"
+          profileId={profileId}
+        />
       )}
-    </ProfilePage>
+    </ProfileLayoutRouteGate>
   );
 };
 
 export const ProfileIndexRedirectPage = () => {
   const { id } = useParams<{ id: string }>();
   if (!id) {
-    return <Navigate to="/feed" replace />;
+    return (
+      <Navigate
+        to="/feed"
+        replace
+      />
+    );
   }
-  return <Navigate to={`/profile/${id}/posts`} replace />;
+  return (
+    <Navigate
+      to={`/profile/${id}/posts`}
+      replace
+    />
+  );
 };
