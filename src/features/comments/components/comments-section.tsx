@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import { CommentItem } from "./comment-item";
@@ -17,6 +17,8 @@ export const CommentsSection = ({
   targetId,
   targetType,
 }: CommentsSectionProps) => {
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-semibold">Comments</h3>
@@ -31,13 +33,25 @@ export const CommentsSection = ({
         <CommentsList
           targetId={targetId}
           targetType={targetType}
+          activeReplyId={activeReplyId}
+          onReplyClick={setActiveReplyId}
         />
       </QueryBoundary>
     </div>
   );
 };
 
-const CommentsList = ({ targetId, targetType }: CommentsSectionProps) => {
+type CommentsListProps = CommentsSectionProps & {
+  activeReplyId: string | null;
+  onReplyClick: (commentId: string | null) => void;
+};
+
+const CommentsList = ({
+  targetId,
+  targetType,
+  activeReplyId,
+  onReplyClick,
+}: CommentsListProps) => {
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteQuery(commentsQueryOptionsFactory.thread(targetId, targetType));
 
@@ -67,6 +81,8 @@ const CommentsList = ({ targetId, targetType }: CommentsSectionProps) => {
             comment={comment}
             targetId={targetId}
             targetType={targetType}
+            activeReplyId={activeReplyId}
+            onReplyClick={onReplyClick}
           />
         ))}
       </div>

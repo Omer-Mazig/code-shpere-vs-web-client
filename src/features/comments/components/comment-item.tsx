@@ -7,12 +7,15 @@ import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import { LikeButton } from "@/features/interactions/components/like-button";
 import { CommentForm } from "./comment-form";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Comment } from "../types";
 
 type CommentItemProps = {
   comment: Comment;
   targetId: string;
   targetType: "POST" | "ARTICLE";
+  activeReplyId: string | null;
+  onReplyClick: (commentId: string | null) => void;
 };
 
 const COMMENT_MENTION_REGEX = /(@[a-zA-Z0-9_-]{3,30})/g;
@@ -51,23 +54,29 @@ export const CommentItem = ({
   comment,
   targetId,
   targetType,
+  activeReplyId,
+  onReplyClick,
 }: CommentItemProps) => {
-  const [isReplying, setIsReplying] = useState(false);
-  const [isRepliesOpen, setIsRepliesOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const isTopLevelComment = comment.parentId === null;
   const canReply = isTopLevelComment;
+  const isReplying = activeReplyId === comment.id;
+  const hasReplies = isTopLevelComment && comment.repliesCount > 0;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
       ...commentsQueryOptionsFactory.replies(comment.id),
-      enabled: isRepliesOpen && comment.repliesCount > 0,
+      enabled: hasReplies,
     });
 
   const replies = useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
     [data],
   );
+
+  const newestReply = replies.length > 0 ? replies[replies.length - 1] : null;
+  const hiddenRepliesCount = comment.repliesCount - 1;
 
   return (
     <div className="py-3">
@@ -115,24 +124,12 @@ export const CommentItem = ({
                 variant="ghost"
                 size="sm"
                 className="gap-1 text-muted-foreground"
-                onClick={() => setIsReplying((prev) => !prev)}
+                onClick={() =>
+                  onReplyClick(isReplying ? null : comment.id)
+                }
               >
                 <MessageCircle className="h-4 w-4" />
                 <span className="text-xs">Reply</span>
-              </Button>
-            )}
-
-            {isTopLevelComment && comment.repliesCount > 0 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-xs text-muted-foreground"
-                onClick={() => setIsRepliesOpen((prev) => !prev)}
-              >
-                {isRepliesOpen
-                  ? "Hide replies"
-                  : `Show replies (${comment.repliesCount})`}
               </Button>
             )}
           </div>
@@ -143,35 +140,65 @@ export const CommentItem = ({
                 targetId={targetId}
                 targetType={targetType}
                 parentId={comment.id}
-                onSuccess={() => {
-                  setIsReplying(false);
-                  setIsRepliesOpen(true);
-                }}
+                onSuccess={() => onReplyClick(null)}
               />
             </div>
           )}
 
-          {isRepliesOpen && (
+          {hasReplies && (
             <div className="ml-2 border-l pl-3 space-y-3">
-              {replies.map((reply) => (
-                <CommentItem
-                  key={reply.id}
-                  comment={reply}
-                  targetId={targetId}
-                  targetType={targetType}
-                />
-              ))}
+              {isLoading ? (
+                <ReplySkeleton />
+              ) : isExpanded ? (
+                <>
+                  {replies.map((reply) => (
+                    <CommentItem
+                      key={reply.id}
+                      comment={reply}
+                      targetId={targetId}
+                      targetType={targetType}
+                      activeReplyId={activeReplyId}
+                      onReplyClick={onReplyClick}
+                    />
+                  ))}
 
-              {hasNextPage && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fetchNextPage()}
-                  disabled={isFetchingNextPage}
-                >
-                  {isFetchingNextPage ? "Loading..." : "Load more replies"}
-                </Button>
+                  {hasNextPage && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-muted-foreground"
+                      onClick={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                    >
+                      {isFetchingNextPage
+                        ? "Loading..."
+                        : "Load more replies"}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  {hiddenRepliesCount > 0 && (
+                    <button
+                      type="button"
+                      className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={() => setIsExpanded(true)}
+                    >
+                      See {hiddenRepliesCount} more{" "}
+                      {hiddenRepliesCount === 1 ? "reply" : "replies"}
+                    </button>
+                  )}
+                  {newestReply && (
+                    <CommentItem
+                      comment={newestReply}
+                      targetId={targetId}
+                      targetType={targetType}
+                      activeReplyId={activeReplyId}
+                      onReplyClick={onReplyClick}
+                    />
+                  )}
+                </>
               )}
             </div>
           )}
@@ -180,3 +207,13 @@ export const CommentItem = ({
     </div>
   );
 };
+
+const ReplySkeleton = () => (
+  <div className="flex gap-3 py-3">
+    <Skeleton className="h-8 w-8 rounded-full" />
+    <div className="flex-1 space-y-1">
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-4 w-full" />
+    </div>
+  </div>
+);

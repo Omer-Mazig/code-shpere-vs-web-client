@@ -1,5 +1,5 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -51,89 +51,55 @@ export const CommentForm = ({
   const [content, setContent] = React.useState("");
   const [cursorPosition, setCursorPosition] = React.useState(0);
   const [isMentionListOpen, setIsMentionListOpen] = React.useState(true);
-  const [hasMentionTriggered, setHasMentionTriggered] = React.useState(false);
-  const [debouncedMentionQuery, setDebouncedMentionQuery] = React.useState("");
+  const [debouncedMentionQuery, setDebouncedMentionQuery] = React.useState<
+    string | undefined
+  >(undefined);
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
   const createComment = useCreateComment();
 
   const canMentionInThisForm = targetType === "POST";
-  const isReplyForm = Boolean(parentId);
   const mentionContext = React.useMemo(
     () =>
       canMentionInThisForm ? getMentionContext(content, cursorPosition) : null,
     [canMentionInThisForm, content, cursorPosition],
   );
 
-  React.useEffect(() => {
-    if (canMentionInThisForm && isReplyForm && mentionContext && !hasMentionTriggered) {
-      setHasMentionTriggered(true);
-    }
-  }, [canMentionInThisForm, isReplyForm, mentionContext, hasMentionTriggered]);
+  const mentionQuery = mentionContext?.query?.trim() ?? null;
 
   React.useEffect(() => {
-    const query = mentionContext?.query?.trim() ?? "";
+    if (mentionQuery === null) {
+      setDebouncedMentionQuery(undefined);
+      return;
+    }
+    // Empty query (just "@") — set immediately for instant dropdown
+    if (!mentionQuery) {
+      setDebouncedMentionQuery("");
+      return;
+    }
+    // Non-empty query — debounce to avoid excessive API calls
     const timeout = window.setTimeout(() => {
-      setDebouncedMentionQuery(query);
+      setDebouncedMentionQuery(mentionQuery);
     }, 250);
     return () => window.clearTimeout(timeout);
-  }, [mentionContext?.query]);
+  }, [mentionQuery]);
 
   const {
-    data: mentionCandidatesPool = [],
-    isLoading: isPoolLoading,
-    isFetching: isPoolFetching,
+    data: mentionCandidates = [],
+    isLoading: isMentionLoading,
+    isFetching: isMentionFetching,
   } = useQuery({
-    ...commentsQueryOptionsFactory.mentionCandidatesPool(targetId, parentId),
-    // Fetch once on first @ in reply forms.
-    enabled: canMentionInThisForm && isReplyForm && hasMentionTriggered,
-  });
-
-  const localFilteredCandidates = React.useMemo(() => {
-    if (!mentionContext) return [];
-    const search = mentionContext.query.trim().toLowerCase();
-    if (!search) return mentionCandidatesPool;
-
-    return mentionCandidatesPool.filter((candidate) => {
-      const usernameMatch = candidate.username.toLowerCase().includes(search);
-      const displayNameMatch = (candidate.displayName ?? "")
-        .toLowerCase()
-        .includes(search);
-      return usernameMatch || displayNameMatch;
-    });
-  }, [mentionCandidatesPool, mentionContext]);
-
-  const hasTypedMentionQuery = (mentionContext?.query.trim().length ?? 0) > 0;
-  const shouldUseFallbackSearch =
-    canMentionInThisForm &&
-    Boolean(mentionContext) &&
-    isMentionListOpen &&
-    hasTypedMentionQuery &&
-    debouncedMentionQuery.length > 0;
-
-  const {
-    data: fallbackMentionCandidates = [],
-    isLoading: isFallbackLoading,
-    isFetching: isFallbackFetching,
-  } = useQuery({
-    ...commentsQueryOptionsFactory.mentionCandidatesSearch(
+    ...commentsQueryOptionsFactory.mentionCandidates(
       targetId,
       parentId,
       debouncedMentionQuery,
     ),
-    // Debounced fallback for mutual-follow search after query typing.
-    enabled: shouldUseFallbackSearch,
+    placeholderData: keepPreviousData,
+    enabled:
+      canMentionInThisForm &&
+      isMentionListOpen &&
+      Boolean(mentionContext) &&
+      debouncedMentionQuery !== undefined,
   });
-
-  const mentionCandidates = React.useMemo(() => {
-    const merged = isReplyForm
-      ? [...localFilteredCandidates, ...fallbackMentionCandidates]
-      : [...fallbackMentionCandidates];
-    const deduped = new Map<string, CommentMentionCandidate>();
-    for (const candidate of merged) {
-      deduped.set(candidate.id, candidate);
-    }
-    return Array.from(deduped.values());
-  }, [isReplyForm, localFilteredCandidates, fallbackMentionCandidates]);
 
   const insertMention = (candidate: CommentMentionCandidate) => {
     if (!mentionContext) return;
@@ -174,16 +140,9 @@ export const CommentForm = ({
 
     setContent("");
     setCursorPosition(0);
-    setHasMentionTriggered(false);
-    setDebouncedMentionQuery("");
+    setDebouncedMentionQuery(undefined);
     onSuccess?.();
   };
-
-  const isMentionLoading =
-    (isReplyForm && isPoolLoading) || (!isReplyForm && isFallbackLoading);
-  const isMentionRefetching =
-    (mentionCandidates.length > 0 && isPoolFetching) ||
-    (mentionCandidates.length > 0 && isFallbackFetching);
 
   const showMentionDropdown =
     canMentionInThisForm &&
@@ -192,7 +151,10 @@ export const CommentForm = ({
     (mentionCandidates.length > 0 || isMentionLoading);
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-2"
+    >
       <div className="relative">
         <Textarea
           ref={textareaRef}
@@ -248,9 +210,11 @@ export const CommentForm = ({
                           alt={candidate.displayName ?? candidate.username}
                         />
                         <AvatarFallback>
-                          {(candidate.displayName?.[0] ??
+                          {(
+                            candidate.displayName?.[0] ??
                             candidate.username[0] ??
-                            "?").toUpperCase()}
+                            "?"
+                          ).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
@@ -264,7 +228,7 @@ export const CommentForm = ({
                     </div>
                   </button>
                 ))}
-            {isMentionRefetching && (
+            {mentionCandidates.length > 0 && isMentionFetching && (
               <div className="flex items-center justify-center px-2 py-1.5">
                 <Spinner className="size-3.5 text-muted-foreground" />
               </div>
