@@ -1,42 +1,8 @@
-export type ArticleAuthor = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
+import type { components, paths } from "@/lib/api-types";
 
-export type Article = {
-  id: string;
-  title: string;
-  slug: string;
-  content: Record<string, unknown>[];
-  coverImageUrl: string | null;
-  isPublished: boolean;
-  author: ArticleAuthor | null;
-  likesCount: number;
-  isLiked: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type CreateArticleDto = {
-  title: string;
-  content: Record<string, unknown>[];
-  coverImageUrl?: string;
-  isPublished?: boolean;
-};
-
-export type UpdateArticleDto = {
-  title?: string;
-  content?: Record<string, unknown>[];
-  coverImageUrl?: string;
-  isPublished?: boolean;
-};
-
-export type ArticleQueryDto = {
-  page?: number;
-  limit?: number;
-  authorId?: string;
-  search?: string;
-  isPublished?: boolean;
-};
+export type ArticleAuthor = components["schemas"]["ArticleAuthorResponseDto"];
+export type Article = components["schemas"]["ArticleResponseDto"];
+export type CreateArticleDto = components["schemas"]["CreateArticleDto"];
+export type UpdateArticleDto = components["schemas"]["UpdateArticleDto"];
+export type ArticleQueryDto =
+  NonNullable<paths["/api/articles"]["get"]["parameters"]["query"]>;

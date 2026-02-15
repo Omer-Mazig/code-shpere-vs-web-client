@@ -1,4 +1,6 @@
 import { apiClient } from "@/lib/api-client";
+import type { ApiEnvelope } from "@/lib/types";
+import type { AuthSession } from "./auth.types";
 
 export type RefreshResult = {
   accessToken: string | null;
@@ -18,7 +20,7 @@ export const refreshAccessToken = async (): Promise<RefreshResult> => {
   }
 
   refreshPromise = apiClient
-    .post("/auth/refresh")
+    .post<ApiEnvelope<AuthSession>>("/auth/refresh")
     .then((response) => {
       const payload = response.data?.payload;
       const nextAccessToken = payload?.accessToken ?? null;

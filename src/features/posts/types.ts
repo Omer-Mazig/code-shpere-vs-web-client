@@ -1,39 +1,10 @@
-export type PostAuthor = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
+import type { components, paths } from "@/lib/api-types";
 
-export type PostCommentPreview = {
-  id: string;
-  content: string;
-  createdAt: string;
-  author: PostAuthor | null;
-};
+export type PostAuthor = components["schemas"]["PostAuthorResponseDto"];
+export type PostCommentPreview = components["schemas"]["PostCommentPreviewResponseDto"];
+export type Post = components["schemas"]["PostResponseDto"];
 
-export type Post = {
-  id: string;
-  content: string;
-  author: PostAuthor;
-  likesCount: number;
-  isLiked: boolean;
-  commentsCount: number;
-  latestComment: PostCommentPreview | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type CreatePostDto = {
-  content: string;
-};
-
-export type UpdatePostDto = {
-  content: string;
-};
-
-export type PostQueryDto = {
-  page?: number;
-  limit?: number;
-  authorId?: string;
-};
+export type CreatePostDto = components["schemas"]["CreatePostDto"];
+export type UpdatePostDto = components["schemas"]["UpdatePostDto"];
+export type PostQueryDto =
+  NonNullable<paths["/api/posts"]["get"]["parameters"]["query"]>;

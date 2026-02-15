@@ -1,39 +1,9 @@
-export type CommentAuthor = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
+import type { components } from "@/lib/api-types";
 
-export type CommentMentionCandidate = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-};
+export type CommentAuthor = components["schemas"]["CommentAuthorResponseDto"];
+export type CommentMentionCandidate =
+  components["schemas"]["CommentMentionCandidateResponseDto"];
+export type Comment = components["schemas"]["CommentResponseDto"];
 
-export type Comment = {
-  id: string;
-  content: string;
-  targetId: string;
-  targetType: "POST" | "ARTICLE";
-  parentId: string | null;
-  likesCount: number;
-  isLiked: boolean;
-  repliesCount: number;
-  mentionedUsers: CommentMentionCandidate[];
-  author: CommentAuthor | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type CreateCommentDto = {
-  content: string;
-  targetId: string;
-  targetType: "POST" | "ARTICLE";
-  parentId?: string;
-};
-
-export type UpdateCommentDto = {
-  content: string;
-};
+export type CreateCommentDto = components["schemas"]["CreateCommentDto"];
+export type UpdateCommentDto = components["schemas"]["UpdateCommentDto"];

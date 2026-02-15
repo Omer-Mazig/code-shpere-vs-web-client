@@ -44,26 +44,47 @@ type PostHeaderProps = {
 
 const Header = ({ rightSlot }: PostHeaderProps) => {
   const post = usePost();
+  const author = post.author;
+
+  if (!author) {
+    return (
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium">
+            ?
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">Unknown author</span>
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(post.createdAt), {
+                addSuffix: true,
+              })}
+            </span>
+          </div>
+        </div>
+        {rightSlot}
+      </div>
+    );
+  }
 
   return (
     <div className="mb-3 flex items-start justify-between gap-3">
       <div className="flex items-center gap-3">
         <Link
-          to={`/profile/${post.author.id}`}
+          to={`/profile/${author.id}`}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium"
         >
-          {post.author.displayName?.[0]?.toUpperCase() ??
-            post.author.username[0].toUpperCase()}
+          {author.displayName?.[0]?.toUpperCase() ?? author.username[0].toUpperCase()}
         </Link>
         <div className="flex flex-col">
           <Link
-            to={`/profile/${post.author.id}`}
+            to={`/profile/${author.id}`}
             className="text-sm font-medium hover:underline"
           >
-            {post.author.displayName ?? post.author.username}
+            {author.displayName ?? author.username}
           </Link>
           <span className="text-xs text-muted-foreground">
-            @{post.author.username} &middot;{" "}
+            @{author.username} &middot;{" "}
             {formatDistanceToNow(new Date(post.createdAt), {
               addSuffix: true,
             })}
@@ -145,7 +166,12 @@ const ActionsBar = ({ onCommentClick }: PostActionsBarProps) => {
 const FollowAuthorButton = () => {
   const post = usePost();
   const { isAuthenticated, user } = useAuth();
-  const authorId = post.author.id;
+  const authorId = post.author?.id;
+
+  if (!authorId) {
+    return null;
+  }
+
   const shouldFetchProfile = isAuthenticated && user?.id !== authorId;
 
   const { data: authorProfile } = useQuery({

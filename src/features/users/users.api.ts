@@ -1,20 +1,25 @@
 import { apiClient } from "@/lib/api-client";
-import type { PaginatedResponse } from "@/lib/types";
+import type { ApiEnvelope, PaginatedResponse } from "@/lib/types";
 import type { UserProfile, UpdateProfileDto, FollowUser } from "./types";
 
 export const usersApi = {
   getMyProfile: async (): Promise<UserProfile> => {
-    const response = await apiClient.get("/users/me");
+    const response = await apiClient.get<ApiEnvelope<UserProfile>>("/users/me");
     return response.data.payload;
   },
 
   getProfile: async (targetUserId: string): Promise<UserProfile> => {
-    const response = await apiClient.get(`/users/${targetUserId}`);
+    const response = await apiClient.get<ApiEnvelope<UserProfile>>(
+      `/users/${targetUserId}`,
+    );
     return response.data.payload;
   },
 
   updateMyProfile: async (dto: UpdateProfileDto): Promise<UserProfile> => {
-    const response = await apiClient.patch("/users/me", dto);
+    const response = await apiClient.patch<ApiEnvelope<UserProfile>>(
+      "/users/me",
+      dto,
+    );
     return response.data.payload;
   },
 
@@ -31,9 +36,12 @@ export const usersApi = {
     page = 1,
     limit = 20,
   ): Promise<PaginatedResponse<FollowUser>> => {
-    const response = await apiClient.get(`/users/${userId}/followers`, {
-      params: { page, limit },
-    });
+    const response = await apiClient.get<ApiEnvelope<PaginatedResponse<FollowUser>>>(
+      `/users/${userId}/followers`,
+      {
+        params: { page, limit },
+      },
+    );
     return response.data.payload;
   },
 
@@ -42,9 +50,12 @@ export const usersApi = {
     page = 1,
     limit = 20,
   ): Promise<PaginatedResponse<FollowUser>> => {
-    const response = await apiClient.get(`/users/${userId}/following`, {
-      params: { page, limit },
-    });
+    const response = await apiClient.get<ApiEnvelope<PaginatedResponse<FollowUser>>>(
+      `/users/${userId}/following`,
+      {
+        params: { page, limit },
+      },
+    );
     return response.data.payload;
   },
 };

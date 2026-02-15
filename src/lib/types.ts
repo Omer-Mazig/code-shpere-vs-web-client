@@ -1,19 +1,21 @@
-export interface PaginatedResponse<T> {
-  items: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
+import type { components, operations } from "./api-types";
 
-export interface ApiError {
-  statusCode: number;
-  method: string;
-  errorCode: string;
-  message: string;
-  timestamp: string;
-}
+type EnvelopeBase =
+  operations["AuthController_refresh"]["responses"][200]["content"]["application/json"];
+
+type PaginatedPayloadBase =
+  operations["PostsController_getFeed"]["responses"][200]["content"]["application/json"]["payload"];
+
+export type ApiEnvelope<TPayload> = Omit<EnvelopeBase, "payload"> & {
+  payload: TPayload;
+};
+
+export type PaginatedResponse<TItem> = Omit<PaginatedPayloadBase, "items"> & {
+  items: TItem[];
+};
+
+export type ApiEnvelopeMeta = components["schemas"]["ApiEnvelopeMetaDto"];
+export type ApiEnvelopeWarning = components["schemas"]["ApiEnvelopeWarningDto"];
+export type PaginatedMeta = components["schemas"]["PaginatedMetaDto"];
+export type ApiError = components["schemas"]["ApiErrorResponseDto"];
+export type ErrorCode = ApiError["errorCode"];

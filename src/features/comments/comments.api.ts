@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import type { PaginatedResponse } from "@/lib/types";
+import type { ApiEnvelope, PaginatedResponse } from "@/lib/types";
 import type {
   Comment,
   CommentMentionCandidate,
@@ -15,9 +15,12 @@ export const commentsApi = {
     limit = 20,
     parentId?: string,
   ): Promise<PaginatedResponse<Comment>> => {
-    const response = await apiClient.get("/interactions/comments", {
-      params: { targetId, targetType, page, limit, parentId },
-    });
+    const response = await apiClient.get<ApiEnvelope<PaginatedResponse<Comment>>>(
+      "/interactions/comments",
+      {
+        params: { targetId, targetType, page, limit, parentId },
+      },
+    );
     return response.data.payload;
   },
 
@@ -26,9 +29,12 @@ export const commentsApi = {
     page = 1,
     limit = 10,
   ): Promise<PaginatedResponse<Comment>> => {
-    const response = await apiClient.get(`/interactions/comments/${commentId}/replies`, {
-      params: { page, limit },
-    });
+    const response = await apiClient.get<ApiEnvelope<PaginatedResponse<Comment>>>(
+      `/interactions/comments/${commentId}/replies`,
+      {
+        params: { page, limit },
+      },
+    );
     return response.data.payload;
   },
 
@@ -37,7 +43,7 @@ export const commentsApi = {
     parentId?: string,
     query?: string,
   ): Promise<CommentMentionCandidate[]> => {
-    const response = await apiClient.get(
+    const response = await apiClient.get<ApiEnvelope<CommentMentionCandidate[]>>(
       "/interactions/comments/mention-candidates",
       {
         params: { targetId, parentId, query },
@@ -47,7 +53,10 @@ export const commentsApi = {
   },
 
   addComment: async (dto: CreateCommentDto): Promise<Comment> => {
-    const response = await apiClient.post("/interactions/comments", dto);
+    const response = await apiClient.post<ApiEnvelope<Comment>>(
+      "/interactions/comments",
+      dto,
+    );
     return response.data.payload;
   },
 
@@ -55,7 +64,7 @@ export const commentsApi = {
     id: string,
     dto: UpdateCommentDto,
   ): Promise<Comment> => {
-    const response = await apiClient.patch(
+    const response = await apiClient.patch<ApiEnvelope<Comment>>(
       `/interactions/comments/${id}`,
       dto,
     );
