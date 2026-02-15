@@ -20,9 +20,21 @@ export const UserProfile = ({
 }: UserProfileProps) => {
   const tabs: ProfileTab[] = [
     { key: "posts", label: "Posts", to: `/profile/${profile.id}/posts` },
-    { key: "articles", label: "Articles", to: `/profile/${profile.id}/articles` },
-    { key: "followers", label: "Followers", to: `/profile/${profile.id}/followers` },
-    { key: "following", label: "Following", to: `/profile/${profile.id}/following` },
+    {
+      key: "articles",
+      label: "Articles",
+      to: `/profile/${profile.id}/articles`,
+    },
+    {
+      key: "followers",
+      label: "Followers",
+      to: `/profile/${profile.id}/followers`,
+    },
+    {
+      key: "following",
+      label: "Following",
+      to: `/profile/${profile.id}/following`,
+    },
   ];
 
   return (
