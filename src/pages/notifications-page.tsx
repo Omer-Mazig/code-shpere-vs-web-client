@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import React from "react";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -45,7 +45,7 @@ export const NotificationsPage = () => {
   const readFilter = (searchParams.get("read") ??
     "all") as NotificationReadFilter;
 
-  const filters = useMemo(
+  const filters = React.useMemo(
     () => ({
       targetType: targetType === "all" ? undefined : targetType,
       isRead:
@@ -58,7 +58,7 @@ export const NotificationsPage = () => {
   const items =
     notificationsList.data?.pages.flatMap((page) => page.items) ?? [];
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (
       isIntersecting &&
       notificationsList.hasNextPage &&

@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { useEffect } from "react";
+import React from "react";
 import type { MouseEventHandler } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -101,7 +101,7 @@ export const NotificationItem = ({
   const targetInfo = getTargetInfo(notification.type, payload);
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.8 });
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (
       !dropdownOpen ||
       !isIntersecting ||
