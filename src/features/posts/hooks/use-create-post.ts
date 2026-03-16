@@ -2,7 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postsApi } from "../posts.api";
 import { postsQueryOptionsFactory } from "../posts-query-options-factory";
 import type { CreatePostDto } from "../types";
-import { toast } from "sonner";
+import type { Post } from "../types";
+import type { PaginatedResponse } from "@/lib/types";
 
 export function useCreatePost() {
   const queryClient = useQueryClient();
@@ -10,11 +11,32 @@ export function useCreatePost() {
   return useMutation({
     mutationKey: ["posts", "create"],
     mutationFn: (dto: CreatePostDto) => postsApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: postsQueryOptionsFactory.feedLists().queryKey,
+    onSuccess: (data: Post) => {
+      const feedOptions = postsQueryOptionsFactory.feedList();
+
+      queryClient.setQueryData(feedOptions.queryKey, (old) => {
+        if (!old || old.pages.length === 0) return old;
+
+        const [firstPage, ...restPages] = old.pages;
+        if (!Array.isArray(firstPage.items)) return old;
+
+        const updatedFirstPage: PaginatedResponse<Post> = {
+          ...firstPage,
+          items: [data, ...firstPage.items],
+          meta: {
+            ...firstPage.meta,
+            total:
+              typeof firstPage.meta.total === "number"
+                ? firstPage.meta.total + 1
+                : firstPage.meta.total,
+          },
+        };
+
+        return {
+          ...old,
+          pages: [updatedFirstPage, ...restPages],
+        };
       });
-      toast.success("Post created!");
     },
   });
 }

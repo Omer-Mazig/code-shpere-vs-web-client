@@ -8,8 +8,13 @@ export const postsQueryOptionsFactory = {
 
   // ["posts", "feed"]
   feedLists: () =>
-    queryOptions({
+    infiniteQueryOptions({
       queryKey: [...postsQueryOptionsFactory.all().queryKey, "feed"],
+      queryFn: ({ pageParam }) => postsApi.getFeed({ page: pageParam }),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) =>
+        lastPage.meta.hasNextPage ? lastPage.meta.page + 1 : undefined,
+      staleTime: 1000 * 60 * 5, // 5 minutes
     }),
 
   // ["posts", "feed", postQueryDto] — infinite query

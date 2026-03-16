@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreatePost } from "../hooks/use-create-post";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
+import { toast } from "sonner";
 
 export const CreatePostForm = () => {
   const { isAuthenticated } = useAuth();
@@ -22,11 +23,15 @@ export const CreatePostForm = () => {
     if (!content.trim()) return;
 
     await createPost.mutateAsync({ content: content.trim() });
+    toast.success("Post created!");
     setContent("");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-lg border bg-card p-4"
+    >
       <Textarea
         placeholder="What's on your mind? Share with the dev community..."
         value={content}
