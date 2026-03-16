@@ -5,7 +5,7 @@ import { MessageCircle } from "lucide-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import { LikeButton } from "@/features/interactions/components/like-button";
-import { CommentForm } from "./comment-form";
+import { CommentForm } from "./comments-form";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Comment } from "../types";
