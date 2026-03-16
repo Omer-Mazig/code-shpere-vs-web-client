@@ -1,16 +1,19 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreatePost } from "../hooks/use-create-post";
+import type { useCreatePost } from "../hooks/use-create-post";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { toast } from "sonner";
 
-export const CreatePostForm = () => {
+type CreatePostFormProps = {
+  createPost: ReturnType<typeof useCreatePost>;
+};
+
+export const CreatePostForm = ({ createPost }: CreatePostFormProps) => {
   const { isAuthenticated } = useAuth();
   const { open: openSignIn } = useSignInModal();
   const [content, setContent] = React.useState("");
-  const createPost = useCreatePost();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -4,11 +4,15 @@ import { postsQueryOptionsFactory } from "../posts-query-options-factory";
 import type { CreatePostDto } from "../types";
 import type { Post } from "../types";
 import type { PaginatedResponse } from "@/lib/types";
+import React from "react";
 
 export function useCreatePost() {
   const queryClient = useQueryClient();
+  const [lastCreatedPostId, setLastCreatedPostId] = React.useState<
+    string | null
+  >(null);
 
-  return useMutation({
+  const mutation = useMutation({
     mutationKey: ["posts", "create"],
     mutationFn: (dto: CreatePostDto) => postsApi.create(dto),
     onSuccess: (data: Post) => {
@@ -37,6 +41,14 @@ export function useCreatePost() {
           pages: [updatedFirstPage, ...restPages],
         };
       });
+
+      setLastCreatedPostId(data.id);
     },
   });
+
+  return {
+    ...mutation,
+    lastCreatedPostId,
+    resetLastCreatedPostId: () => setLastCreatedPostId(null),
+  };
 }
