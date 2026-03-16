@@ -22,6 +22,8 @@ export const setAccessToken = (token: string | null) => {
   accessToken = token;
 };
 
+export const getAccessToken = () => accessToken;
+
 export { setUnauthorizedHandler };
 
 apiClient.interceptors.request.use((config) => {

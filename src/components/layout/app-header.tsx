@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/shared/mode-toggle";
 import { useAuth } from "@/features/auth/auth.context";
+import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { FEED_PATHS, ARTICLE_PATHS, AUTH_PATHS } from "@/lib/routes.constants";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +63,7 @@ export const AppHeader = () => {
             </Link>
           )}
 
+          <NotificationBell />
           <ModeToggle />
 
           {isAuthenticated && user ? (
