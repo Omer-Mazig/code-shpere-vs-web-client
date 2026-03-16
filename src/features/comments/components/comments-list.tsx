@@ -44,7 +44,7 @@ export const CommentsList = ({
 
   return (
     <div className="space-y-4">
-      {createComment.isPending && (
+      {createComment.isPending && createComment.pendingParentId === null && (
         <div className="flex gap-3 py-3 opacity-80">
           <Skeleton className="h-8 w-8 rounded-full" />
           <div className="flex-1 space-y-1">
@@ -64,6 +64,7 @@ export const CommentsList = ({
             activeReplyId={activeReplyId}
             onReplyClick={onReplyClick}
             isNew={comment.id === createComment.lastCreatedCommentId}
+            createComment={createComment}
           />
         ))}
       </div>

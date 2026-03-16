@@ -9,6 +9,7 @@ import { CommentForm } from "./comments-form";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Comment } from "../types";
+import type { useCreateComment } from "../hooks/use-create-comment";
 
 type CommentItemProps = {
   comment: Comment;
@@ -17,6 +18,7 @@ type CommentItemProps = {
   activeReplyId: string | null;
   onReplyClick: (commentId: string | null) => void;
   isNew?: boolean;
+  createComment: ReturnType<typeof useCreateComment>;
 };
 
 const COMMENT_MENTION_REGEX = /(@[a-zA-Z0-9_-]{3,30})/g;
@@ -58,6 +60,7 @@ export const CommentItem = ({
   activeReplyId,
   onReplyClick,
   isNew,
+  createComment,
 }: CommentItemProps) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [isHighlighting, setIsHighlighting] = useState(isNew ?? false);
@@ -154,18 +157,23 @@ export const CommentItem = ({
 
           {isReplying && (
             <div className="pt-1">
+              {createComment.isPending &&
+                createComment.pendingParentId === comment.id && (
+                  <ReplySkeleton />
+                )}
               <CommentForm
                 targetId={targetId}
                 targetType={targetType}
                 parentId={comment.id}
                 onSuccess={() => onReplyClick(null)}
+                createComment={createComment}
               />
             </div>
           )}
 
           {hasReplies && (
             <div className="ml-2 border-l pl-3 space-y-3">
-              {isLoading ? (
+              {isLoading && !createComment.isPending ? (
                 <ReplySkeleton />
               ) : isExpanded ? (
                 <>
@@ -177,6 +185,8 @@ export const CommentItem = ({
                       targetType={targetType}
                       activeReplyId={activeReplyId}
                       onReplyClick={onReplyClick}
+                      createComment={createComment}
+                      isNew={reply.id === createComment.lastCreatedCommentId}
                     />
                   ))}
 
@@ -212,6 +222,10 @@ export const CommentItem = ({
                       targetType={targetType}
                       activeReplyId={activeReplyId}
                       onReplyClick={onReplyClick}
+                      createComment={createComment}
+                      isNew={
+                        newestReply.id === createComment.lastCreatedCommentId
+                      }
                     />
                   )}
                 </>

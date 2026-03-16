@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCreateComment } from "../hooks/use-create-comment";
+import type { useCreateComment } from "../hooks/use-create-comment";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import type { CommentMentionCandidate } from "../types";
 import { useAuth } from "@/features/auth/auth.context";
@@ -16,7 +16,7 @@ type CommentFormProps = {
   targetType: "POST" | "ARTICLE";
   parentId?: string;
   onSuccess?: () => void;
-  createComment?: ReturnType<typeof useCreateComment>;
+  createComment: ReturnType<typeof useCreateComment>;
 };
 
 type MentionContext = {
@@ -46,7 +46,7 @@ export const CommentForm = ({
   targetType,
   parentId,
   onSuccess,
-  createComment: propsCreateComment,
+  createComment,
 }: CommentFormProps) => {
   const { isAuthenticated } = useAuth();
   const { open: openSignIn } = useSignInModal();
@@ -57,10 +57,6 @@ export const CommentForm = ({
     string | undefined
   >(undefined);
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const createComment = React.useMemo(
-    () => propsCreateComment ?? useCreateComment(),
-    [propsCreateComment],
-  );
 
   const canMentionInThisForm = targetType === "POST";
   const mentionContext = React.useMemo(

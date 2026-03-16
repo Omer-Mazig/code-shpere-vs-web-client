@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { commentsApi } from "../comments.api";
 import type { Comment, CreateCommentDto } from "../types";
 import { toast } from "sonner";
-import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-factory";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import type { PaginatedResponse } from "@/lib/types";
 import React from "react";
@@ -12,18 +11,25 @@ export function useCreateComment() {
   const [lastCreatedCommentId, setLastCreatedCommentId] = React.useState<
     string | null
   >(null);
+  const [pendingParentId, setPendingParentId] = React.useState<
+    string | null | undefined
+  >(undefined);
 
   const mutation = useMutation({
     mutationKey: ["comments", "create"],
     mutationFn: (dto: CreateCommentDto) => commentsApi.addComment(dto),
-    onSuccess: (data, variables) => {
-      // Top-level comments: update the thread cache in-place
-      if (!variables.parentId) {
-        const threadOptions = commentsQueryOptionsFactory.thread(
-          variables.targetId,
-          variables.targetType as "POST" | "ARTICLE",
-        );
+    onMutate: (variables) => {
+      setPendingParentId(variables.parentId ?? null);
+    },
+    onSuccess: async (data, variables) => {
+      // Thread cache (top-level comments list) – always keep counts in sync
+      const threadOptions = commentsQueryOptionsFactory.thread(
+        variables.targetId,
+        variables.targetType as "POST" | "ARTICLE",
+      );
 
+      if (!variables.parentId) {
+        // Top-level comments: insert into thread's first page
         queryClient.setQueryData(threadOptions.queryKey, (old) => {
           if (!old || old.pages.length === 0) return old;
 
@@ -47,28 +53,26 @@ export function useCreateComment() {
             pages: [updatedFirstPage, ...restPages],
           };
         });
-
-        setLastCreatedCommentId(data.id);
-      } else {
-        // For replies, keep the existing behavior and let queries refetch
-        queryClient.invalidateQueries({
+      } else if (variables.parentId) {
+        // Replies: let existing queries refetch and handle display
+        await queryClient.invalidateQueries({
           queryKey: commentsQueryOptionsFactory.all().queryKey,
         });
       }
 
-      if (variables.targetType === "POST") {
-        queryClient.invalidateQueries({
-          queryKey: postsQueryOptionsFactory.all().queryKey,
-        });
-      }
+      setLastCreatedCommentId(data.id);
 
       toast.success("Comment added!");
+    },
+    onSettled: () => {
+      setPendingParentId(undefined);
     },
   });
 
   return {
     ...mutation,
     lastCreatedCommentId,
+    pendingParentId,
     resetLastCreatedCommentId: () => setLastCreatedCommentId(null),
   };
 }
