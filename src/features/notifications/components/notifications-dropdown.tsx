@@ -23,7 +23,11 @@ export const NotificationsDropdown = ({ open }: NotificationsDropdownProps) => {
       <div className="flex items-center justify-between px-3 py-2">
         <p className="text-sm font-semibold">Notifications</p>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="xs" asChild>
+          <Button
+            variant="ghost"
+            size="xs"
+            asChild
+          >
             <Link to={NOTIFICATION_PATHS.NOTIFICATIONS}>View all</Link>
           </Button>
           <Button

@@ -1,7 +1,10 @@
 import { useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { NotificationItem } from "@/features/notifications/components/notification-item";
 import { useNotificationsList } from "@/features/notifications/hooks/use-notifications-list";
@@ -39,7 +42,8 @@ export const NotificationsPage = () => {
     rawTargetType === "USER"
       ? rawTargetType
       : "all";
-  const readFilter = (searchParams.get("read") ?? "all") as NotificationReadFilter;
+  const readFilter = (searchParams.get("read") ??
+    "all") as NotificationReadFilter;
 
   const filters = useMemo(
     () => ({
@@ -51,7 +55,8 @@ export const NotificationsPage = () => {
   );
 
   const notificationsList = useNotificationsList(20, true, filters);
-  const items = notificationsList.data?.pages.flatMap((page) => page.items) ?? [];
+  const items =
+    notificationsList.data?.pages.flatMap((page) => page.items) ?? [];
 
   useEffect(() => {
     if (
@@ -93,7 +98,10 @@ export const NotificationsPage = () => {
             size="sm"
           >
             {TARGET_TYPE_OPTIONS.map((option) => (
-              <NativeSelectOption key={option.value} value={option.value}>
+              <NativeSelectOption
+                key={option.value}
+                value={option.value}
+              >
                 {option.label}
               </NativeSelectOption>
             ))}
@@ -101,12 +109,17 @@ export const NotificationsPage = () => {
 
           <NativeSelect
             value={readFilter}
-            onChange={(event) => updateSearchParam({ read: event.target.value })}
+            onChange={(event) =>
+              updateSearchParam({ read: event.target.value })
+            }
             aria-label="Filter by read state"
             size="sm"
           >
             {READ_FILTER_OPTIONS.map((option) => (
-              <NativeSelectOption key={option.value} value={option.value}>
+              <NativeSelectOption
+                key={option.value}
+                value={option.value}
+              >
                 {option.label}
               </NativeSelectOption>
             ))}
@@ -132,7 +145,10 @@ export const NotificationsPage = () => {
             />
           ))}
 
-          <div ref={ref} className="flex h-12 items-center justify-center">
+          <div
+            ref={ref}
+            className="flex h-12 items-center justify-center"
+          >
             {notificationsList.isFetchingNextPage ? (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             ) : null}

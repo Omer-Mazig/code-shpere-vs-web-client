@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { MessageCircle } from "lucide-react";
@@ -57,7 +57,7 @@ export const CommentItem = ({
   activeReplyId,
   onReplyClick,
 }: CommentItemProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
   const isTopLevelComment = comment.parentId === null;
   const canReply = isTopLevelComment;
@@ -70,7 +70,7 @@ export const CommentItem = ({
       enabled: hasReplies,
     });
 
-  const replies = useMemo(
+  const replies = React.useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
     [data],
   );
@@ -124,9 +124,7 @@ export const CommentItem = ({
                 variant="ghost"
                 size="sm"
                 className="gap-1 text-muted-foreground"
-                onClick={() =>
-                  onReplyClick(isReplying ? null : comment.id)
-                }
+                onClick={() => onReplyClick(isReplying ? null : comment.id)}
               >
                 <MessageCircle className="h-4 w-4" />
                 <span className="text-xs">Reply</span>
@@ -171,9 +169,7 @@ export const CommentItem = ({
                       onClick={() => fetchNextPage()}
                       disabled={isFetchingNextPage}
                     >
-                      {isFetchingNextPage
-                        ? "Loading..."
-                        : "Load more replies"}
+                      {isFetchingNextPage ? "Loading..." : "Load more replies"}
                     </Button>
                   )}
                 </>

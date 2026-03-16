@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import { CommentItem } from "./comment-item";
@@ -17,7 +17,7 @@ export const CommentsSection = ({
   targetId,
   targetType,
 }: CommentsSectionProps) => {
-  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [activeReplyId, setActiveReplyId] = React.useState<string | null>(null);
 
   return (
     <div className="flex flex-col gap-4">
@@ -55,7 +55,7 @@ const CommentsList = ({
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteQuery(commentsQueryOptionsFactory.thread(targetId, targetType));
 
-  const comments = useMemo(
+  const comments = React.useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
     [data],
   );

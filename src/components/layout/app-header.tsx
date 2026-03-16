@@ -36,14 +36,20 @@ export const AppHeader = () => {
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         {/* Logo & Nav */}
         <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg">
+          <Link
+            to="/"
+            className="flex items-center gap-2 font-bold text-lg"
+          >
             <Code2 className="h-6 w-6" />
             <span>CodeSphere</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
-              <Link key={item.path} to={item.path}>
+              <Link
+                key={item.path}
+                to={item.path}
+              >
                 <Button
                   variant="ghost"
                   size="sm"
@@ -64,7 +70,11 @@ export const AppHeader = () => {
         <div className="flex items-center gap-2">
           {isAuthenticated && (
             <Link to={ARTICLE_PATHS.CREATE_ARTICLE}>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
                 <PenSquare className="h-4 w-4" />
                 <span className="hidden sm:inline">Write</span>
               </Button>
@@ -91,7 +101,10 @@ export const AppHeader = () => {
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent
+                align="end"
+                className="w-48"
+              >
                 <DropdownMenuItem asChild>
                   <Link
                     to={`/profile/${user.id}`}

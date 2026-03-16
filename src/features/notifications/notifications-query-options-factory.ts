@@ -16,7 +16,10 @@ export const notificationsQueryOptionsFactory = {
     infiniteQueryOptions({
       queryKey: [...notificationsQueryOptionsFactory.all().queryKey, "list"],
       queryFn: ({ pageParam }) =>
-        notificationsApi.getNotifications(Number(pageParam), DEFAULT_NOTIFICATIONS_PAGE_SIZE),
+        notificationsApi.getNotifications(
+          Number(pageParam),
+          DEFAULT_NOTIFICATIONS_PAGE_SIZE,
+        ),
       initialPageParam: 1,
       getNextPageParam: (lastPage) =>
         lastPage.meta.hasNextPage ? lastPage.meta.page + 1 : undefined,
@@ -28,7 +31,11 @@ export const notificationsQueryOptionsFactory = {
     filters?: NotificationsListFilters,
   ) =>
     infiniteQueryOptions({
-      queryKey: [...notificationsQueryOptionsFactory.lists().queryKey, limit, filters],
+      queryKey: [
+        ...notificationsQueryOptionsFactory.lists().queryKey,
+        limit,
+        filters,
+      ],
       queryFn: ({ pageParam }) =>
         notificationsApi.getNotifications(Number(pageParam), limit, filters),
       initialPageParam: 1,
@@ -39,7 +46,10 @@ export const notificationsQueryOptionsFactory = {
 
   unreadCount: () =>
     queryOptions({
-      queryKey: [...notificationsQueryOptionsFactory.all().queryKey, "unread-count"],
+      queryKey: [
+        ...notificationsQueryOptionsFactory.all().queryKey,
+        "unread-count",
+      ],
       queryFn: () => notificationsApi.getUnreadCount(),
       staleTime: 1000 * 15,
     }),

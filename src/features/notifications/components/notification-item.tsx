@@ -4,7 +4,11 @@ import type { MouseEventHandler } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import type { Notification, NotificationPayload, NotificationType } from "../types";
+import type {
+  Notification,
+  NotificationPayload,
+  NotificationType,
+} from "../types";
 import { useMarkNotificationRead } from "../hooks/use-mark-notification-read";
 
 type NotificationItemProps = {
@@ -36,7 +40,10 @@ const getNotificationHref = (
   return "/feed";
 };
 
-const getTargetInfo = (type: NotificationType, payload: NotificationPayload) => {
+const getTargetInfo = (
+  type: NotificationType,
+  payload: NotificationPayload,
+) => {
   if (type === "POST_LIKED" && payload.postId) {
     return {
       href: `/feed/${payload.postId}`,
@@ -51,7 +58,11 @@ const getTargetInfo = (type: NotificationType, payload: NotificationPayload) => 
     };
   }
 
-  if (type === "COMMENT_REPLIED" && payload.targetType === "POST" && payload.targetId) {
+  if (
+    type === "COMMENT_REPLIED" &&
+    payload.targetType === "POST" &&
+    payload.targetId
+  ) {
     return {
       href: `/feed/${payload.targetId}`,
       label: payload.replyExcerpt ?? "your comment",
@@ -134,7 +145,10 @@ export const NotificationItem = ({
       }`}
     >
       <Avatar size="sm">
-        <AvatarImage src={payload.actorAvatarUrl ?? undefined} alt={actorName} />
+        <AvatarImage
+          src={payload.actorAvatarUrl ?? undefined}
+          alt={actorName}
+        />
         <AvatarFallback>{getInitial(actorName)}</AvatarFallback>
       </Avatar>
 
@@ -149,8 +163,7 @@ export const NotificationItem = ({
             </Link>
           ) : (
             <span className="font-semibold">{actorName}</span>
-          )}
-          {" "}
+          )}{" "}
           {notification.type === "POST_LIKED" && "liked your post"}
           {notification.type === "POST_COMMENTED" && "commented on your post"}
           {notification.type === "COMMENT_REPLIED" && "replied to your comment"}

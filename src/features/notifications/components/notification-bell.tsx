@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import { NotificationsDropdown } from "./notifications-dropdown";
 
 export const NotificationBell = () => {
   const { isAuthenticated } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
   const unreadCountQuery = useUnreadNotificationsCount(isAuthenticated);
 
   useNotificationStream(isAuthenticated);
@@ -26,9 +26,16 @@ export const NotificationBell = () => {
   const count = unreadCountQuery.data?.count ?? 0;
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu
+      open={open}
+      onOpenChange={setOpen}
+    >
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-sm" className="relative">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="relative"
+        >
           <Bell className="h-5 w-5" />
           {count > 0 ? (
             <Badge className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full px-1.5 text-[10px]">
@@ -38,7 +45,10 @@ export const NotificationBell = () => {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="p-0">
+      <DropdownMenuContent
+        align="end"
+        className="p-0"
+      >
         <NotificationsDropdown open={open} />
       </DropdownMenuContent>
     </DropdownMenu>

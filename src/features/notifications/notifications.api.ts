@@ -21,7 +21,12 @@ export const notificationsApi = {
     const response = await apiClient.get<
       ApiEnvelope<PaginatedResponse<Notification>>
     >("/notifications", {
-      params: { page, limit, targetType: filters?.targetType, isRead: filters?.isRead },
+      params: {
+        page,
+        limit,
+        targetType: filters?.targetType,
+        isRead: filters?.isRead,
+      },
     });
 
     return response.data.payload;
