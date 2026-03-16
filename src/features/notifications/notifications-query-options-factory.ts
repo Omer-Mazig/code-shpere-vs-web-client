@@ -1,7 +1,13 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { notificationsApi } from "./notifications.api";
+import type { NotificationTargetType } from "./types";
 
 const DEFAULT_NOTIFICATIONS_PAGE_SIZE = 20;
+
+export type NotificationsListFilters = {
+  targetType?: NotificationTargetType;
+  isRead?: boolean;
+};
 
 export const notificationsQueryOptionsFactory = {
   all: () => queryOptions({ queryKey: ["notifications"] }),
@@ -17,11 +23,14 @@ export const notificationsQueryOptionsFactory = {
       staleTime: 1000 * 30,
     }),
 
-  list: (limit = DEFAULT_NOTIFICATIONS_PAGE_SIZE) =>
+  list: (
+    limit = DEFAULT_NOTIFICATIONS_PAGE_SIZE,
+    filters?: NotificationsListFilters,
+  ) =>
     infiniteQueryOptions({
-      queryKey: [...notificationsQueryOptionsFactory.lists().queryKey, limit],
+      queryKey: [...notificationsQueryOptionsFactory.lists().queryKey, limit, filters],
       queryFn: ({ pageParam }) =>
-        notificationsApi.getNotifications(Number(pageParam), limit),
+        notificationsApi.getNotifications(Number(pageParam), limit, filters),
       initialPageParam: 1,
       getNextPageParam: (lastPage) =>
         lastPage.meta.hasNextPage ? lastPage.meta.page + 1 : undefined,

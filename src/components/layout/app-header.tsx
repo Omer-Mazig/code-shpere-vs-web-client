@@ -11,7 +11,12 @@ import {
 import { ModeToggle } from "@/components/shared/mode-toggle";
 import { useAuth } from "@/features/auth/auth.context";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
-import { FEED_PATHS, ARTICLE_PATHS, AUTH_PATHS } from "@/lib/routes.constants";
+import {
+  FEED_PATHS,
+  ARTICLE_PATHS,
+  AUTH_PATHS,
+  NOTIFICATION_PATHS,
+} from "@/lib/routes.constants";
 import { cn } from "@/lib/utils";
 
 export const AppHeader = () => {
@@ -21,10 +26,13 @@ export const AppHeader = () => {
   const navItems = [
     { label: "Feed", path: FEED_PATHS.FEED },
     { label: "Articles", path: ARTICLE_PATHS.ARTICLES },
+    ...(isAuthenticated
+      ? [{ label: "Notifications", path: NOTIFICATION_PATHS.NOTIFICATIONS }]
+      : []),
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="supports-backdrop-filter:bg-background/60 sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         {/* Logo & Nav */}
         <div className="flex items-center gap-6">

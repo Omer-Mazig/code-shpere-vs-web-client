@@ -1,6 +1,8 @@
 import { Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { NOTIFICATION_PATHS } from "@/lib/routes.constants";
 import { useMarkAllNotificationsRead } from "../hooks/use-mark-all-notifications-read";
 import { useNotificationsList } from "../hooks/use-notifications-list";
 import { NotificationItem } from "./notification-item";
@@ -20,14 +22,19 @@ export const NotificationsDropdown = ({ open }: NotificationsDropdownProps) => {
     <div className="">
       <div className="flex items-center justify-between px-3 py-2">
         <p className="text-sm font-semibold">Notifications</p>
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={() => markAllReadMutation.mutate()}
-          disabled={markAllReadMutation.isPending || items.length === 0}
-        >
-          Mark all as read
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="xs" asChild>
+            <Link to={NOTIFICATION_PATHS.NOTIFICATIONS}>View all</Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => markAllReadMutation.mutate()}
+            disabled={markAllReadMutation.isPending || items.length === 0}
+          >
+            Mark all as read
+          </Button>
+        </div>
       </div>
 
       <Separator />

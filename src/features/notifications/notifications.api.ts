@@ -3,6 +3,7 @@ import type { ApiEnvelope, PaginatedResponse } from "@/lib/types";
 import type {
   MarkAllReadResponse,
   Notification,
+  NotificationTargetType,
   UnreadNotificationsCount,
 } from "./types";
 
@@ -12,11 +13,15 @@ export const notificationsApi = {
   getNotifications: async (
     page = 1,
     limit = 20,
+    filters?: {
+      targetType?: NotificationTargetType;
+      isRead?: boolean;
+    },
   ): Promise<PaginatedResponse<Notification>> => {
     const response = await apiClient.get<
       ApiEnvelope<PaginatedResponse<Notification>>
     >("/notifications", {
-      params: { page, limit },
+      params: { page, limit, targetType: filters?.targetType, isRead: filters?.isRead },
     });
 
     return response.data.payload;

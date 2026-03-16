@@ -28,6 +28,9 @@ const getNotificationHref = (
     if (payload.targetType === "POST" && payload.targetId) {
       return `/feed/${payload.targetId}`;
     }
+    if (payload.targetType === "ARTICLE" && payload.articleSlug) {
+      return `/articles/${payload.articleSlug}`;
+    }
   }
 
   return "/feed";
@@ -51,6 +54,17 @@ const getTargetInfo = (type: NotificationType, payload: NotificationPayload) => 
   if (type === "COMMENT_REPLIED" && payload.targetType === "POST" && payload.targetId) {
     return {
       href: `/feed/${payload.targetId}`,
+      label: payload.replyExcerpt ?? "your comment",
+    };
+  }
+
+  if (
+    type === "COMMENT_REPLIED" &&
+    payload.targetType === "ARTICLE" &&
+    payload.articleSlug
+  ) {
+    return {
+      href: `/articles/${payload.articleSlug}`,
       label: payload.replyExcerpt ?? "your comment",
     };
   }

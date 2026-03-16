@@ -19,3 +19,7 @@ export const ARTICLE_PATHS = {
 export const PROFILE_PATHS = {
   PROFILE: "/profile/:id",
 } as const;
+
+export const NOTIFICATION_PATHS = {
+  NOTIFICATIONS: "/notifications",
+} as const;

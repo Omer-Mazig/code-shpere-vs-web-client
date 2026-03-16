@@ -6,6 +6,8 @@ export type UnreadNotificationsCount =
 export type MarkAllReadResponse =
   components["schemas"]["MarkAllReadResponseDto"];
 export type NotificationType = Notification["type"];
+export type NotificationTargetType = NonNullable<Notification["targetType"]>;
+export type NotificationReadFilter = "all" | "read" | "unread";
 export type NotificationPayload = Notification["payload"] & {
   actorId?: string;
   actorName?: string;
@@ -17,8 +19,9 @@ export type NotificationPayload = Notification["payload"] & {
   parentCommentId?: string;
   replyCommentId?: string;
   replyExcerpt?: string;
-  targetType?: "POST" | "ARTICLE";
+  targetType?: "POST" | "ARTICLE" | "USER";
   targetId?: string;
+  articleSlug?: string;
   createdAt?: string;
 };
 

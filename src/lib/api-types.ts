@@ -787,9 +787,12 @@ export interface components {
         };
         /** @enum {string} */
         NotificationType: "POST_LIKED" | "POST_COMMENTED" | "COMMENT_REPLIED" | "NEW_FOLLOWER";
+        /** @enum {string} */
+        NotificationTargetType: "POST" | "ARTICLE" | "USER";
         NotificationResponseDto: {
             id: string;
             type: components["schemas"]["NotificationType"];
+            targetType: components["schemas"]["NotificationTargetType"] | null;
             payload: {
                 [key: string]: unknown;
             };
@@ -4167,6 +4170,9 @@ export interface operations {
             query?: {
                 page?: number;
                 limit?: number;
+                targetType?: components["schemas"]["NotificationTargetType"];
+                /** @description Filter by read state. */
+                isRead?: boolean;
             };
             header?: never;
             path?: never;
