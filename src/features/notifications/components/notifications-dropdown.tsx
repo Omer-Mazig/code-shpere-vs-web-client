@@ -17,7 +17,7 @@ export const NotificationsDropdown = ({ open }: NotificationsDropdownProps) => {
     notificationsList.data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
-    <div className="w-[360px] max-w-[calc(100vw-2rem)]">
+    <div className="">
       <div className="flex items-center justify-between px-3 py-2">
         <p className="text-sm font-semibold">Notifications</p>
         <Button
@@ -46,6 +46,7 @@ export const NotificationsDropdown = ({ open }: NotificationsDropdownProps) => {
             <NotificationItem
               key={notification.id}
               notification={notification}
+              dropdownOpen={open}
             />
           ))}
 
@@ -57,7 +58,9 @@ export const NotificationsDropdown = ({ open }: NotificationsDropdownProps) => {
               onClick={() => notificationsList.fetchNextPage()}
               disabled={notificationsList.isFetchingNextPage}
             >
-              {notificationsList.isFetchingNextPage ? "Loading..." : "Load more"}
+              {notificationsList.isFetchingNextPage
+                ? "Loading..."
+                : "Load more"}
             </Button>
           ) : null}
         </div>
