@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { QueryBoundary } from "@/components/errors/query-boundary";
 import { InlineErrorFallback } from "@/components/errors/inline-error-fallback";
 import { CommentForm } from "./comment-form";
+import { useCreateComment } from "../hooks/use-create-comment";
+import type { Comment } from "../types";
 
 type CommentsSectionProps = {
   targetId: string;
@@ -18,6 +20,7 @@ export const CommentsSection = ({
   targetType,
 }: CommentsSectionProps) => {
   const [activeReplyId, setActiveReplyId] = React.useState<string | null>(null);
+  const createComment = useCreateComment();
 
   return (
     <div className="flex flex-col gap-4">
@@ -25,6 +28,7 @@ export const CommentsSection = ({
       <CommentForm
         targetId={targetId}
         targetType={targetType}
+        createComment={createComment}
       />
       <QueryBoundary
         fallback={<CommentsSkeleton />}
@@ -35,6 +39,7 @@ export const CommentsSection = ({
           targetType={targetType}
           activeReplyId={activeReplyId}
           onReplyClick={setActiveReplyId}
+          createComment={createComment}
         />
       </QueryBoundary>
     </div>
@@ -44,6 +49,7 @@ export const CommentsSection = ({
 type CommentsListProps = CommentsSectionProps & {
   activeReplyId: string | null;
   onReplyClick: (commentId: string | null) => void;
+  createComment: ReturnType<typeof useCreateComment>;
 };
 
 const CommentsList = ({
@@ -51,12 +57,13 @@ const CommentsList = ({
   targetType,
   activeReplyId,
   onReplyClick,
+  createComment,
 }: CommentsListProps) => {
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteQuery(commentsQueryOptionsFactory.thread(targetId, targetType));
 
   const comments = React.useMemo(
-    () => data?.pages.flatMap((page) => page.items) ?? [],
+    () => data?.pages.flatMap((page) => page.items as Comment[]) ?? [],
     [data],
   );
 
@@ -74,6 +81,16 @@ const CommentsList = ({
 
   return (
     <div className="space-y-4">
+      {createComment.isPending && (
+        <div className="flex gap-3 py-3 opacity-80">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <div className="flex-1 space-y-1">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        </div>
+      )}
+
       <div className="divide-y">
         {comments.map((comment) => (
           <CommentItem
@@ -83,6 +100,7 @@ const CommentsList = ({
             targetType={targetType}
             activeReplyId={activeReplyId}
             onReplyClick={onReplyClick}
+            isNew={comment.id === createComment.lastCreatedCommentId}
           />
         ))}
       </div>

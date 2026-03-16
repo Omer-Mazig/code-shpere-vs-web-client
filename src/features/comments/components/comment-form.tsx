@@ -16,6 +16,7 @@ type CommentFormProps = {
   targetType: "POST" | "ARTICLE";
   parentId?: string;
   onSuccess?: () => void;
+  createComment?: ReturnType<typeof useCreateComment>;
 };
 
 type MentionContext = {
@@ -45,6 +46,7 @@ export const CommentForm = ({
   targetType,
   parentId,
   onSuccess,
+  createComment: propsCreateComment,
 }: CommentFormProps) => {
   const { isAuthenticated } = useAuth();
   const { open: openSignIn } = useSignInModal();
@@ -55,7 +57,10 @@ export const CommentForm = ({
     string | undefined
   >(undefined);
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const createComment = useCreateComment();
+  const createComment = React.useMemo(
+    () => propsCreateComment ?? useCreateComment(),
+    [propsCreateComment],
+  );
 
   const canMentionInThisForm = targetType === "POST";
   const mentionContext = React.useMemo(

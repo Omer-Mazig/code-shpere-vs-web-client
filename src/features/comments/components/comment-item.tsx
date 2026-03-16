@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { MessageCircle } from "lucide-react";
@@ -16,6 +16,7 @@ type CommentItemProps = {
   targetType: "POST" | "ARTICLE";
   activeReplyId: string | null;
   onReplyClick: (commentId: string | null) => void;
+  isNew?: boolean;
 };
 
 const COMMENT_MENTION_REGEX = /(@[a-zA-Z0-9_-]{3,30})/g;
@@ -56,8 +57,21 @@ export const CommentItem = ({
   targetType,
   activeReplyId,
   onReplyClick,
+  isNew,
 }: CommentItemProps) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
+  const [isHighlighting, setIsHighlighting] = useState(isNew ?? false);
+
+  useEffect(() => {
+    if (!isNew) return;
+
+    setIsHighlighting(true);
+    const timeout = setTimeout(() => {
+      setIsHighlighting(false);
+    }, 600);
+
+    return () => clearTimeout(timeout);
+  }, [isNew]);
 
   const isTopLevelComment = comment.parentId === null;
   const canReply = isTopLevelComment;
@@ -79,7 +93,13 @@ export const CommentItem = ({
   const hiddenRepliesCount = comment.repliesCount - 1;
 
   return (
-    <div className="py-3">
+    <div
+      className={
+        isHighlighting
+          ? "rounded-lg bg-primary/5 py-3 animate-[pulse_0.6s_ease-out]"
+          : "py-3"
+      }
+    >
       <div className="flex gap-3">
         {comment.author && (
           <Link
