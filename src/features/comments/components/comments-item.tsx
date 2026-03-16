@@ -19,6 +19,10 @@ type CommentItemProps = {
   onReplyClick: (commentId: string | null) => void;
   isNew?: boolean;
   createComment: ReturnType<typeof useCreateComment>;
+  lastCreatedCommentId: string | null;
+  pendingParentId: string | null | undefined;
+  setLastCreatedCommentId: (id: string | null) => void;
+  setPendingParentId: (id: string | null | undefined) => void;
 };
 
 const COMMENT_MENTION_REGEX = /(@[a-zA-Z0-9_-]{3,30})/g;
@@ -61,6 +65,10 @@ export const CommentItem = ({
   onReplyClick,
   isNew,
   createComment,
+  lastCreatedCommentId,
+  pendingParentId,
+  setLastCreatedCommentId,
+  setPendingParentId,
 }: CommentItemProps) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [isHighlighting, setIsHighlighting] = useState(isNew ?? false);
@@ -157,16 +165,17 @@ export const CommentItem = ({
 
           {isReplying && (
             <div className="pt-1">
-              {createComment.isPending &&
-                createComment.pendingParentId === comment.id && (
-                  <ReplySkeleton />
-                )}
+              {createComment.isPending && pendingParentId === comment.id && (
+                <ReplySkeleton />
+              )}
               <CommentForm
                 targetId={targetId}
                 targetType={targetType}
                 parentId={comment.id}
                 onSuccess={() => onReplyClick(null)}
                 createComment={createComment}
+                setLastCreatedCommentId={setLastCreatedCommentId}
+                setPendingParentId={setPendingParentId}
               />
             </div>
           )}
@@ -186,7 +195,11 @@ export const CommentItem = ({
                       activeReplyId={activeReplyId}
                       onReplyClick={onReplyClick}
                       createComment={createComment}
-                      isNew={reply.id === createComment.lastCreatedCommentId}
+                      isNew={reply.id === lastCreatedCommentId}
+                      lastCreatedCommentId={lastCreatedCommentId}
+                      pendingParentId={pendingParentId}
+                      setLastCreatedCommentId={setLastCreatedCommentId}
+                      setPendingParentId={setPendingParentId}
                     />
                   ))}
 
@@ -223,9 +236,11 @@ export const CommentItem = ({
                       activeReplyId={activeReplyId}
                       onReplyClick={onReplyClick}
                       createComment={createComment}
-                      isNew={
-                        newestReply.id === createComment.lastCreatedCommentId
-                      }
+                      isNew={newestReply.id === lastCreatedCommentId}
+                      lastCreatedCommentId={lastCreatedCommentId}
+                      pendingParentId={pendingParentId}
+                      setLastCreatedCommentId={setLastCreatedCommentId}
+                      setPendingParentId={setPendingParentId}
                     />
                   )}
                 </>

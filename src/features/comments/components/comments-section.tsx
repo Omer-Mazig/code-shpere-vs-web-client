@@ -18,6 +18,12 @@ export const CommentsSection = ({
   targetType,
 }: CommentsSectionProps) => {
   const [activeReplyId, setActiveReplyId] = React.useState<string | null>(null);
+  const [lastCreatedCommentId, setLastCreatedCommentId] = React.useState<
+    string | null
+  >(null);
+  const [pendingParentId, setPendingParentId] = React.useState<
+    string | null | undefined
+  >(undefined);
   const createComment = useCreateComment();
 
   return (
@@ -27,6 +33,8 @@ export const CommentsSection = ({
         targetId={targetId}
         targetType={targetType}
         createComment={createComment}
+        setLastCreatedCommentId={setLastCreatedCommentId}
+        setPendingParentId={setPendingParentId}
       />
       <QueryBoundary
         fallback={<CommentsSkeleton />}
@@ -38,6 +46,10 @@ export const CommentsSection = ({
           activeReplyId={activeReplyId}
           onReplyClick={setActiveReplyId}
           createComment={createComment}
+          lastCreatedCommentId={lastCreatedCommentId}
+          pendingParentId={pendingParentId}
+          setLastCreatedCommentId={setLastCreatedCommentId}
+          setPendingParentId={setPendingParentId}
         />
       </QueryBoundary>
     </div>

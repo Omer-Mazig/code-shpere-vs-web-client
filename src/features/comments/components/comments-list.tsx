@@ -13,6 +13,10 @@ type CommentsListProps = {
   activeReplyId: string | null;
   onReplyClick: (commentId: string | null) => void;
   createComment: ReturnType<typeof useCreateComment>;
+  lastCreatedCommentId: string | null;
+  pendingParentId: string | null | undefined;
+  setLastCreatedCommentId: (id: string | null) => void;
+  setPendingParentId: (id: string | null | undefined) => void;
 };
 
 export const CommentsList = ({
@@ -21,6 +25,10 @@ export const CommentsList = ({
   activeReplyId,
   onReplyClick,
   createComment,
+  lastCreatedCommentId,
+  pendingParentId,
+  setLastCreatedCommentId,
+  setPendingParentId,
 }: CommentsListProps) => {
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteQuery(commentsQueryOptionsFactory.thread(targetId, targetType));
@@ -44,7 +52,7 @@ export const CommentsList = ({
 
   return (
     <div className="space-y-4">
-      {createComment.isPending && createComment.pendingParentId === null && (
+      {createComment.isPending && pendingParentId === null && (
         <div className="flex gap-3 py-3 opacity-80">
           <Skeleton className="h-8 w-8 rounded-full" />
           <div className="flex-1 space-y-1">
@@ -63,8 +71,12 @@ export const CommentsList = ({
             targetType={targetType}
             activeReplyId={activeReplyId}
             onReplyClick={onReplyClick}
-            isNew={comment.id === createComment.lastCreatedCommentId}
+            isNew={comment.id === lastCreatedCommentId}
             createComment={createComment}
+            lastCreatedCommentId={lastCreatedCommentId}
+            pendingParentId={pendingParentId}
+            setLastCreatedCommentId={setLastCreatedCommentId}
+            setPendingParentId={setPendingParentId}
           />
         ))}
       </div>

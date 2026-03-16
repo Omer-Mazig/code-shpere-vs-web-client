@@ -17,6 +17,8 @@ type CommentFormProps = {
   parentId?: string;
   onSuccess?: () => void;
   createComment: ReturnType<typeof useCreateComment>;
+  setLastCreatedCommentId: (id: string | null) => void;
+  setPendingParentId: (id: string | null | undefined) => void;
 };
 
 type MentionContext = {
@@ -47,6 +49,8 @@ export const CommentForm = ({
   parentId,
   onSuccess,
   createComment,
+  setLastCreatedCommentId,
+  setPendingParentId,
 }: CommentFormProps) => {
   const { isAuthenticated } = useAuth();
   const { open: openSignIn } = useSignInModal();
@@ -122,7 +126,7 @@ export const CommentForm = ({
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isAuthenticated) {
@@ -131,18 +135,28 @@ export const CommentForm = ({
     }
 
     if (!content.trim()) return;
+    setPendingParentId(parentId ?? null);
 
-    await createComment.mutateAsync({
-      content: content.trim(),
-      targetId,
-      targetType,
-      parentId,
-    });
-
-    setContent("");
-    setCursorPosition(0);
-    setDebouncedMentionQuery(undefined);
-    onSuccess?.();
+    createComment.mutate(
+      {
+        content: content.trim(),
+        targetId,
+        targetType,
+        parentId,
+      },
+      {
+        onSuccess: (data) => {
+          setLastCreatedCommentId(data.id);
+          setContent("");
+          setCursorPosition(0);
+          setDebouncedMentionQuery(undefined);
+          onSuccess?.();
+        },
+        onSettled: () => {
+          setPendingParentId(undefined);
+        },
+      },
+    );
   };
 
   const showMentionDropdown =
