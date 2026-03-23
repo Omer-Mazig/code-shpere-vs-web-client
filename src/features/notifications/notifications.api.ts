@@ -53,8 +53,15 @@ export const notificationsApi = {
     return response.data.payload;
   },
 
-  createEventSource: (accessToken: string): EventSource => {
-    const streamUrl = `${baseURL}/api/notifications/stream?accessToken=${encodeURIComponent(accessToken)}`;
+  getStreamToken: async (): Promise<{ streamToken: string }> => {
+    const response = await apiClient.post<ApiEnvelope<{ streamToken: string }>>(
+      "/notifications/stream-token",
+    );
+    return response.data.payload;
+  },
+
+  createEventSource: (streamToken: string): EventSource => {
+    const streamUrl = `${baseURL}/api/notifications/stream?streamToken=${encodeURIComponent(streamToken)}`;
     return new EventSource(streamUrl, { withCredentials: true });
   },
 };

@@ -39,60 +39,77 @@ export const useNotificationStream = (enabled = true) => {
 
     const unreadCountQueryKey = notificationsQueryOptionsFactory.unreadCount().queryKey;
 
-    const connect = () => {
+    const connect = async () => {
       if (isDisposed) return;
 
-      eventSource = notificationsApi.createEventSource(accessToken);
-
-      eventSource.onopen = () => {
-        retryAttempt = 0;
-      };
-
-      eventSource.addEventListener("notification.created", (event) => {
-        const nextNotification = parseSseData<Notification>(
-          (event as MessageEvent<string>).data,
-        );
-        if (!nextNotification) return;
-
-        upsertNotificationInCache(queryClient, nextNotification);
-
-        queryClient.setQueryData<{ count: number }>(unreadCountQueryKey, (oldData) => ({
-          count: (oldData?.count ?? 0) + 1,
-        }));
-
-        const actorName =
-          typeof nextNotification.payload?.actorName === "string"
-            ? nextNotification.payload.actorName
-            : "Someone";
-        toast.info(`${actorName} sent you a new notification`);
-      });
-
-      eventSource.addEventListener("notification.unread_count", (event) => {
-        const unreadPayload = parseSseData<NotificationsStreamUnreadCountEvent>(
-          (event as MessageEvent<string>).data,
-        );
-        if (!unreadPayload) return;
-
-        queryClient.setQueryData(unreadCountQueryKey, {
-          count: unreadPayload.count,
-        });
-      });
-
-      eventSource.onerror = () => {
-        if (eventSource) {
-          eventSource.close();
-          eventSource = null;
-        }
-
+      try {
+        const { streamToken } = await notificationsApi.getStreamToken();
         if (isDisposed) return;
 
+        eventSource?.close();
+        eventSource = notificationsApi.createEventSource(streamToken);
+
+        eventSource.onopen = () => {
+          retryAttempt = 0;
+        };
+
+        eventSource.addEventListener("notification.created", (event) => {
+          const nextNotification = parseSseData<Notification>(
+            (event as MessageEvent<string>).data,
+          );
+          if (!nextNotification) return;
+
+          upsertNotificationInCache(queryClient, nextNotification);
+
+          queryClient.setQueryData<{ count: number }>(
+            unreadCountQueryKey,
+            (oldData) => ({
+              count: (oldData?.count ?? 0) + 1,
+            }),
+          );
+
+          const actorName =
+            typeof nextNotification.payload?.actorName === "string"
+              ? nextNotification.payload.actorName
+              : "Someone";
+          toast.info(`${actorName} sent you a new notification`);
+        });
+
+        eventSource.addEventListener("notification.unread_count", (event) => {
+          const unreadPayload = parseSseData<NotificationsStreamUnreadCountEvent>(
+            (event as MessageEvent<string>).data,
+          );
+          if (!unreadPayload) return;
+
+          queryClient.setQueryData(unreadCountQueryKey, {
+            count: unreadPayload.count,
+          });
+        });
+
+        eventSource.onerror = () => {
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+
+          if (isDisposed) return;
+
+          const delay = Math.min(
+            1000 * 2 ** retryAttempt,
+            MAX_RETRY_DELAY_MS,
+          );
+          retryAttempt += 1;
+          reconnectTimeoutId = window.setTimeout(() => void connect(), delay);
+        };
+      } catch {
+        if (isDisposed) return;
         const delay = Math.min(1000 * 2 ** retryAttempt, MAX_RETRY_DELAY_MS);
         retryAttempt += 1;
-        reconnectTimeoutId = window.setTimeout(() => connect(), delay);
-      };
+        reconnectTimeoutId = window.setTimeout(() => void connect(), delay);
+      }
     };
 
-    connect();
+    void connect();
 
     return () => {
       isDisposed = true;
