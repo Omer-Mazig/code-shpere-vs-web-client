@@ -46,9 +46,10 @@ export const commentsQueryOptionsFactory = {
       staleTime: 1000 * 60 * 2,
     }),
 
-  // ["comments", "mention-candidates", targetId, parentId, query]
+  // ["comments", "mention-candidates", targetType, targetId, parentId, query]
   mentionCandidates: (
     targetId: string,
+    targetType: "POST" | "ARTICLE",
     parentId?: string,
     query?: string,
   ) =>
@@ -56,12 +57,18 @@ export const commentsQueryOptionsFactory = {
       queryKey: [
         ...commentsQueryOptionsFactory.all().queryKey,
         "mention-candidates",
+        targetType,
         targetId,
         parentId,
         query ?? "",
       ],
       queryFn: () =>
-        commentsApi.getMentionCandidates(targetId, parentId, query || undefined),
+        commentsApi.getMentionCandidates(
+          targetId,
+          targetType,
+          parentId,
+          query || undefined,
+        ),
       staleTime: query ? 1000 * 30 : 1000 * 60 * 5,
     }),
 };

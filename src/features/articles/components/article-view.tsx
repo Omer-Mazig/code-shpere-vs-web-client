@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
 import type { Article } from "../types";
 import { LikeButton } from "@/features/interactions/components/like-button";
+import { UserAvatar } from "@/components/shared/user-avatar";
+import { RelativeTime } from "@/components/shared/relative-time";
 
 type ArticleViewProps = {
   article: Article;
@@ -28,10 +29,12 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
         <div className="flex items-center gap-3 mb-8 pb-8 border-b">
           <Link
             to={`/profile/${article.author.id}`}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium"
+            className="shrink-0"
           >
-            {article.author.displayName?.[0]?.toUpperCase() ??
-              article.author.username[0].toUpperCase()}
+            <UserAvatar
+              user={article.author}
+              size="lg"
+            />
           </Link>
           <div>
             <Link
@@ -41,9 +44,7 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
               {article.author.displayName ?? article.author.username}
             </Link>
             <p className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(article.createdAt), {
-                addSuffix: true,
-              })}
+              <RelativeTime date={article.createdAt} />
             </p>
           </div>
         </div>

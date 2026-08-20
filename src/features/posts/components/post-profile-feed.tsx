@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { PenLine } from "lucide-react";
 import { postsQueryOptionsFactory } from "../posts-query-options-factory";
 import { PostProfileCard } from "./post-profile-card";
 import { FeedSkeleton } from "./post-feed";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 
 type PostProfileFeedProps = {
@@ -33,11 +35,11 @@ export const PostProfileFeed = ({ userId }: PostProfileFeedProps) => {
 
   if (allPosts.length === 0) {
     return (
-      <div className="rounded-lg border bg-card p-8 text-center">
-        <p className="text-muted-foreground">
-          This user has not posted yet.
-        </p>
-      </div>
+      <EmptyState
+        icon={PenLine}
+        title="No posts yet"
+        description="When they share something, it will show up here."
+      />
     );
   }
 

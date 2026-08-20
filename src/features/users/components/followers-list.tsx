@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
 import type { FollowUser } from "../types";
+import { UserAvatar } from "@/components/shared/user-avatar";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Users } from "lucide-react";
 
 type FollowersListProps = {
   users: FollowUser[];
@@ -12,9 +15,11 @@ export const FollowersList = ({
 }: FollowersListProps) => {
   if (!users.length) {
     return (
-      <p className="text-sm text-muted-foreground text-center py-4">
-        {emptyMessage}
-      </p>
+      <EmptyState
+        icon={Users}
+        title={emptyMessage}
+        className="py-8"
+      />
     );
   }
 
@@ -26,10 +31,10 @@ export const FollowersList = ({
           to={`/profile/${user.id}`}
           className="flex items-center gap-3 py-3 hover:bg-accent/50 rounded px-2 transition-colors"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium">
-            {user.displayName?.[0]?.toUpperCase() ??
-              user.username[0].toUpperCase()}
-          </div>
+          <UserAvatar
+            user={user}
+            size="lg"
+          />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">
               {user.displayName ?? user.username}

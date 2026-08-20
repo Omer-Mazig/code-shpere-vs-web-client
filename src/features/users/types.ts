@@ -5,6 +5,8 @@ export type UserProfile = Omit<
   "email"
 > & {
   email?: string;
+  postsCount?: number;
+  articlesCount?: number;
 };
 
 export type UpdateProfileDto = components["schemas"]["UpdateProfileDto"];

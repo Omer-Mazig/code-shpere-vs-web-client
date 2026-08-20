@@ -6,8 +6,6 @@ import { useCreateComment } from "../hooks/use-create-comment";
 import { CommentsList } from "./comments-list";
 import { CommentsSkeleton } from "./comments-skeleton";
 
-// TODO: skeletom for replay work weord because we are using the same component for both the comments and the replies.
-
 type CommentsSectionProps = {
   targetId: string;
   targetType: "POST" | "ARTICLE";

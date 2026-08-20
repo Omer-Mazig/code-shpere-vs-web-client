@@ -1,9 +1,11 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { Calendar, Github, Globe, MapPin } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { UserProfile } from "../types";
+import { UserAvatar } from "@/components/shared/user-avatar";
+import { Button } from "@/components/ui/button";
 
 export type ProfileTab = {
   key: ProfileActiveTab;
@@ -47,7 +49,7 @@ type RootProps = {
 const Root = ({ profile, activeTab, tabs, children }: RootProps) => {
   return (
     <ProfileContext.Provider value={{ profile, activeTab, tabs }}>
-      <div className="flex flex-col overflow-hidden rounded-xl border bg-card">
+      <div className="flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
         {children}
       </div>
     </ProfileContext.Provider>
@@ -58,13 +60,22 @@ type CoverProps = {
   imageUrl?: string | null;
 };
 
+const coverGradient = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  const hue = hash % 360;
+  return `linear-gradient(135deg, oklch(0.38 0.14 ${hue}) 0%, oklch(0.28 0.1 ${(hue + 48) % 360}) 55%, oklch(0.42 0.12 ${(hue + 96) % 360}) 100%)`;
+};
+
 const Cover = ({ imageUrl }: CoverProps) => {
   const { profile } = useProfile();
   const resolvedImage = imageUrl ?? null;
   const altLabel = profile.displayName ?? profile.username;
 
   return (
-    <div className="relative h-40 w-full overflow-hidden border-b bg-muted md:h-52">
+    <div className="relative h-36 w-full overflow-hidden md:h-48">
       {resolvedImage ? (
         <img
           src={resolvedImage}
@@ -72,7 +83,10 @@ const Cover = ({ imageUrl }: CoverProps) => {
           className="h-full w-full object-cover"
         />
       ) : (
-        <div className="h-full w-full bg-linear-to-r from-slate-900 via-slate-700 to-slate-900" />
+        <div
+          className="h-full w-full"
+          style={{ backgroundImage: coverGradient(profile.username) }}
+        />
       )}
     </div>
   );
@@ -84,37 +98,36 @@ type HeaderProps = {
 
 const Header = ({ actions }: HeaderProps) => {
   const { profile } = useProfile();
-  const initials = (
-    profile.displayName?.[0] ??
-    profile.username[0] ??
-    "?"
-  ).toUpperCase();
+  const displayName = profile.displayName ?? profile.username;
+  const postsCount = profile.postsCount ?? 0;
+  const articlesCount = profile.articlesCount ?? 0;
 
   return (
-    <div className="px-5 pb-5 pt-2">
-      <div className="-mt-8 flex flex-col gap-4 md:-mt-10">
-        <div className="flex flex-row gap-4 justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Avatar
-              initials={initials}
-              imageUrl={profile.avatarUrl}
-            />
-            <div>
-              <h1 className="text-2xl font-semibold">
-                {profile.displayName ?? profile.username}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                @{profile.username}
-              </p>
-            </div>
-          </div>
-          {actions && <div className="z-10 md:pt-2 self-center">{actions}</div>}
+    <div className="px-5 pb-5">
+      <div className="-mt-10 flex flex-col gap-4 md:-mt-12">
+        <div className="flex items-end justify-between gap-4">
+          <UserAvatar
+            user={profile}
+            className="size-24 border-4 border-card shadow-sm md:size-28"
+          />
+          {actions && <div className="z-10 pb-1">{actions}</div>}
         </div>
+
         <div className="flex flex-col gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+              {displayName}
+            </h1>
+            <p className="text-muted-foreground">@{profile.username}</p>
+          </div>
+
           {profile.bio && (
-            <p className="max-w-2xl text-sm leading-relaxed">{profile.bio}</p>
+            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              {profile.bio}
+            </p>
           )}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {profile.location && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-4 w-4" />
@@ -122,76 +135,88 @@ const Header = ({ actions }: HeaderProps) => {
               </span>
             )}
             {profile.website && (
-              <a
-                href={profile.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 hover:text-foreground"
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground"
+                asChild
               >
-                <Globe className="h-4 w-4" />
-                Website
-              </a>
+                <a
+                  href={profile.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Website"
+                >
+                  <Globe className="h-4 w-4" />
+                </a>
+              </Button>
             )}
             {profile.github && (
-              <a
-                href={`https://github.com/${profile.github}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 hover:text-foreground"
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground"
+                asChild
               >
-                <Github className="h-4 w-4" />
-                {profile.github}
-              </a>
+                <a
+                  href={`https://github.com/${profile.github}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`GitHub ${profile.github}`}
+                >
+                  <Github className="h-4 w-4" />
+                </a>
+              </Button>
             )}
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Joined{" "}
-              {formatDistanceToNow(new Date(profile.createdAt), {
-                addSuffix: true,
-              })}
+              Joined {format(new Date(profile.createdAt), "MMMM yyyy")}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-6 text-sm">
-          <span>
-            <strong>{profile.followersCount}</strong>{" "}
-            <span className="text-muted-foreground">followers</span>
-          </span>
-          <span>
-            <strong>{profile.followingCount}</strong>{" "}
-            <span className="text-muted-foreground">following</span>
-          </span>
+
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+          <StatLink
+            to={`/profile/${profile.id}/posts`}
+            count={postsCount}
+            label="posts"
+          />
+          <StatLink
+            to={`/profile/${profile.id}/articles`}
+            count={articlesCount}
+            label="articles"
+          />
+          <StatLink
+            to={`/profile/${profile.id}/followers`}
+            count={profile.followersCount}
+            label="followers"
+          />
+          <StatLink
+            to={`/profile/${profile.id}/following`}
+            count={profile.followingCount}
+            label="following"
+          />
         </div>
       </div>
     </div>
   );
 };
 
-type AvatarProps = {
-  initials: string;
-  imageUrl?: string | null;
+type StatLinkProps = {
+  to: string;
+  count: number;
+  label: string;
 };
 
-const Avatar = ({ initials, imageUrl }: AvatarProps) => {
-  const { profile } = useProfile();
-  const altLabel = profile.displayName ?? profile.username;
-
-  return (
-    <div className="z-10 h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-card bg-primary text-primary-foreground md:h-28 md:w-28">
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={`${altLabel} avatar`}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center text-2xl font-bold">
-          {initials}
-        </div>
-      )}
-    </div>
-  );
-};
+const StatLink = ({ to, count, label }: StatLinkProps) => (
+  <NavLink
+    to={to}
+    className="hover:underline"
+  >
+    <strong className="text-foreground">{count}</strong>{" "}
+    <span className="text-muted-foreground">{label}</span>
+  </NavLink>
+);
 
 const TabNav = () => {
   const { tabs, activeTab } = useProfile();
@@ -204,8 +229,8 @@ const TabNav = () => {
             to={tab.to}
             className={() =>
               cn(
-                "rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors",
-                activeTab === tab.key && "bg-muted text-foreground",
+                "rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
+                activeTab === tab.key && "bg-muted text-foreground font-medium",
               )
             }
           >
@@ -222,14 +247,13 @@ type TabContentProps = {
 };
 
 const TabContent = ({ children }: TabContentProps) => {
-  return <div className="px-5 py-5">{children}</div>;
+  return <div className="border-t bg-muted/20 px-5 py-5">{children}</div>;
 };
 
 export const ProfileShell = Object.assign(Root, {
   useProfile,
   Cover,
   Header,
-  Avatar,
   TabNav,
   TabContent,
 });

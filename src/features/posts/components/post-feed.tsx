@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { PenLine } from "lucide-react";
 import { postsQueryOptionsFactory } from "../posts-query-options-factory";
 import { PostFeedCard } from "./post-feed-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import type { useCreatePost } from "../hooks/use-create-post";
 
@@ -28,18 +30,18 @@ export const PostFeed = ({ createPost }: PostFeedProps) => {
 
   if (allPosts.length === 0) {
     return (
-      <div className="rounded-lg border bg-card p-8 text-center">
-        <p className="text-muted-foreground">
-          No posts yet. Be the first to post!
-        </p>
-      </div>
+      <EmptyState
+        icon={PenLine}
+        title="The feed is quiet"
+        description="Share a snippet, a win, or a question — be the first post this community sees."
+      />
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
       {createPost.isPending && (
-        <div className="rounded-lg border bg-card p-4 opacity-80">
+        <div className="opacity-80">
           <FeedSkeleton count={1} />
         </div>
       )}
@@ -61,7 +63,7 @@ export const PostFeed = ({ createPost }: PostFeedProps) => {
 
       {!hasNextPage && (
         <p className="text-center text-sm text-muted-foreground py-4">
-          You've reached the end
+          You’re all caught up
         </p>
       )}
     </div>
@@ -73,7 +75,7 @@ export const FeedSkeleton = ({ count = 3 }: { count?: number }) => (
     {Array.from({ length: count }).map((_, i) => (
       <div
         key={i}
-        className="rounded-lg border bg-card p-4"
+        className="rounded-xl border bg-card p-4 shadow-xs"
       >
         <div className="flex items-center gap-3 mb-3">
           <Skeleton className="h-10 w-10 rounded-full" />

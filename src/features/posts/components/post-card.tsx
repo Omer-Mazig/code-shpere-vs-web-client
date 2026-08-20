@@ -1,12 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import type { Post as PostType } from "../types";
 import { PostActions } from "./post-actions";
 import { FollowButton } from "@/features/users/components/follow-button";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
 import { useAuth } from "@/features/auth/auth.context";
+import { UserAvatar } from "@/components/shared/user-avatar";
+import { RelativeTime } from "@/components/shared/relative-time";
+import { cn } from "@/lib/utils";
 
 type PostContextValue = {
   post: PostType;
@@ -31,7 +33,12 @@ type PostRootProps = {
 const Root = ({ post, children, className }: PostRootProps) => {
   return (
     <PostContext.Provider value={{ post }}>
-      <article className={`rounded-lg border bg-card p-4 ${className ?? ""}`}>
+      <article
+        className={cn(
+          "rounded-xl border bg-card p-4 shadow-xs transition-shadow hover:shadow-sm",
+          className,
+        )}
+      >
         {children}
       </article>
     </PostContext.Provider>
@@ -50,16 +57,13 @@ const Header = ({ rightSlot }: PostHeaderProps) => {
     return (
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium">
-            ?
-          </div>
+          <UserAvatar size="lg" />
           <div className="flex flex-col">
             <span className="text-sm font-medium">Unknown author</span>
-            <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(post.createdAt), {
-                addSuffix: true,
-              })}
-            </span>
+            <RelativeTime
+              date={post.createdAt}
+              className="text-xs text-muted-foreground"
+            />
           </div>
         </div>
         {rightSlot}
@@ -72,28 +76,71 @@ const Header = ({ rightSlot }: PostHeaderProps) => {
       <div className="flex items-center gap-3">
         <Link
           to={`/profile/${author.id}`}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium"
+          className="shrink-0"
         >
-          {author.displayName?.[0]?.toUpperCase() ?? author.username[0].toUpperCase()}
+          <UserAvatar
+            user={author}
+            size="lg"
+          />
         </Link>
-        <div className="flex flex-col">
+        <div className="min-w-0 flex flex-col">
           <Link
             to={`/profile/${author.id}`}
-            className="text-sm font-medium hover:underline"
+            className="truncate text-sm font-semibold hover:underline"
           >
             {author.displayName ?? author.username}
           </Link>
-          <span className="text-xs text-muted-foreground">
-            @{author.username} &middot;{" "}
-            {formatDistanceToNow(new Date(post.createdAt), {
-              addSuffix: true,
-            })}
-          </span>
+          <div className="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+            <span>@{author.username}</span>
+            <span aria-hidden="true">·</span>
+            <RelativeTime date={post.createdAt} />
+          </div>
         </div>
       </div>
       {rightSlot}
     </div>
   );
+};
+
+const FENCE_SPLIT_REGEX = /(```[\s\S]*?```)/g;
+const FENCE_MATCH_REGEX = /^```(\w+)?\n?([\s\S]*?)```$/;
+const INLINE_CODE_SPLIT_REGEX = /(`[^`]+`)/g;
+
+const renderInlineMarkdown = (text: string, keyPrefix: string) => {
+  const parts = text.split(INLINE_CODE_SPLIT_REGEX);
+  return parts.map((part, index) => {
+    if (part.startsWith("`") && part.endsWith("`") && part.length >= 2) {
+      return (
+        <code
+          key={`${keyPrefix}-code-${index}`}
+          className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em]"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return <React.Fragment key={`${keyPrefix}-text-${index}`}>{part}</React.Fragment>;
+  });
+};
+
+const renderPostContent = (content: string) => {
+  const parts = content.split(FENCE_SPLIT_REGEX);
+  return parts.map((part, index) => {
+    const fence = FENCE_MATCH_REGEX.exec(part);
+    if (fence) {
+      return (
+        <pre
+          key={`fence-${index}`}
+          className="my-3 overflow-x-auto rounded-lg bg-muted p-3 font-mono text-xs leading-relaxed"
+        >
+          <code>{fence[2]}</code>
+        </pre>
+      );
+    }
+    return (
+      <span key={`text-${index}`}>{renderInlineMarkdown(part, `p-${index}`)}</span>
+    );
+  });
 };
 
 type PostContentProps = {
@@ -102,14 +149,22 @@ type PostContentProps = {
 
 const Content = ({ linkToDetail = true }: PostContentProps) => {
   const post = usePost();
+  const body = (
+    <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
+      {renderPostContent(post.content)}
+    </div>
+  );
 
   if (!linkToDetail) {
-    return <p className="whitespace-pre-wrap text-sm leading-relaxed">{post.content}</p>;
+    return body;
   }
 
   return (
-    <Link to={`/feed/${post.id}`}>
-      <p className="whitespace-pre-wrap text-sm leading-relaxed">{post.content}</p>
+    <Link
+      to={`/feed/${post.id}`}
+      className="block"
+    >
+      {body}
     </Link>
   );
 };
@@ -120,7 +175,7 @@ const CommentPreview = () => {
   return (
     <>
       {post.latestComment && (
-        <div className="mt-3 rounded-md bg-muted/40 p-3 text-sm">
+        <div className="mt-3 rounded-lg bg-muted/50 p-3 text-sm">
           <span className="font-medium">
             {post.latestComment.author?.displayName ??
               post.latestComment.author?.username ??
@@ -134,7 +189,7 @@ const CommentPreview = () => {
       {post.commentsCount > 0 && (
         <Link
           to={`/feed/${post.id}`}
-          className="mt-2 block text-xs text-muted-foreground hover:underline"
+          className="mt-2 block text-xs text-muted-foreground hover:text-foreground hover:underline"
         >
           Show all comments ({post.commentsCount})
         </Link>

@@ -40,13 +40,14 @@ export const commentsApi = {
 
   getMentionCandidates: async (
     targetId: string,
+    targetType: "POST" | "ARTICLE",
     parentId?: string,
     query?: string,
   ): Promise<CommentMentionCandidate[]> => {
     const response = await apiClient.get<ApiEnvelope<CommentMentionCandidate[]>>(
       "/interactions/comments/mention-candidates",
       {
-        params: { targetId, parentId, query },
+        params: { targetId, targetType, parentId, query },
       },
     );
     return response.data.payload;

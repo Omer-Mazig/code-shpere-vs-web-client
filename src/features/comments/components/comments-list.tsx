@@ -6,6 +6,8 @@ import { CommentItem } from "./comments-item";
 import { Button } from "@/components/ui/button";
 import { CommentsSkeleton } from "./comments-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
+import { MessageCircle } from "lucide-react";
 
 type CommentsListProps = {
   targetId: string;
@@ -42,18 +44,21 @@ export const CommentsList = ({
     return <CommentsSkeleton />;
   }
 
-  if (comments.length === 0) {
+  if (comments.length === 0 && pendingParentId !== null) {
     return (
-      <p className="text-sm text-muted-foreground">
-        No comments yet. Be the first to comment!
-      </p>
+      <EmptyState
+        icon={MessageCircle}
+        title="No comments yet"
+        description="Start the conversation — the first comment is often the one others reply to."
+        className="py-8"
+      />
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-1">
       {createComment.isPending && pendingParentId === null && (
-        <div className="flex gap-3 py-3 opacity-80">
+        <div className="flex gap-3 px-2 py-2.5 opacity-80">
           <Skeleton className="h-8 w-8 rounded-full" />
           <div className="flex-1 space-y-1">
             <Skeleton className="h-4 w-24" />
@@ -62,7 +67,7 @@ export const CommentsList = ({
         </div>
       )}
 
-      <div className="divide-y">
+      <div className="divide-y divide-border/60">
         {comments.map((comment) => (
           <CommentItem
             key={comment.id}
