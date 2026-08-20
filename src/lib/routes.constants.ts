@@ -2,6 +2,8 @@ export const AUTH_PATHS = {
   AUTH: "/auth",
   SIGN_IN: "/auth/sign-in",
   SIGN_UP: "/auth/sign-up",
+  CHECK_EMAIL: "/auth/check-email",
+  VERIFY_EMAIL: "/auth/verify-email",
 } as const;
 
 export const FEED_PATHS = {

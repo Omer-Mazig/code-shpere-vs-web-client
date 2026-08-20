@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/features/auth/auth.context";
-import { AUTH_PATHS, FEED_PATHS } from "@/lib/routes.constants";
+import { AUTH_PATHS } from "@/lib/routes.constants";
+import { getAuthErrorMessage } from "@/features/auth/auth.errors";
+import { signUpSchema } from "@/features/auth/auth.schemas";
 
 export const SignUpPage = () => {
   const navigate = useNavigate();
@@ -21,18 +23,36 @@ export const SignUpPage = () => {
     e.preventDefault();
     setError(null);
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+    const parsed = signUpSchema.safeParse({
+      email,
+      username,
+      displayName,
+      password,
+      confirmPassword,
+    });
+
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Please check the form.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await register({ email, username, displayName, password });
-      navigate(FEED_PATHS.FEED);
-    } catch {
-      setError("Registration failed. Please try again.");
+      const result = await register({
+        email: parsed.data.email,
+        username: parsed.data.username,
+        displayName: parsed.data.displayName,
+        password: parsed.data.password,
+      });
+      const params = new URLSearchParams({ email: result.email });
+      navigate(`${AUTH_PATHS.CHECK_EMAIL}?${params.toString()}`, {
+        state: { verificationUrl: result.verificationUrl },
+      });
+    } catch (submitError) {
+      setError(
+        getAuthErrorMessage(submitError, "Registration failed. Please try again."),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -89,7 +109,7 @@ export const SignUpPage = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="At least 6 characters"
+            placeholder="At least 8 characters, with a letter and a number"
             required
           />
         </div>

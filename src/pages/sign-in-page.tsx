@@ -5,6 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/features/auth/auth.context";
 import { AUTH_PATHS, FEED_PATHS } from "@/lib/routes.constants";
+import {
+  getAuthErrorMessage,
+  isEmailNotVerifiedError,
+} from "@/features/auth/auth.errors";
 
 export const SignInPage = () => {
   const navigate = useNavigate();
@@ -12,18 +16,21 @@ export const SignInPage = () => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
+  const [showVerifyHint, setShowVerifyHint] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setShowVerifyHint(false);
     setIsSubmitting(true);
 
     try {
       await login(email, password);
       navigate(FEED_PATHS.FEED);
-    } catch {
-      setError("Invalid credentials. Please try again.");
+    } catch (submitError) {
+      setError(getAuthErrorMessage(submitError));
+      setShowVerifyHint(isEmailNotVerifiedError(submitError));
     } finally {
       setIsSubmitting(false);
     }
@@ -64,6 +71,18 @@ export const SignInPage = () => {
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
+
+        {showVerifyHint && email && (
+          <p className="text-sm text-muted-foreground">
+            Need a new link?{" "}
+            <Link
+              to={`${AUTH_PATHS.CHECK_EMAIL}?email=${encodeURIComponent(email)}`}
+              className="text-primary hover:underline font-medium"
+            >
+              Resend verification email
+            </Link>
+          </p>
+        )}
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? "Signing in..." : "Sign In"}

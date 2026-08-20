@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React from "react";
+import { getAuthErrorMessage } from "../auth.errors";
 
 export const SignInModal = () => {
   const { isOpen, close } = useSignInModal();
@@ -24,8 +25,8 @@ export const SignInModal = () => {
       close();
       setEmail("");
       setPassword("");
-    } catch {
-      setError("Invalid credentials. Please try again.");
+    } catch (submitError) {
+      setError(getAuthErrorMessage(submitError));
     } finally {
       setIsSubmitting(false);
     }

@@ -1,7 +1,12 @@
 import React from "react";
 import { setAccessToken } from "@/lib/api-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AuthUser } from "./auth.types";
+import type {
+  AuthSession,
+  AuthUser,
+  RegisterResult,
+  ResendVerificationResult,
+} from "./auth.types";
 import { authQueryOptionsFactory } from "./auth-query-options-factory";
 import { authApi, type RegisterPayload } from "./auth.api";
 import { setUnauthorizedHandler } from "./auth.session";
@@ -13,7 +18,9 @@ type AuthContextValue = {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<RegisterResult>;
+  verifyEmail: (token: string) => Promise<void>;
+  resendVerification: (email: string) => Promise<ResendVerificationResult>;
   logout: () => Promise<void>;
 };
 
@@ -28,6 +35,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     authQueryOptionsFactory.session(),
   );
   const user = session?.accessToken && session.user ? session.user : null;
+
+  const applySession = React.useCallback(
+    (data: AuthSession) => {
+      if (data.accessToken && data.user) {
+        setAccessToken(data.accessToken);
+        queryClient.setQueryData(
+          authQueryOptionsFactory.session().queryKey,
+          data,
+        );
+        return;
+      }
+
+      setAccessToken(null);
+      queryClient.setQueryData(
+        authQueryOptionsFactory.session().queryKey,
+        undefined,
+      );
+    },
+    [queryClient],
+  );
 
   const clearSession = React.useCallback(
     (redirectToLogin = false) => {
@@ -96,41 +123,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     mutationKey: ["auth", "login"],
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       authApi.login(email, password),
-    onSuccess: (data) => {
-      if (data.accessToken && data.user) {
-        setAccessToken(data.accessToken);
-        queryClient.setQueryData(
-          authQueryOptionsFactory.session().queryKey,
-          data,
-        );
-      } else {
-        setAccessToken(null);
-        queryClient.setQueryData(
-          authQueryOptionsFactory.session().queryKey,
-          undefined,
-        );
-      }
-    },
+    onSuccess: applySession,
   });
 
   const { mutateAsync: registerMutation } = useMutation({
     mutationKey: ["auth", "register"],
     mutationFn: (payload: RegisterPayload) => authApi.register(payload),
-    onSuccess: (data) => {
-      if (data.accessToken && data.user) {
-        setAccessToken(data.accessToken);
-        queryClient.setQueryData(
-          authQueryOptionsFactory.session().queryKey,
-          data,
-        );
-      } else {
-        setAccessToken(null);
-        queryClient.setQueryData(
-          authQueryOptionsFactory.session().queryKey,
-          undefined,
-        );
-      }
-    },
+  });
+
+  const { mutateAsync: verifyEmailMutation } = useMutation({
+    mutationKey: ["auth", "verify-email"],
+    mutationFn: (token: string) => authApi.verifyEmail(token),
+    onSuccess: applySession,
+  });
+
+  const { mutateAsync: resendVerificationMutation } = useMutation({
+    mutationKey: ["auth", "resend-verification"],
+    mutationFn: (email: string) => authApi.resendVerification(email),
   });
 
   const { mutateAsync: logoutMutation } = useMutation({
@@ -150,13 +159,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const register = React.useCallback(
-    async (payload: RegisterPayload) => {
-      await registerMutation(payload);
+    async (payload: RegisterPayload): Promise<RegisterResult> => {
+      return registerMutation(payload);
     },
     [registerMutation],
   );
 
-  const logout = React.useCallback(() => logoutMutation(), [logoutMutation]);
+  const verifyEmail = React.useCallback(
+    async (token: string) => {
+      await verifyEmailMutation(token);
+    },
+    [verifyEmailMutation],
+  );
+
+  const resendVerification = React.useCallback(
+    async (email: string): Promise<ResendVerificationResult> => {
+      return resendVerificationMutation(email);
+    },
+    [resendVerificationMutation],
+  );
+
+  const logout = React.useCallback(async () => {
+    await logoutMutation();
+  }, [logoutMutation]);
 
   const value = React.useMemo<AuthContextValue>(
     () => ({
@@ -165,9 +190,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isAuthenticated: Boolean(user),
       login,
       register,
+      verifyEmail,
+      resendVerification,
       logout,
     }),
-    [user, isLoading, login, register, logout],
+    [
+      user,
+      isLoading,
+      login,
+      register,
+      verifyEmail,
+      resendVerification,
+      logout,
+    ],
   );
 
   if (isLoading) {

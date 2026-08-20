@@ -96,6 +96,19 @@ export const ProfileSettingsPage = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                value={profile.email ?? ""}
+                readOnly
+                disabled
+              />
+              <p className="text-xs text-muted-foreground">
+                Your email is private and is not shown on your public profile.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="displayName">Display name</Label>
               <Input
                 id="displayName"

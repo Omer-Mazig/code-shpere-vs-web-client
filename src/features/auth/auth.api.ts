@@ -1,7 +1,11 @@
 import { apiClient, setAccessToken } from "@/lib/api-client";
 import type { components } from "@/lib/api-types";
 import type { ApiEnvelope } from "@/lib/types";
-import type { AuthSession } from "./auth.types";
+import type {
+  AuthSession,
+  RegisterResult,
+  ResendVerificationResult,
+} from "./auth.types";
 
 export type RegisterPayload = components["schemas"]["RegisterDto"];
 
@@ -15,11 +19,28 @@ export const authApi = {
     return response.data.payload;
   },
 
-  register: async (payload: RegisterPayload): Promise<AuthSession> => {
-    const response = await apiClient.post<ApiEnvelope<AuthSession>>(
+  register: async (payload: RegisterPayload): Promise<RegisterResult> => {
+    const response = await apiClient.post<ApiEnvelope<RegisterResult>>(
       "/auth/register",
       payload,
     );
+    return response.data.payload;
+  },
+
+  verifyEmail: async (token: string): Promise<AuthSession> => {
+    const response = await apiClient.post<ApiEnvelope<AuthSession>>(
+      "/auth/verify-email",
+      { token },
+    );
+    return response.data.payload;
+  },
+
+  resendVerification: async (
+    email: string,
+  ): Promise<ResendVerificationResult> => {
+    const response = await apiClient.post<
+      ApiEnvelope<ResendVerificationResult>
+    >("/auth/resend-verification", { email });
     return response.data.payload;
   },
 

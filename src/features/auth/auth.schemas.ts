@@ -1,8 +1,14 @@
 import { z } from "zod";
 
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Za-z]/, "Password must contain at least one letter")
+  .regex(/\d/, "Password must contain at least one number");
+
 export const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export const signUpSchema = z
@@ -20,7 +26,7 @@ export const signUpSchema = z
       .string()
       .min(1, "Display name is required")
       .max(100, "Display name must be at most 100 characters"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
