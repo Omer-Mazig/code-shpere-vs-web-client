@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { Comment } from "../types";
 import type { useCreateComment } from "../hooks/use-create-comment";
+import { tokenizeCommentMentions } from "../comment-mentions";
 import { useAuth } from "@/features/auth/auth.context";
 import { useDeleteComment } from "../hooks/use-delete-comment";
 import { useUpdateComment } from "../hooks/use-update-comment";
@@ -47,36 +48,24 @@ type CommentItemProps = {
   setPendingParentId: (id: string | null | undefined) => void;
 };
 
-const COMMENT_MENTION_REGEX = /(@[a-zA-Z0-9_-]{3,30})/g;
-
 const renderCommentContent = (comment: Comment) => {
-  const mentionMap = new Map(
-    comment.mentionedUsers.map((user) => [user.username.toLowerCase(), user]),
+  return tokenizeCommentMentions(comment.content, comment.mentionedUsers).map(
+    (token, index) => {
+      if (token.type === "mention") {
+        return (
+          <Link
+            key={`${comment.id}-part-${index}`}
+            to={`/profile/${token.user.id}`}
+            className="text-primary font-medium hover:underline"
+          >
+            @{token.user.username}
+          </Link>
+        );
+      }
+
+      return <span key={`${comment.id}-part-${index}`}>{token.value}</span>;
+    },
   );
-  const parts = comment.content.split(COMMENT_MENTION_REGEX);
-
-  return parts.map((part, index) => {
-    const mentionMatch = /^@([a-zA-Z0-9_-]{3,30})$/.exec(part);
-    if (!mentionMatch) {
-      return <span key={`${comment.id}-part-${index}`}>{part}</span>;
-    }
-
-    const username = mentionMatch[1].toLowerCase();
-    const mentionedUser = mentionMap.get(username);
-    if (!mentionedUser) {
-      return <span key={`${comment.id}-part-${index}`}>{part}</span>;
-    }
-
-    return (
-      <Link
-        key={`${comment.id}-part-${index}`}
-        to={`/profile/${mentionedUser.id}`}
-        className="text-primary font-medium hover:underline"
-      >
-        @{mentionedUser.username}
-      </Link>
-    );
-  });
 };
 
 export const CommentItem = ({

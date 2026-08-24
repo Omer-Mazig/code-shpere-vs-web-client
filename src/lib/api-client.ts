@@ -3,6 +3,7 @@ import {
   refreshAccessToken,
   setUnauthorizedHandler,
 } from "@/features/auth/auth.session";
+import { shouldAttemptTokenRefresh } from "./should-attempt-token-refresh";
 
 const baseURL = import.meta.env.VITE_API_URL ?? "";
 
@@ -43,10 +44,11 @@ apiClient.interceptors.response.use(
     const requestUrl = originalRequest?.url ?? "";
 
     if (
-      status !== 401 ||
-      originalRequest?._retry ||
-      requestUrl.includes("/auth/login") ||
-      requestUrl.includes("/auth/refresh")
+      !shouldAttemptTokenRefresh(
+        status,
+        Boolean(originalRequest?._retry),
+        requestUrl,
+      )
     ) {
       return Promise.reject(error);
     }

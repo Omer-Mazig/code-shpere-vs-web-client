@@ -3,89 +3,19 @@ import React from "react";
 import type { MouseEventHandler } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getUserInitials } from "@/components/shared/user-avatar";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import type {
-  Notification,
-  NotificationPayload,
-  NotificationType,
-} from "../types";
+import type { Notification, NotificationPayload } from "../types";
 import { useMarkNotificationRead } from "../hooks/use-mark-notification-read";
+import {
+  getNotificationHref,
+  getNotificationTargetInfo,
+  getNotificationVerb,
+} from "../notification-links";
 
 type NotificationItemProps = {
   notification: Notification;
   dropdownOpen: boolean;
-};
-
-const getNotificationHref = (
-  type: NotificationType,
-  payload: NotificationPayload,
-): string => {
-  if (type === "NEW_FOLLOWER" && payload.actorId) {
-    return `/profile/${payload.actorId}`;
-  }
-
-  if ((type === "POST_LIKED" || type === "POST_COMMENTED") && payload.postId) {
-    return `/feed/${payload.postId}`;
-  }
-
-  if (type === "COMMENT_REPLIED") {
-    if (payload.targetType === "POST" && payload.targetId) {
-      return `/feed/${payload.targetId}`;
-    }
-    if (payload.targetType === "ARTICLE" && payload.articleSlug) {
-      return `/articles/${payload.articleSlug}`;
-    }
-  }
-
-  return "/feed";
-};
-
-const getTargetInfo = (
-  type: NotificationType,
-  payload: NotificationPayload,
-) => {
-  if (type === "POST_LIKED" && payload.postId) {
-    return {
-      href: `/feed/${payload.postId}`,
-      label: payload.postExcerpt ?? "your post",
-    };
-  }
-
-  if (type === "POST_COMMENTED" && payload.postId) {
-    return {
-      href: `/feed/${payload.postId}`,
-      label: payload.commentExcerpt ?? payload.postExcerpt ?? "your post",
-    };
-  }
-
-  if (
-    type === "COMMENT_REPLIED" &&
-    payload.targetType === "POST" &&
-    payload.targetId
-  ) {
-    return {
-      href: `/feed/${payload.targetId}`,
-      label: payload.replyExcerpt ?? "your comment",
-    };
-  }
-
-  if (
-    type === "COMMENT_REPLIED" &&
-    payload.targetType === "ARTICLE" &&
-    payload.articleSlug
-  ) {
-    return {
-      href: `/articles/${payload.articleSlug}`,
-      label: payload.replyExcerpt ?? "your comment",
-    };
-  }
-
-  return null;
-};
-
-const getInitial = (value?: string) => {
-  if (!value) return "?";
-  return value.charAt(0).toUpperCase();
 };
 
 export const NotificationItem = ({
@@ -98,7 +28,7 @@ export const NotificationItem = ({
   const href = getNotificationHref(notification.type, payload);
   const actorName = payload.actorName ?? "User";
   const actorHref = payload.actorId ? `/profile/${payload.actorId}` : null;
-  const targetInfo = getTargetInfo(notification.type, payload);
+  const targetInfo = getNotificationTargetInfo(notification.type, payload);
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.8 });
 
   React.useEffect(() => {
@@ -149,7 +79,7 @@ export const NotificationItem = ({
           src={payload.actorAvatarUrl ?? undefined}
           alt={actorName}
         />
-        <AvatarFallback>{getInitial(actorName)}</AvatarFallback>
+        <AvatarFallback>{getUserInitials({ displayName: actorName })}</AvatarFallback>
       </Avatar>
 
       <div className="min-w-0 flex-1">
@@ -164,10 +94,7 @@ export const NotificationItem = ({
           ) : (
             <span className="font-semibold">{actorName}</span>
           )}{" "}
-          {notification.type === "POST_LIKED" && "liked your post"}
-          {notification.type === "POST_COMMENTED" && "commented on your post"}
-          {notification.type === "COMMENT_REPLIED" && "replied to your comment"}
-          {notification.type === "NEW_FOLLOWER" && "started following you"}
+          {getNotificationVerb(notification.type)}
           {targetInfo ? (
             <>
               :{" "}

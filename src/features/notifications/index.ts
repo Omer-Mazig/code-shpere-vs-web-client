@@ -2,6 +2,7 @@ export * from "./types";
 export * from "./notifications.api";
 export * from "./notifications-query-options-factory";
 export * from "./notifications-cache";
+export * from "./notification-links";
 export * from "./hooks/use-notification-stream";
 export * from "./hooks/use-notifications-list";
 export * from "./hooks/use-unread-notifications-count";

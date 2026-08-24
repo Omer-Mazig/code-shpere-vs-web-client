@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/shared/user-avatar";
 import type { useCreateComment } from "../hooks/use-create-comment";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import type { CommentMentionCandidate } from "../types";
+import { getMentionContext, insertMention } from "../comment-mentions";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 
@@ -20,28 +21,6 @@ type CommentFormProps = {
   setLastCreatedCommentId: (id: string | null) => void;
   setPendingParentId: (id: string | null | undefined) => void;
 };
-
-type MentionContext = {
-  start: number;
-  end: number;
-  query: string;
-};
-
-function getMentionContext(
-  value: string,
-  cursorPosition: number,
-): MentionContext | null {
-  const beforeCursor = value.slice(0, cursorPosition);
-  const match = /(^|\s)@([a-zA-Z0-9_-]*)$/.exec(beforeCursor);
-  if (!match) return null;
-
-  const query = match[2] ?? "";
-  const end = cursorPosition;
-  const start = end - query.length - 1;
-  if (start < 0) return null;
-
-  return { start, end, query };
-}
 
 export const CommentForm = ({
   targetId,
@@ -103,16 +82,14 @@ export const CommentForm = ({
       debouncedMentionQuery !== undefined,
   });
 
-  const insertMention = (candidate: CommentMentionCandidate) => {
+  const handleInsertMention = (candidate: CommentMentionCandidate) => {
     if (!mentionContext) return;
 
-    const mentionToken = `@${candidate.username} `;
-    const nextValue =
-      content.slice(0, mentionContext.start) +
-      mentionToken +
-      content.slice(mentionContext.end);
-
-    const nextCursor = mentionContext.start + mentionToken.length;
+    const { nextValue, nextCursor } = insertMention(
+      content,
+      mentionContext,
+      candidate.username,
+    );
     setContent(nextValue);
     setCursorPosition(nextCursor);
     setIsMentionListOpen(false);
@@ -217,7 +194,7 @@ export const CommentForm = ({
                       className="flex w-full items-center justify-between gap-2 rounded px-2 py-1 text-left text-sm hover:bg-accent"
                       onMouseDown={(e) => {
                         e.preventDefault();
-                        insertMention(candidate);
+                        handleInsertMention(candidate);
                       }}
                     >
                       <div className="flex items-center gap-2">
