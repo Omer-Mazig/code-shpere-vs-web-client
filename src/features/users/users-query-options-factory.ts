@@ -32,6 +32,19 @@ export const usersQueryOptionsFactory = {
       staleTime: 1000 * 60 * 5, // 5 minutes
     }),
 
+  // ["users", "suggestions", viewerId, limit] — viewerId keeps results fresh across sign-in/out
+  suggestions: (limit = 5, viewerId?: string) =>
+    queryOptions({
+      queryKey: [
+        ...usersQueryOptionsFactory.all().queryKey,
+        "suggestions",
+        viewerId ?? "guest",
+        limit,
+      ],
+      queryFn: () => usersApi.getSuggestions(limit),
+      staleTime: 1000 * 60 * 5,
+    }),
+
   // ["users", "followers", userId]
   followers: (userId: string) =>
     infiniteQueryOptions({

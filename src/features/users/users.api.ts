@@ -1,6 +1,11 @@
 import { apiClient } from "@/lib/api-client";
 import type { ApiEnvelope, PaginatedResponse } from "@/lib/types";
-import type { UserProfile, UpdateProfileDto, FollowUser } from "./types";
+import type {
+  UserProfile,
+  UpdateProfileDto,
+  FollowUser,
+  SuggestedUser,
+} from "./types";
 
 export const usersApi = {
   getMyProfile: async (): Promise<UserProfile> => {
@@ -29,6 +34,15 @@ export const usersApi = {
 
   unfollow: async (userId: string): Promise<void> => {
     await apiClient.delete(`/users/${userId}/follow`);
+  },
+
+  getSuggestions: async (
+    limit = 5,
+  ): Promise<PaginatedResponse<SuggestedUser>> => {
+    const response = await apiClient.get<
+      ApiEnvelope<PaginatedResponse<SuggestedUser>>
+    >("/users/suggestions", { params: { limit } });
+    return response.data.payload;
   },
 
   getFollowers: async (

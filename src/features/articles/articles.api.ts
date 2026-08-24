@@ -18,6 +18,13 @@ export const articlesApi = {
     return response.data.payload;
   },
 
+  getSuggestions: async (limit = 4): Promise<PaginatedResponse<Article>> => {
+    const response = await apiClient.get<
+      ApiEnvelope<PaginatedResponse<Article>>
+    >("/articles/suggestions", { params: { limit } });
+    return response.data.payload;
+  },
+
   getBySlug: async (slug: string): Promise<Article> => {
     const response = await apiClient.get<ApiEnvelope<Article>>(
       `/articles/${slug}`,

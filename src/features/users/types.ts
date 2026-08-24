@@ -11,3 +11,4 @@ export type UserProfile = Omit<
 
 export type UpdateProfileDto = components["schemas"]["UpdateProfileDto"];
 export type FollowUser = components["schemas"]["FollowUserResponseDto"];
+export type SuggestedUser = components["schemas"]["SuggestedUserResponseDto"];

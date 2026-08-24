@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -21,12 +22,15 @@ export const LikeButton = ({
   const { isAuthenticated } = useAuth();
   const { open: openSignIn } = useSignInModal();
   const { toggle } = useToggleLike(targetId, targetType);
+  // Only pop the heart for likes performed in this session, not pre-liked mounts
+  const [justLiked, setJustLiked] = useState(false);
 
   const handleClick = () => {
     if (!isAuthenticated) {
       openSignIn();
       return;
     }
+    setJustLiked(!isLiked);
     toggle(isLiked);
   };
 
@@ -40,8 +44,14 @@ export const LikeButton = ({
       )}
       onClick={handleClick}
     >
-      <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
-      <span className="text-xs">{likesCount}</span>
+      <Heart
+        className={cn(
+          "h-4 w-4",
+          isLiked && "fill-current",
+          isLiked && justLiked && "animate-like-pop",
+        )}
+      />
+      <span className="text-xs tabular-nums">{likesCount}</span>
     </Button>
   );
 };

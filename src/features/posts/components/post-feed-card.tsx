@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import type { Post as PostType } from "../types";
 import { Post } from "./post-card";
+import { cn } from "@/lib/utils";
 
 type PostFeedCardProps = {
   post: PostType;
@@ -25,11 +26,10 @@ export const PostFeedCard = ({ post, isNew }: PostFeedCardProps) => {
 
   return (
     <div
-      className={
-        isHighlighting
-          ? "animate-[pulse_0.6s_ease-out] rounded-lg bg-primary/5"
-          : undefined
-      }
+      className={cn(
+        "animate-fade-up",
+        isHighlighting && "animate-[pulse_0.6s_ease-out] rounded-lg bg-primary/5",
+      )}
     >
       <Post.Root post={post}>
         <Post.Header rightSlot={<Post.FollowAuthorButton />} />

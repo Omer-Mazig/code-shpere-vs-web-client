@@ -23,6 +23,19 @@ export const articlesQueryOptionsFactory = {
       staleTime: 1000 * 60 * 5, // 5 minutes
     }),
 
+  // ["articles", "suggestions", viewerId, limit] — viewerId keeps results fresh across sign-in/out
+  suggestions: (limit = 4, viewerId?: string) =>
+    queryOptions({
+      queryKey: [
+        ...articlesQueryOptionsFactory.all().queryKey,
+        "suggestions",
+        viewerId ?? "guest",
+        limit,
+      ],
+      queryFn: () => articlesApi.getSuggestions(limit),
+      staleTime: 1000 * 60 * 5,
+    }),
+
   // ["articles", "details"]
   allDetails: () =>
     queryOptions({

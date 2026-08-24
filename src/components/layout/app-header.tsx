@@ -77,10 +77,20 @@ export const AppHeader = () => {
 
           <Link
             to="/"
-            className="flex items-center gap-2 font-bold text-lg"
+            className="group flex items-center gap-2"
           >
-            <Code2 className="h-6 w-6" />
-            <span>CodeSphere</span>
+            <span className="flex size-7 items-center justify-center rounded-lg bg-linear-to-br from-primary to-glow shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <Code2 className="size-4 text-white" />
+            </span>
+            <span className="font-mono text-base font-semibold tracking-tight">
+              code<span className="text-primary">_</span>sphere
+              <span
+                className="animate-caret-blink ml-0.5 text-primary"
+                aria-hidden
+              >
+                ▍
+              </span>
+            </span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
@@ -88,17 +98,21 @@ export const AppHeader = () => {
               <Link
                 key={item.path}
                 to={item.path}
+                className={cn(
+                  "relative rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+                  isActive(item.path) && "text-foreground",
+                )}
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
+                {item.label}
+                {/* Animated active indicator aligned with the header's bottom border */}
+                <span
                   className={cn(
-                    "text-muted-foreground",
-                    isActive(item.path) && "text-foreground bg-accent",
+                    "absolute inset-x-3 -bottom-3 h-0.5 origin-center rounded-full bg-linear-to-r from-primary to-glow transition-all duration-300",
+                    isActive(item.path)
+                      ? "scale-x-100 opacity-100"
+                      : "scale-x-0 opacity-0",
                   )}
-                >
-                  {item.label}
-                </Button>
+                />
               </Link>
             ))}
           </nav>
@@ -184,8 +198,12 @@ export const AppHeader = () => {
         >
           <SheetHeader className="border-b">
             <SheetTitle className="flex items-center gap-2">
-              <Code2 className="h-5 w-5" />
-              CodeSphere
+              <span className="flex size-6 items-center justify-center rounded-md bg-linear-to-br from-primary to-glow">
+                <Code2 className="size-3.5 text-white" />
+              </span>
+              <span className="font-mono font-semibold tracking-tight">
+                code<span className="text-primary">_</span>sphere
+              </span>
             </SheetTitle>
             <SheetDescription className="sr-only">
               Main navigation

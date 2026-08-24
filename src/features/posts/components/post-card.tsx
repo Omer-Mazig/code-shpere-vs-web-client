@@ -87,7 +87,7 @@ const Root = ({ post, children, className, onDeleted }: PostRootProps) => {
     >
       <article
         className={cn(
-          "rounded-xl border bg-card p-4 shadow-xs transition-shadow hover:shadow-sm",
+          "card-hover rounded-xl border bg-card p-4 shadow-xs",
           className,
         )}
       >
