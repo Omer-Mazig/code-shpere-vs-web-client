@@ -1,5 +1,7 @@
 export { apiClient, setAccessToken } from "./api-client";
 export { queryClientInstance } from "./query-client";
+export { queryOptions, infiniteQueryOptions } from "./query-options";
+export { MIN_QUERY_PENDING_MS, withMinDuration } from "./min-pending";
 export { ErrorBoundary } from "./error-boundary";
 export { cn, truncateText, debounce, makeId } from "./utils";
 export { prependToInfiniteList } from "./infinite-query-cache";

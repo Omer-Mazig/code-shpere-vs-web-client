@@ -1,4 +1,4 @@
-import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@/lib/query-options";
 import { postsApi } from "./posts.api";
 import type { PostQueryDto } from "./types";
 

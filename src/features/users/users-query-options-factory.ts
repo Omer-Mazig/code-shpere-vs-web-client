@@ -1,4 +1,4 @@
-import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@/lib/query-options";
 import { usersApi } from "./users.api";
 
 const FOLLOW_CONNECTIONS_LIMIT = 20;

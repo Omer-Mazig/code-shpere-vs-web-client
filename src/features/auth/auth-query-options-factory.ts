@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions } from "@/lib/query-options";
 import { authApi } from "./auth.api";
 
 export const authQueryOptionsFactory = {
@@ -13,5 +13,7 @@ export const authQueryOptionsFactory = {
       retry: false,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
+      // App bootstrap — don't pad the splash screen on a fast session check.
+      meta: { minPending: false },
     }),
 };

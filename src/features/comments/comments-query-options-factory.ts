@@ -1,4 +1,4 @@
-import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@/lib/query-options";
 import { commentsApi } from "./comments.api";
 
 const TOP_LEVEL_LIMIT = 10;
@@ -70,5 +70,7 @@ export const commentsQueryOptionsFactory = {
           query || undefined,
         ),
       staleTime: query ? 1000 * 30 : 1000 * 60 * 5,
+      // Typeahead — a 300ms floor would make mention search feel laggy.
+      meta: { minPending: false },
     }),
 };

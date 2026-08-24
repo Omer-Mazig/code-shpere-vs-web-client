@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions } from "@/lib/query-options";
 import { articlesApi } from "./articles.api";
 import type { ArticleQueryDto } from "./types";
 

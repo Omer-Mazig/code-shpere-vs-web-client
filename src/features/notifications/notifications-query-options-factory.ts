@@ -1,4 +1,4 @@
-import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@/lib/query-options";
 import { notificationsApi } from "./notifications.api";
 import type { NotificationTargetType } from "./types";
 
@@ -52,6 +52,8 @@ export const notificationsQueryOptionsFactory = {
       ],
       queryFn: () => notificationsApi.getUnreadCount(),
       staleTime: 1000 * 15,
+      // Badge count has no skeleton; padding would make the badge pop in late.
+      meta: { minPending: false },
     }),
 };
 
