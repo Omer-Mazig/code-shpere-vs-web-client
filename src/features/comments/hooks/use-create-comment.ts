@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { commentsApi } from "../comments.api";
-import type { Comment, CreateCommentDto } from "../types";
+import type { CreateCommentDto } from "../types";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
-import type { PaginatedResponse } from "@/lib/types";
+import { prependToInfiniteList } from "@/lib/infinite-query-cache";
 
 export function useCreateComment() {
   const queryClient = useQueryClient();
@@ -19,29 +19,9 @@ export function useCreateComment() {
 
       if (!variables.parentId) {
         // Top-level comments: insert into thread's first page
-        queryClient.setQueryData(threadOptions.queryKey, (old) => {
-          if (!old || old.pages.length === 0) return old;
-
-          const [firstPage, ...restPages] = old.pages;
-          if (!Array.isArray(firstPage.items)) return old;
-
-          const updatedFirstPage: PaginatedResponse<Comment> = {
-            ...firstPage,
-            items: [data, ...firstPage.items],
-            meta: {
-              ...firstPage.meta,
-              total:
-                typeof firstPage.meta.total === "number"
-                  ? firstPage.meta.total + 1
-                  : firstPage.meta.total,
-            },
-          };
-
-          return {
-            ...old,
-            pages: [updatedFirstPage, ...restPages],
-          };
-        });
+        queryClient.setQueryData(threadOptions.queryKey, (old) =>
+          prependToInfiniteList(old, data),
+        );
       } else if (variables.parentId) {
         // Replies: let existing queries refetch and handle display
         // ✅ keep mutation pending until invalidation finishes

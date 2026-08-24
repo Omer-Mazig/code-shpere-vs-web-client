@@ -1,9 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postsApi } from "../posts.api";
 import { postsQueryOptionsFactory } from "../posts-query-options-factory";
-import type { CreatePostDto } from "../types";
-import type { Post } from "../types";
-import type { PaginatedResponse } from "@/lib/types";
+import type { CreatePostDto, Post } from "../types";
+import { prependToInfiniteList } from "@/lib/infinite-query-cache";
 import React from "react";
 
 export function useCreatePost() {
@@ -18,29 +17,9 @@ export function useCreatePost() {
     onSuccess: (data: Post) => {
       const feedOptions = postsQueryOptionsFactory.feedList();
 
-      queryClient.setQueryData(feedOptions.queryKey, (old) => {
-        if (!old || old.pages.length === 0) return old;
-
-        const [firstPage, ...restPages] = old.pages;
-        if (!Array.isArray(firstPage.items)) return old;
-
-        const updatedFirstPage: PaginatedResponse<Post> = {
-          ...firstPage,
-          items: [data, ...firstPage.items],
-          meta: {
-            ...firstPage.meta,
-            total:
-              typeof firstPage.meta.total === "number"
-                ? firstPage.meta.total + 1
-                : firstPage.meta.total,
-          },
-        };
-
-        return {
-          ...old,
-          pages: [updatedFirstPage, ...restPages],
-        };
-      });
+      queryClient.setQueryData(feedOptions.queryKey, (old) =>
+        prependToInfiniteList(old, data),
+      );
 
       setLastCreatedPostId(data.id);
     },

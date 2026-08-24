@@ -5,59 +5,7 @@ import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-f
 import { articlesQueryOptionsFactory } from "@/features/articles/articles-query-options-factory";
 import { toast } from "sonner";
 import { commentsQueryOptionsFactory } from "@/features/comments/comments-query-options-factory";
-
-/**
- * Recursively traverses query cache data structures (single items,
- * paginated responses, infinite query pages) and toggles the like
- * state for the item matching `targetId`.
- */
-function updateLikeInData(
-  data: unknown,
-  targetId: string,
-  isLiked: boolean,
-  delta: number,
-): unknown {
-  if (!data || typeof data !== "object") return data;
-
-  const record = data as Record<string, unknown>;
-
-  // Single item (detail query)
-  if ("id" in record && record.id === targetId && "likesCount" in record) {
-    return {
-      ...record,
-      isLiked,
-      likesCount: Math.max(0, (record.likesCount as number) + delta),
-    };
-  }
-
-  // Paginated response ({ items: T[], meta: ... })
-  if ("items" in record && Array.isArray(record.items)) {
-    return {
-      ...record,
-      items: (record.items as Record<string, unknown>[]).map((item) =>
-        item.id === targetId && "likesCount" in item
-          ? {
-              ...item,
-              isLiked,
-              likesCount: Math.max(0, (item.likesCount as number) + delta),
-            }
-          : item,
-      ),
-    };
-  }
-
-  // Infinite query data ({ pages: [...], pageParams: [...] })
-  if ("pages" in record && Array.isArray(record.pages)) {
-    return {
-      ...record,
-      pages: (record.pages as unknown[]).map((page) =>
-        updateLikeInData(page, targetId, isLiked, delta),
-      ),
-    };
-  }
-
-  return data;
-}
+import { updateLikeInData } from "../like-cache";
 
 export function useToggleLike(
   targetId: string,
