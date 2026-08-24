@@ -10,9 +10,10 @@ export function useUpdateComment() {
     mutationKey: ["comments", "update"],
     mutationFn: ({ id, dto }: { id: string; dto: UpdateCommentDto }) =>
       commentsApi.updateComment(id, dto),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
+    onSuccess: () => {
+      return queryClient.invalidateQueries({
         queryKey: commentsQueryOptionsFactory.all().queryKey,
-      }),
+      });
+    },
   });
 }

@@ -33,6 +33,7 @@ import { useAuth } from "@/features/auth/auth.context";
 import { useDeleteComment } from "../hooks/use-delete-comment";
 import { useUpdateComment } from "../hooks/use-update-comment";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type CommentItemProps = {
   comment: Comment;
@@ -139,6 +140,9 @@ export const CommentItem = ({
       { id: comment.id, dto: { content: nextContent } },
       {
         onSuccess: () => setIsEditing(false),
+        onError: () => {
+          toast.error("Failed to update comment");
+        },
       },
     );
   };
@@ -330,7 +334,9 @@ export const CommentItem = ({
                         onClick={() => fetchNextPage()}
                         disabled={isFetchingNextPage}
                       >
-                        {isFetchingNextPage ? "Loading..." : "Load more replies"}
+                        {isFetchingNextPage
+                          ? "Loading..."
+                          : "Load more replies"}
                       </Button>
                     )}
                   </>
@@ -370,24 +376,30 @@ export const CommentItem = ({
 
       <AlertDialog
         open={deleteOpen}
-        onOpenChange={setDeleteOpen}
+        onOpenChange={(open) => {
+          if (deleteComment.isPending) return;
+          setDeleteOpen(open);
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete comment?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently remove your comment
-              {comment.repliesCount > 0
-                ? " and its replies"
-                : ""}
-              .
+              {comment.repliesCount > 0 ? " and its replies" : ""}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteComment.isPending}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={() => deleteComment.mutate(comment.id)}
+              disabled={deleteComment.isPending}
+              onClick={(event) => {
+                event.preventDefault();
+                deleteComment.mutate(comment.id);
+              }}
             >
               {deleteComment.isPending ? "Deleting…" : "Delete"}
             </AlertDialogAction>
