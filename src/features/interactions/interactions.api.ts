@@ -17,4 +17,8 @@ export const interactionsApi = {
       data: { targetId, targetType },
     });
   },
+
+  share: async (targetId: string, targetType: LikeTargetType): Promise<void> => {
+    await apiClient.post("/interactions/shares", { targetId, targetType });
+  },
 };

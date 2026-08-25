@@ -31,6 +31,12 @@ export const createPostSchema = z.object({
 
 export type CreatePostFormValues = z.infer<typeof createPostSchema>;
 
+export const resharePostSchema = z.object({
+  content: z.string().max(5000, "Post must be at most 5000 characters"),
+});
+
+export type ResharePostFormValues = z.infer<typeof resharePostSchema>;
+
 export const commentSchema = z.object({
   content: z
     .string()

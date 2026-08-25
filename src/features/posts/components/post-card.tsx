@@ -32,6 +32,7 @@ import { useDeletePost } from "../hooks/use-delete-post";
 import { useUpdatePost } from "../hooks/use-update-post";
 import { postsQueryOptionsFactory } from "../posts-query-options-factory";
 import { toast } from "sonner";
+import { SharedPostEmbed } from "./shared-post-embed";
 
 const POST_CONTENT_MAX_LENGTH = 5000;
 
@@ -340,6 +341,12 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
           maxLength={POST_CONTENT_MAX_LENGTH}
           className="min-h-20 max-h-64 field-sizing-content resize-none"
         />
+        {post.sharedPost && (
+          <SharedPostEmbed
+            post={post.sharedPost}
+            className="pointer-events-none"
+          />
+        )}
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">
             {editContent.length}/{POST_CONTENT_MAX_LENGTH}
@@ -370,23 +377,37 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
     );
   }
 
-  const body = (
+  const commentary = post.content.trim() ? (
     <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
       {renderPostContent(post.content)}
     </div>
-  );
+  ) : null;
 
-  if (!linkToDetail) {
-    return body;
+  const embed = post.sharedPost ? (
+    <SharedPostEmbed post={post.sharedPost} />
+  ) : null;
+
+  const linkedCommentary =
+    commentary && linkToDetail ? (
+      <Link
+        to={`/feed/${post.id}`}
+        className="block"
+      >
+        {commentary}
+      </Link>
+    ) : (
+      commentary
+    );
+
+  if (!linkedCommentary && !embed) {
+    return null;
   }
 
   return (
-    <Link
-      to={`/feed/${post.id}`}
-      className="block"
-    >
-      {body}
-    </Link>
+    <div>
+      {linkedCommentary}
+      {embed}
+    </div>
   );
 };
 
@@ -437,10 +458,7 @@ const ActionsBar = ({ onCommentClick }: PostActionsBarProps) => {
   return (
     <div className="mt-3 border-t pt-2">
       <PostActions
-        postId={post.id}
-        isLiked={post.isLiked}
-        likesCount={post.likesCount}
-        commentsCount={post.commentsCount}
+        post={post}
         onCommentClick={onCommentClick}
       />
     </div>
