@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAuthErrorMessage, isEmailNotVerifiedError } from "./auth.errors";
+import { getAuthErrorMessage } from "./auth.errors";
 import { makeAxiosError } from "@/test/make-axios-error";
 
 describe("getAuthErrorMessage", () => {
@@ -33,18 +33,7 @@ describe("getAuthErrorMessage", () => {
     ).toBe("This username is already taken.");
   });
 
-  it("prefers the API message for verification errors", () => {
-    expect(
-      getAuthErrorMessage(
-        makeAxiosError({
-          status: 403,
-          data: {
-            errorCode: "EMAIL_NOT_VERIFIED",
-            message: "Please verify first.",
-          },
-        }),
-      ),
-    ).toBe("Please verify first.");
+  it("prefers the API message for verification-token errors", () => {
     expect(
       getAuthErrorMessage(
         makeAxiosError({
@@ -67,6 +56,17 @@ describe("getAuthErrorMessage", () => {
     expect(getAuthErrorMessage(makeAxiosError({ status: 401 }))).toBe(
       "Invalid credentials. Please try again.",
     );
+    expect(
+      getAuthErrorMessage(
+        makeAxiosError({
+          status: 403,
+          data: {
+            errorCode: "EMAIL_NOT_VERIFIED",
+            message: "Please verify first.",
+          },
+        }),
+      ),
+    ).toBe("Please verify first.");
     expect(getAuthErrorMessage(new Error("boom"), "Try later.")).toBe(
       "Try later.",
     );
@@ -78,21 +78,5 @@ describe("getAuthErrorMessage", () => {
         }),
       ),
     ).toBe("Database down");
-  });
-});
-
-describe("isEmailNotVerifiedError", () => {
-  it("detects the EMAIL_NOT_VERIFIED error code", () => {
-    expect(
-      isEmailNotVerifiedError(
-        makeAxiosError({
-          status: 403,
-          data: { errorCode: "EMAIL_NOT_VERIFIED" },
-        }),
-      ),
-    ).toBe(true);
-    expect(isEmailNotVerifiedError(makeAxiosError({ status: 401 }))).toBe(
-      false,
-    );
   });
 });

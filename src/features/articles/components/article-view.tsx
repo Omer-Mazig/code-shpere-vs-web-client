@@ -21,9 +21,7 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
         </div>
       )}
 
-      <h1 className="text-4xl font-bold leading-tight mb-4">
-        {article.title}
-      </h1>
+      <h1 className="text-4xl font-bold leading-tight mb-4">{article.title}</h1>
 
       {article.author && (
         <div className="flex items-center gap-3 mb-8 pb-8 border-b">
@@ -54,7 +52,10 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
         {article.content.map((block, index) => {
           if (block.type === "heading") {
             return (
-              <h2 key={index} className="text-2xl font-semibold mt-8 mb-4">
+              <h2
+                key={index}
+                className="text-2xl font-semibold mt-8 mb-4"
+              >
                 {String(block.content)}
               </h2>
             );
@@ -72,7 +73,10 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
           }
 
           return (
-            <p key={index} className="leading-relaxed mb-4">
+            <p
+              key={index}
+              className="leading-relaxed mb-4"
+            >
               {String(block.content)}
             </p>
           );

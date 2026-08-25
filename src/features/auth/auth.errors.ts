@@ -13,12 +13,6 @@ export function getAuthErrorMessage(
     return "Too many attempts. Please try again later.";
   }
 
-  if (apiError.errorCode === "EMAIL_NOT_VERIFIED") {
-    return (
-      apiError.message ?? "Please verify your email before signing in."
-    );
-  }
-
   if (apiError.errorCode === "EMAIL_VERIFICATION_TOKEN_EXPIRED") {
     return (
       apiError.message ??
@@ -46,8 +40,4 @@ export function getAuthErrorMessage(
   }
 
   return apiError.message ?? fallback;
-}
-
-export function isEmailNotVerifiedError(error: unknown): boolean {
-  return getApiError(error).errorCode === "EMAIL_NOT_VERIFIED";
 }

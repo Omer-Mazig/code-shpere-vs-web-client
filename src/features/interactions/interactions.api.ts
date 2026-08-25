@@ -5,10 +5,7 @@ type LikeDto = components["schemas"]["LikeDto"];
 type LikeTargetType = LikeDto["targetType"];
 
 export const interactionsApi = {
-  like: async (
-    targetId: string,
-    targetType: LikeTargetType,
-  ): Promise<void> => {
+  like: async (targetId: string, targetType: LikeTargetType): Promise<void> => {
     await apiClient.post("/interactions/likes", { targetId, targetType });
   },
 
