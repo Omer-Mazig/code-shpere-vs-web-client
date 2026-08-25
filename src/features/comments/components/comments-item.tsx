@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { Comment } from "../types";
+import type { Comment, CommentTargetType } from "../types";
 import type { useCreateComment } from "../hooks/use-create-comment";
 import { tokenizeCommentMentions } from "../comment-mentions";
 import { useAuth } from "@/features/auth/auth.context";
@@ -38,7 +38,7 @@ import { toast } from "sonner";
 type CommentItemProps = {
   comment: Comment;
   targetId: string;
-  targetType: "POST" | "ARTICLE";
+  targetType: CommentTargetType;
   activeReplyId: string | null;
   onReplyClick: (commentId: string | null) => void;
   isNew?: boolean;

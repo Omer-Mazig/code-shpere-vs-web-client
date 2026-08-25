@@ -3,7 +3,8 @@ import type { ApiEnvelope, PaginatedResponse } from "@/lib/types";
 import type {
   MarkAllReadResponse,
   Notification,
-  NotificationTargetType,
+  NotificationsListFilters,
+  StreamTokenResponse,
   UnreadNotificationsCount,
 } from "./types";
 
@@ -13,10 +14,7 @@ export const notificationsApi = {
   getNotifications: async (
     page = 1,
     limit = 20,
-    filters?: {
-      targetType?: NotificationTargetType;
-      isRead?: boolean;
-    },
+    filters?: NotificationsListFilters,
   ): Promise<PaginatedResponse<Notification>> => {
     const response = await apiClient.get<
       ApiEnvelope<PaginatedResponse<Notification>>
@@ -53,8 +51,8 @@ export const notificationsApi = {
     return response.data.payload;
   },
 
-  getStreamToken: async (): Promise<{ streamToken: string }> => {
-    const response = await apiClient.post<ApiEnvelope<{ streamToken: string }>>(
+  getStreamToken: async (): Promise<StreamTokenResponse> => {
+    const response = await apiClient.post<ApiEnvelope<StreamTokenResponse>>(
       "/notifications/stream-token",
     );
     return response.data.payload;

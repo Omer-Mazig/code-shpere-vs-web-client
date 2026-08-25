@@ -1,14 +1,11 @@
 import axios from "axios";
+import type { ApiError } from "./types";
 
 export function isNotFoundError(error: unknown): boolean {
   return axios.isAxiosError(error) && error.response?.status === 404;
 }
 
-export type ParsedApiError = {
-  statusCode?: number;
-  errorCode?: string;
-  message?: string;
-};
+export type ParsedApiError = Partial<ApiError>;
 
 export function getApiError(error: unknown): ParsedApiError {
   if (!axios.isAxiosError(error)) {
@@ -20,11 +17,7 @@ export function getApiError(error: unknown): ParsedApiError {
     return { statusCode: error.response?.status };
   }
 
-  const body = data as {
-    statusCode?: number;
-    errorCode?: string;
-    message?: string;
-  };
+  const body = data as Partial<ApiError>;
 
   return {
     statusCode: body.statusCode ?? error.response?.status,

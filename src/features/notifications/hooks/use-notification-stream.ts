@@ -68,10 +68,7 @@ export const useNotificationStream = (enabled = true) => {
             }),
           );
 
-          const actorName =
-            typeof nextNotification.payload?.actorName === "string"
-              ? nextNotification.payload.actorName
-              : "Someone";
+          const actorName = nextNotification.payload.actorName || "Someone";
           toast.info(`${actorName} sent you a new notification`);
         });
 

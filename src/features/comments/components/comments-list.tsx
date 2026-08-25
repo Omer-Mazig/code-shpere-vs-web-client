@@ -8,10 +8,11 @@ import { CommentsSkeleton } from "./comments-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MessageCircle } from "lucide-react";
+import type { CommentTargetType } from "../types";
 
 type CommentsListProps = {
   targetId: string;
-  targetType: "POST" | "ARTICLE";
+  targetType: CommentTargetType;
   activeReplyId: string | null;
   onReplyClick: (commentId: string | null) => void;
   createComment: ReturnType<typeof useCreateComment>;

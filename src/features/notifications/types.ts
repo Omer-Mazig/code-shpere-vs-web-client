@@ -1,30 +1,21 @@
-import type { components } from "@/lib/api-types";
+import type { components, paths } from "@/lib/api-types";
 
 export type Notification = components["schemas"]["NotificationResponseDto"];
 export type UnreadNotificationsCount =
   components["schemas"]["UnreadCountResponseDto"];
 export type MarkAllReadResponse =
   components["schemas"]["MarkAllReadResponseDto"];
+export type StreamTokenResponse =
+  components["schemas"]["StreamTokenResponseDto"];
 export type NotificationType = Notification["type"];
 export type NotificationTargetType = NonNullable<Notification["targetType"]>;
+export type NotificationPayload = Notification["payload"];
 export type NotificationReadFilter = "all" | "read" | "unread";
-export type NotificationPayload = Notification["payload"] & {
-  actorId?: string;
-  actorName?: string;
-  actorAvatarUrl?: string | null;
-  postId?: string;
-  postExcerpt?: string;
-  commentId?: string;
-  commentExcerpt?: string;
-  parentCommentId?: string;
-  replyCommentId?: string;
-  replyExcerpt?: string;
-  targetType?: "POST" | "ARTICLE" | "USER";
-  targetId?: string;
-  articleSlug?: string;
-  createdAt?: string;
-};
-
-export type NotificationsStreamUnreadCountEvent = {
-  count: number;
-};
+export type NotificationsQueryDto = NonNullable<
+  paths["/api/notifications"]["get"]["parameters"]["query"]
+>;
+export type NotificationsListFilters = Pick<
+  NotificationsQueryDto,
+  "targetType" | "isRead"
+>;
+export type NotificationsStreamUnreadCountEvent = UnreadNotificationsCount;

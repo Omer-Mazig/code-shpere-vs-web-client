@@ -11,17 +11,13 @@ import {
 } from "@/components/ui/field";
 import { articleEditorSchema } from "@/lib/form-schemas";
 import { isFieldInvalid } from "@/lib/form";
+import type { CreateArticleDto } from "../types";
 
 type ArticleEditorProps = {
   initialTitle?: string;
   initialContent?: string;
   initialCoverImageUrl?: string;
-  onSubmit: (data: {
-    title: string;
-    content: Record<string, unknown>[];
-    coverImageUrl?: string;
-    isPublished: boolean;
-  }) => void;
+  onSubmit: (data: CreateArticleDto) => void;
   isSubmitting?: boolean;
   submitLabel?: string;
 };

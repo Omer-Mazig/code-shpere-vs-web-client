@@ -3,8 +3,8 @@ import type { ApiEnvelope } from "@/lib/types";
 import type { AuthSession } from "./auth.types";
 
 export type RefreshResult = {
-  accessToken: string | null;
-  user: unknown | null;
+  accessToken: AuthSession["accessToken"] | null;
+  user: AuthSession["user"] | null;
 };
 
 let refreshPromise: Promise<RefreshResult> | null = null;

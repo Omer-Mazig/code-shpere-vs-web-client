@@ -1,24 +1,24 @@
 import { apiClient } from "@/lib/api-client";
-import type { components } from "@/lib/api-types";
-
-type LikeDto = components["schemas"]["LikeDto"];
-type LikeTargetType = LikeDto["targetType"];
+import type { LikeDto, LikeTargetType } from "./types";
 
 export const interactionsApi = {
   like: async (targetId: string, targetType: LikeTargetType): Promise<void> => {
-    await apiClient.post("/interactions/likes", { targetId, targetType });
+    const dto: LikeDto = { targetId, targetType };
+    await apiClient.post("/interactions/likes", dto);
   },
 
   unlike: async (
     targetId: string,
     targetType: LikeTargetType,
   ): Promise<void> => {
+    const dto: LikeDto = { targetId, targetType };
     await apiClient.delete("/interactions/likes", {
-      data: { targetId, targetType },
+      data: dto,
     });
   },
 
   share: async (targetId: string, targetType: LikeTargetType): Promise<void> => {
-    await apiClient.post("/interactions/shares", { targetId, targetType });
+    const dto: LikeDto = { targetId, targetType };
+    await apiClient.post("/interactions/shares", dto);
   },
 };

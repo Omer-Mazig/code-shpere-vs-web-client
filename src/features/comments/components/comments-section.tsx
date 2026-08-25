@@ -5,10 +5,11 @@ import { CommentForm } from "./comments-form";
 import { useCreateComment } from "../hooks/use-create-comment";
 import { CommentsList } from "./comments-list";
 import { CommentsSkeleton } from "./comments-skeleton";
+import type { CommentTargetType } from "../types";
 
 type CommentsSectionProps = {
   targetId: string;
-  targetType: "POST" | "ARTICLE";
+  targetType: CommentTargetType;
 };
 
 export const CommentsSection = ({

@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getUserInitials } from "@/components/shared/user-avatar";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import type { Notification, NotificationPayload } from "../types";
+import type { Notification } from "../types";
 import { useMarkNotificationRead } from "../hooks/use-mark-notification-read";
 import {
   getNotificationHref,
@@ -24,11 +24,11 @@ export const NotificationItem = ({
 }: NotificationItemProps) => {
   const navigate = useNavigate();
   const markAsReadMutation = useMarkNotificationRead();
-  const payload = notification.payload as NotificationPayload;
-  const href = getNotificationHref(notification.type, payload);
-  const actorName = payload.actorName ?? "User";
-  const actorHref = payload.actorId ? `/profile/${payload.actorId}` : null;
-  const targetInfo = getNotificationTargetInfo(notification.type, payload);
+  const payload = notification.payload;
+  const href = getNotificationHref(payload);
+  const actorName = payload.actorName;
+  const actorHref = `/profile/${payload.actorId}`;
+  const targetInfo = getNotificationTargetInfo(payload);
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.8 });
 
   React.useEffect(() => {

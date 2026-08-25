@@ -6,10 +6,11 @@ import { articlesQueryOptionsFactory } from "@/features/articles/articles-query-
 import { toast } from "sonner";
 import { commentsQueryOptionsFactory } from "@/features/comments/comments-query-options-factory";
 import { updateLikeInData } from "../like-cache";
+import type { LikeTargetType } from "../types";
 
 export function useToggleLike(
   targetId: string,
-  targetType: "POST" | "ARTICLE" | "COMMENT",
+  targetType: LikeTargetType,
 ) {
   const queryClient = useQueryClient();
 

@@ -4,11 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   AuthSession,
   AuthUser,
-  RegisterResult,
-  ResendVerificationResult,
+  RegisterDto,
+  RegisterResponseDto,
+  ResendVerificationResponseDto,
 } from "./auth.types";
 import { authQueryOptionsFactory } from "./auth-query-options-factory";
-import { authApi, type RegisterPayload } from "./auth.api";
+import { authApi } from "./auth.api";
 import { setUnauthorizedHandler } from "./auth.session";
 import { AppLoader } from "@/components/shared/app-loader";
 import { AUTH_PATHS } from "@/lib/routes.constants";
@@ -18,9 +19,9 @@ type AuthContextValue = {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<RegisterResult>;
+  register: (payload: RegisterDto) => Promise<RegisterResponseDto>;
   verifyEmail: (token: string) => Promise<void>;
-  resendVerification: (email: string) => Promise<ResendVerificationResult>;
+  resendVerification: (email: string) => Promise<ResendVerificationResponseDto>;
   logout: () => Promise<void>;
 };
 
@@ -128,7 +129,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { mutateAsync: registerMutation } = useMutation({
     mutationKey: ["auth", "register"],
-    mutationFn: (payload: RegisterPayload) => authApi.register(payload),
+    mutationFn: (payload: RegisterDto) => authApi.register(payload),
   });
 
   const { mutateAsync: verifyEmailMutation } = useMutation({
@@ -159,7 +160,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const register = React.useCallback(
-    async (payload: RegisterPayload): Promise<RegisterResult> => {
+    async (payload: RegisterDto): Promise<RegisterResponseDto> => {
       return registerMutation(payload);
     },
     [registerMutation],
@@ -173,7 +174,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const resendVerification = React.useCallback(
-    async (email: string): Promise<ResendVerificationResult> => {
+    async (email: string): Promise<ResendVerificationResponseDto> => {
       return resendVerificationMutation(email);
     },
     [resendVerificationMutation],

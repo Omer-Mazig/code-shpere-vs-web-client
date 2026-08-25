@@ -1,19 +1,22 @@
 import { apiClient, setAccessToken } from "@/lib/api-client";
-import type { components } from "@/lib/api-types";
 import type { ApiEnvelope } from "@/lib/types";
 import type {
   AuthSession,
-  RegisterResult,
-  ResendVerificationResult,
-  ForgotPasswordResult,
-  ResetPasswordResult,
+  ForgotPasswordDto,
+  ForgotPasswordResponseDto,
+  LoginDto,
+  RegisterDto,
+  RegisterResponseDto,
+  ResendVerificationDto,
+  ResendVerificationResponseDto,
+  ResetPasswordDto,
+  ResetPasswordResponseDto,
+  VerifyEmailDto,
 } from "./auth.types";
-
-export type RegisterPayload = components["schemas"]["RegisterDto"];
 
 export const authApi = {
   login: async (email: string, password: string): Promise<AuthSession> => {
-    const loginPayload: components["schemas"]["LoginDto"] = { email, password };
+    const loginPayload: LoginDto = { email, password };
     const response = await apiClient.post<ApiEnvelope<AuthSession>>(
       "/auth/login",
       loginPayload,
@@ -21,8 +24,8 @@ export const authApi = {
     return response.data.payload;
   },
 
-  register: async (payload: RegisterPayload): Promise<RegisterResult> => {
-    const response = await apiClient.post<ApiEnvelope<RegisterResult>>(
+  register: async (payload: RegisterDto): Promise<RegisterResponseDto> => {
+    const response = await apiClient.post<ApiEnvelope<RegisterResponseDto>>(
       "/auth/register",
       payload,
     );
@@ -30,26 +33,31 @@ export const authApi = {
   },
 
   verifyEmail: async (token: string): Promise<AuthSession> => {
+    const payload: VerifyEmailDto = { token };
     const response = await apiClient.post<ApiEnvelope<AuthSession>>(
       "/auth/verify-email",
-      { token },
+      payload,
     );
     return response.data.payload;
   },
 
   resendVerification: async (
     email: string,
-  ): Promise<ResendVerificationResult> => {
+  ): Promise<ResendVerificationResponseDto> => {
+    const payload: ResendVerificationDto = { email };
     const response = await apiClient.post<
-      ApiEnvelope<ResendVerificationResult>
-    >("/auth/resend-verification", { email });
+      ApiEnvelope<ResendVerificationResponseDto>
+    >("/auth/resend-verification", payload);
     return response.data.payload;
   },
 
-  forgotPassword: async (email: string): Promise<ForgotPasswordResult> => {
-    const response = await apiClient.post<ApiEnvelope<ForgotPasswordResult>>(
+  forgotPassword: async (
+    email: string,
+  ): Promise<ForgotPasswordResponseDto> => {
+    const payload: ForgotPasswordDto = { email };
+    const response = await apiClient.post<ApiEnvelope<ForgotPasswordResponseDto>>(
       "/auth/forgot-password",
-      { email },
+      payload,
     );
     return response.data.payload;
   },
@@ -57,10 +65,11 @@ export const authApi = {
   resetPassword: async (
     token: string,
     password: string,
-  ): Promise<ResetPasswordResult> => {
-    const response = await apiClient.post<ApiEnvelope<ResetPasswordResult>>(
+  ): Promise<ResetPasswordResponseDto> => {
+    const payload: ResetPasswordDto = { token, password };
+    const response = await apiClient.post<ApiEnvelope<ResetPasswordResponseDto>>(
       "/auth/reset-password",
-      { token, password },
+      payload,
     );
     return response.data.payload;
   },

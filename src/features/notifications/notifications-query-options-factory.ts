@@ -1,13 +1,10 @@
 import { infiniteQueryOptions, queryOptions } from "@/lib/query-options";
 import { notificationsApi } from "./notifications.api";
-import type { NotificationTargetType } from "./types";
+import type { NotificationsListFilters } from "./types";
+
+export type { NotificationsListFilters };
 
 const DEFAULT_NOTIFICATIONS_PAGE_SIZE = 20;
-
-export type NotificationsListFilters = {
-  targetType?: NotificationTargetType;
-  isRead?: boolean;
-};
 
 export const notificationsQueryOptionsFactory = {
   all: () => queryOptions({ queryKey: ["notifications"] }),

@@ -1,5 +1,6 @@
 import { infiniteQueryOptions, queryOptions } from "@/lib/query-options";
 import { commentsApi } from "./comments.api";
+import type { CommentTargetType } from "./types";
 
 const TOP_LEVEL_LIMIT = 10;
 const REPLIES_LIMIT = 10;
@@ -9,7 +10,7 @@ export const commentsQueryOptionsFactory = {
   all: () => queryOptions({ queryKey: ["comments"] }),
 
   // ["comments", targetType, targetId, "thread"]
-  thread: (targetId: string, targetType: "POST" | "ARTICLE") =>
+  thread: (targetId: string, targetType: CommentTargetType) =>
     infiniteQueryOptions({
       queryKey: [
         ...commentsQueryOptionsFactory.all().queryKey,
@@ -49,7 +50,7 @@ export const commentsQueryOptionsFactory = {
   // ["comments", "mention-candidates", targetType, targetId, parentId, query]
   mentionCandidates: (
     targetId: string,
-    targetType: "POST" | "ARTICLE",
+    targetType: CommentTargetType,
     parentId?: string,
     query?: string,
   ) =>

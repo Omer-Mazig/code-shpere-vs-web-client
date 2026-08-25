@@ -9,7 +9,7 @@ import { Field, FieldError } from "@/components/ui/field";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import type { useCreateComment } from "../hooks/use-create-comment";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
-import type { CommentMentionCandidate } from "../types";
+import type { CommentMentionCandidate, CommentTargetType } from "../types";
 import { getMentionContext, insertMention } from "../comment-mentions";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
@@ -18,7 +18,7 @@ import { isFieldInvalid } from "@/lib/form";
 
 type CommentFormProps = {
   targetId: string;
-  targetType: "POST" | "ARTICLE";
+  targetType: CommentTargetType;
   parentId?: string;
   onSuccess?: () => void;
   createComment: ReturnType<typeof useCreateComment>;

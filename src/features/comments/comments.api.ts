@@ -3,6 +3,9 @@ import type { ApiEnvelope, PaginatedResponse } from "@/lib/types";
 import type {
   Comment,
   CommentMentionCandidate,
+  CommentMentionCandidatesQueryDto,
+  CommentsQueryDto,
+  CommentTargetType,
   CreateCommentDto,
   UpdateCommentDto,
 } from "./types";
@@ -10,16 +13,21 @@ import type {
 export const commentsApi = {
   getComments: async (
     targetId: string,
-    targetType: "POST" | "ARTICLE",
+    targetType: CommentTargetType,
     page = 1,
     limit = 20,
     parentId?: string,
   ): Promise<PaginatedResponse<Comment>> => {
+    const params: CommentsQueryDto = {
+      targetId,
+      targetType,
+      page,
+      limit,
+      parentId,
+    };
     const response = await apiClient.get<ApiEnvelope<PaginatedResponse<Comment>>>(
       "/interactions/comments",
-      {
-        params: { targetId, targetType, page, limit, parentId },
-      },
+      { params },
     );
     return response.data.payload;
   },
@@ -40,15 +48,19 @@ export const commentsApi = {
 
   getMentionCandidates: async (
     targetId: string,
-    targetType: "POST" | "ARTICLE",
+    targetType: CommentTargetType,
     parentId?: string,
     query?: string,
   ): Promise<CommentMentionCandidate[]> => {
+    const params: CommentMentionCandidatesQueryDto = {
+      targetId,
+      targetType,
+      parentId,
+      query,
+    };
     const response = await apiClient.get<ApiEnvelope<CommentMentionCandidate[]>>(
       "/interactions/comments/mention-candidates",
-      {
-        params: { targetId, targetType, parentId, query },
-      },
+      { params },
     );
     return response.data.payload;
   },

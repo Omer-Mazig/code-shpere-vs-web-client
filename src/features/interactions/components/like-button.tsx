@@ -5,10 +5,11 @@ import { cn } from "@/lib/utils";
 import { useToggleLike } from "../hooks/use-toggle-like";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
+import type { LikeTargetType } from "../types";
 
 type LikeButtonProps = {
   targetId: string;
-  targetType: "POST" | "ARTICLE" | "COMMENT";
+  targetType: LikeTargetType;
   isLiked: boolean;
   likesCount: number;
 };

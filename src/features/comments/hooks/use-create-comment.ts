@@ -14,7 +14,7 @@ export function useCreateComment() {
       // Only handle cache-level updates here.
       const threadOptions = commentsQueryOptionsFactory.thread(
         variables.targetId,
-        variables.targetType as "POST" | "ARTICLE",
+        variables.targetType,
       );
 
       if (!variables.parentId) {
