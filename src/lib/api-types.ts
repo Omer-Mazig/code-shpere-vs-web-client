@@ -1036,19 +1036,37 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        UserMentionedNotificationPayloadDto: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "USER_MENTIONED";
+            actorId: string;
+            actorName: string;
+            actorAvatarUrl: string | null;
+            /** @enum {string} */
+            targetType: "POST" | "ARTICLE";
+            postId?: string;
+            articleSlug?: string;
+            commentId?: string;
+            excerpt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
         NotificationStreamPingEventDto: {
             /** Format: date-time */
             timestamp: string;
         };
         /** @enum {string} */
-        NotificationType: "POST_LIKED" | "POST_COMMENTED" | "COMMENT_REPLIED" | "NEW_FOLLOWER";
+        NotificationType: "POST_LIKED" | "POST_COMMENTED" | "COMMENT_REPLIED" | "NEW_FOLLOWER" | "USER_MENTIONED";
         /** @enum {string} */
         NotificationTargetType: "POST" | "ARTICLE" | "USER";
         NotificationResponseDto: {
             id: string;
             type: components["schemas"]["NotificationType"];
             targetType: components["schemas"]["NotificationTargetType"] | null;
-            payload: components["schemas"]["PostLikedNotificationPayloadDto"] | components["schemas"]["PostCommentedNotificationPayloadDto"] | components["schemas"]["CommentRepliedNotificationPayloadDto"] | components["schemas"]["NewFollowerNotificationPayloadDto"];
+            payload: components["schemas"]["PostLikedNotificationPayloadDto"] | components["schemas"]["PostCommentedNotificationPayloadDto"] | components["schemas"]["CommentRepliedNotificationPayloadDto"] | components["schemas"]["NewFollowerNotificationPayloadDto"] | components["schemas"]["UserMentionedNotificationPayloadDto"];
             isRead: boolean;
             /** Format: date-time */
             createdAt: string;

@@ -72,6 +72,22 @@ const newFollower = (
   ...overrides,
 });
 
+const userMentioned = (
+  overrides: Partial<
+    Extract<NotificationPayload, { type: "USER_MENTIONED" }>
+  > = {},
+): NotificationPayload => ({
+  type: "USER_MENTIONED",
+  actorId: "actor-1",
+  actorName: "Ada",
+  actorAvatarUrl: null,
+  targetType: "POST",
+  postId: "post-1",
+  excerpt: "hey @grace",
+  createdAt: CREATED_AT,
+  ...overrides,
+});
+
 describe("getNotificationHref", () => {
   it("routes followers to the actor profile", () => {
     expect(getNotificationHref(newFollower())).toBe("/profile/user-1");
@@ -102,6 +118,19 @@ describe("getNotificationHref", () => {
       ),
     ).toBe("/feed");
   });
+
+  it("routes mention notifications to the post or article", () => {
+    expect(getNotificationHref(userMentioned())).toBe("/feed/post-1");
+    expect(
+      getNotificationHref(
+        userMentioned({
+          targetType: "ARTICLE",
+          postId: undefined,
+          articleSlug: "hello-world",
+        }),
+      ),
+    ).toBe("/articles/hello-world");
+  });
 });
 
 describe("getNotificationTargetInfo", () => {
@@ -123,6 +152,10 @@ describe("getNotificationTargetInfo", () => {
 
   it("returns null when there is no target", () => {
     expect(getNotificationTargetInfo(newFollower())).toBeNull();
+    expect(getNotificationTargetInfo(userMentioned())).toEqual({
+      href: "/feed/post-1",
+      label: "hey @grace",
+    });
   });
 });
 
@@ -136,5 +169,6 @@ describe("getNotificationVerb", () => {
       "replied to your comment",
     );
     expect(getNotificationVerb("NEW_FOLLOWER")).toBe("started following you");
+    expect(getNotificationVerb("USER_MENTIONED")).toBe("mentioned you");
   });
 });
