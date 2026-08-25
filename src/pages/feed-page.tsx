@@ -5,7 +5,6 @@ import { InlineErrorFallback } from "@/components/errors/inline-error-fallback";
 import { useCreatePost } from "@/features/posts/hooks/use-create-post";
 import { ProfileSidebarCard } from "@/features/users/components/profile-sidebar-card";
 import {
-  ProfileStatsCard,
   ShortcutsCard,
 } from "@/features/users/components/profile-rail-cards";
 import { WhoToFollowCard } from "@/features/users/components/who-to-follow-card";

@@ -3,6 +3,8 @@ import { SignInPage } from "@/pages/sign-in-page";
 import { SignUpPage } from "@/pages/sign-up-page";
 import { CheckEmailPage } from "@/pages/check-email-page";
 import { VerifyEmailPage } from "@/pages/verify-email-page";
+import { ForgotPasswordPage } from "@/pages/forgot-password-page";
+import { ResetPasswordPage } from "@/pages/reset-password-page";
 
 export const authRoutes: RouteObject[] = [
   {
@@ -20,5 +22,13 @@ export const authRoutes: RouteObject[] = [
   {
     path: "verify-email",
     element: <VerifyEmailPage />,
+  },
+  {
+    path: "forgot-password",
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: "reset-password",
+    element: <ResetPasswordPage />,
   },
 ];

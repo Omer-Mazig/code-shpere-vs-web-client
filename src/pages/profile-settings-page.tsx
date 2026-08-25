@@ -1,53 +1,84 @@
 import React from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useForm } from "@tanstack/react-form";
 import { Bell, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { useAuth } from "@/features/auth/auth.context";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
 import { useUpdateProfile } from "@/features/users/hooks/use-update-profile";
+import { profileSettingsSchema } from "@/lib/form-schemas";
+import { isFieldInvalid } from "@/lib/form";
 
 export const ProfileSettingsPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
   const updateProfile = useUpdateProfile();
+  const isOwnProfile = Boolean(id && isAuthenticated && user?.id === id);
+
+  const { data: profile, isLoading } = useQuery({
+    ...usersQueryOptionsFactory.myProfile(),
+    enabled: isOwnProfile,
+  });
+
+  const [notifyMentions, setNotifyMentions] = React.useState(true);
+  const [notifyFollowers, setNotifyFollowers] = React.useState(true);
+  const [notifyComments, setNotifyComments] = React.useState(true);
+
+  const form = useForm({
+    defaultValues: {
+      displayName: "",
+      bio: "",
+      location: "",
+      website: "",
+      github: "",
+      avatarUrl: "",
+    },
+    validators: {
+      onSubmit: profileSettingsSchema,
+    },
+    onSubmit: async ({ value }) => {
+      await updateProfile.mutateAsync({
+        displayName: value.displayName || undefined,
+        bio: value.bio || undefined,
+        location: value.location || undefined,
+        website: value.website || undefined,
+        github: value.github || undefined,
+        avatarUrl: value.avatarUrl || undefined,
+      });
+    },
+  });
+
+  React.useEffect(() => {
+    if (!profile) return;
+    form.reset({
+      displayName: profile.displayName ?? "",
+      bio: profile.bio ?? "",
+      location: profile.location ?? "",
+      website: profile.website ?? "",
+      github: profile.github ?? "",
+      avatarUrl: profile.avatarUrl ?? "",
+    });
+  }, [profile, form]);
 
   if (!id) {
     return <Navigate to="/feed" replace />;
   }
 
-  const isOwnProfile = isAuthenticated && user?.id === id;
   if (!isOwnProfile) {
     return <Navigate to={`/profile/${id}/posts`} replace />;
   }
-
-  const { data: profile, isLoading } = useQuery(usersQueryOptionsFactory.myProfile());
-
-  const [displayName, setDisplayName] = React.useState("");
-  const [bio, setBio] = React.useState("");
-  const [location, setLocation] = React.useState("");
-  const [website, setWebsite] = React.useState("");
-  const [github, setGithub] = React.useState("");
-  const [avatarUrl, setAvatarUrl] = React.useState("");
-  const [notifyMentions, setNotifyMentions] = React.useState(true);
-  const [notifyFollowers, setNotifyFollowers] = React.useState(true);
-  const [notifyComments, setNotifyComments] = React.useState(true);
-
-  React.useEffect(() => {
-    if (!profile) return;
-
-    setDisplayName(profile.displayName ?? "");
-    setBio(profile.bio ?? "");
-    setLocation(profile.location ?? "");
-    setWebsite(profile.website ?? "");
-    setGithub(profile.github ?? "");
-    setAvatarUrl(profile.avatarUrl ?? "");
-  }, [profile]);
 
   if (isLoading) {
     return (
@@ -65,19 +96,6 @@ export const ProfileSettingsPage = () => {
     );
   }
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    await updateProfile.mutateAsync({
-      displayName: displayName || undefined,
-      bio: bio || undefined,
-      location: location || undefined,
-      website: website || undefined,
-      github: github || undefined,
-      avatarUrl: avatarUrl || undefined,
-    });
-  };
-
   return (
     <div className="container mx-auto max-w-3xl px-4 py-6">
       <div className="space-y-5">
@@ -88,88 +106,194 @@ export const ProfileSettingsPage = () => {
           </p>
         </header>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            form.handleSubmit();
+          }}
+          className="space-y-5"
+        >
           <section className="space-y-4 rounded-lg border p-4">
             <div className="flex items-center gap-2">
               <UserRound className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-medium">General info</h2>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                value={profile.email ?? ""}
-                readOnly
-                disabled
+            <FieldGroup className="gap-4">
+              <Field>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <Input
+                  id="email"
+                  value={profile.email ?? ""}
+                  readOnly
+                  disabled
+                />
+                <FieldDescription>
+                  Your email is private and is not shown on your public profile.
+                </FieldDescription>
+              </Field>
+
+              <form.Field
+                name="displayName"
+                children={(field) => {
+                  const invalid = isFieldInvalid(field);
+                  return (
+                    <Field data-invalid={invalid}>
+                      <FieldLabel htmlFor={field.name}>Display name</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        aria-invalid={invalid}
+                        placeholder="John Doe"
+                      />
+                      {invalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
               />
-              <p className="text-xs text-muted-foreground">
-                Your email is private and is not shown on your public profile.
-              </p>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="displayName">Display name</Label>
-              <Input
-                id="displayName"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                placeholder="John Doe"
+              <form.Field
+                name="bio"
+                children={(field) => {
+                  const invalid = isFieldInvalid(field);
+                  return (
+                    <Field data-invalid={invalid}>
+                      <FieldLabel htmlFor={field.name}>Bio</FieldLabel>
+                      <Textarea
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        aria-invalid={invalid}
+                        rows={4}
+                        placeholder="Tell the community about yourself..."
+                      />
+                      {invalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
               />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                value={bio}
-                onChange={(event) => setBio(event.target.value)}
-                rows={4}
-                placeholder="Tell the community about yourself..."
-              />
-            </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <form.Field
+                  name="location"
+                  children={(field) => {
+                    const invalid = isFieldInvalid(field);
+                    return (
+                      <Field data-invalid={invalid}>
+                        <FieldLabel htmlFor={field.name}>Location</FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          aria-invalid={invalid}
+                          placeholder="San Francisco, CA"
+                        />
+                        {invalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+                <form.Field
+                  name="github"
+                  children={(field) => {
+                    const invalid = isFieldInvalid(field);
+                    return (
+                      <Field data-invalid={invalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          GitHub username
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          aria-invalid={invalid}
+                          placeholder="johndoe"
+                        />
+                        {invalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+              </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={location}
-                  onChange={(event) => setLocation(event.target.value)}
-                  placeholder="San Francisco, CA"
+              <div className="grid gap-4 md:grid-cols-2">
+                <form.Field
+                  name="website"
+                  children={(field) => {
+                    const invalid = isFieldInvalid(field);
+                    return (
+                      <Field data-invalid={invalid}>
+                        <FieldLabel htmlFor={field.name}>Website</FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          aria-invalid={invalid}
+                          placeholder="https://example.com"
+                        />
+                        {invalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+                <form.Field
+                  name="avatarUrl"
+                  children={(field) => {
+                    const invalid = isFieldInvalid(field);
+                    return (
+                      <Field data-invalid={invalid}>
+                        <FieldLabel htmlFor={field.name}>Avatar URL</FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          aria-invalid={invalid}
+                          placeholder="https://..."
+                        />
+                        {invalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="github">GitHub username</Label>
-                <Input
-                  id="github"
-                  value={github}
-                  onChange={(event) => setGithub(event.target.value)}
-                  placeholder="johndoe"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
-                <Input
-                  id="website"
-                  value={website}
-                  onChange={(event) => setWebsite(event.target.value)}
-                  placeholder="https://example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="avatarUrl">Avatar URL</Label>
-                <Input
-                  id="avatarUrl"
-                  value={avatarUrl}
-                  onChange={(event) => setAvatarUrl(event.target.value)}
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
+            </FieldGroup>
           </section>
 
           <section className="space-y-4 rounded-lg border p-4">
@@ -225,9 +349,19 @@ export const ProfileSettingsPage = () => {
           </section>
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={updateProfile.isPending}>
-              {updateProfile.isPending ? "Saving..." : "Save changes"}
-            </Button>
+            <form.Subscribe
+              selector={(state) => state.isSubmitting}
+              children={(isSubmitting) => (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || updateProfile.isPending}
+                >
+                  {isSubmitting || updateProfile.isPending
+                    ? "Saving..."
+                    : "Save changes"}
+                </Button>
+              )}
+            />
           </div>
         </form>
       </div>

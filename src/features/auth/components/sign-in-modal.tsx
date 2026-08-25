@@ -1,39 +1,64 @@
-import { useSignInModal } from "../sign-in-modal.context";
-import { useAuth } from "../auth.context";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import React from "react";
+import { useForm } from "@tanstack/react-form";
+import { Link } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import React from "react";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { useSignInModal } from "../sign-in-modal.context";
+import { useAuth } from "../auth.context";
 import { getAuthErrorMessage } from "../auth.errors";
+import { signInSchema } from "../auth.schemas";
+import { AUTH_PATHS } from "@/lib/routes.constants";
+import { isFieldInvalid } from "@/lib/form";
 
 export const SignInModal = () => {
   const { isOpen, close } = useSignInModal();
   const { login } = useAuth();
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [error, setError] = React.useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [formError, setFormError] = React.useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      await login(email, password);
-      close();
-      setEmail("");
-      setPassword("");
-    } catch (submitError) {
-      setError(getAuthErrorMessage(submitError));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    validators: {
+      onSubmit: signInSchema,
+    },
+    onSubmit: async ({ value }) => {
+      setFormError(null);
+      try {
+        await login(value.email, value.password);
+        close();
+        form.reset();
+      } catch (submitError) {
+        setFormError(getAuthErrorMessage(submitError));
+      }
+    },
+  });
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          close();
+          setFormError(null);
+          form.reset();
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Sign In</DialogTitle>
@@ -41,36 +66,105 @@ export const SignInModal = () => {
             Sign in to interact with content on CodeSphere.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="modal-email">Email</Label>
-            <Input
-              id="modal-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
+
+        <form
+          id="sign-in-modal-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <FieldGroup className="gap-4">
+            <form.Field
+              name="email"
+              children={(field) => {
+                const invalid = isFieldInvalid(field);
+                return (
+                  <Field data-invalid={invalid}>
+                    <FieldLabel htmlFor={`modal-${field.name}`}>Email</FieldLabel>
+                    <Input
+                      id={`modal-${field.name}`}
+                      name={field.name}
+                      type="email"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      aria-invalid={invalid}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                    />
+                    {invalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
+                );
+              }}
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="modal-password">Password</Label>
-            <Input
-              id="modal-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
+
+            <form.Field
+              name="password"
+              children={(field) => {
+                const invalid = isFieldInvalid(field);
+                return (
+                  <Field data-invalid={invalid}>
+                    <div className="flex items-center justify-between gap-2">
+                      <FieldLabel htmlFor={`modal-${field.name}`}>
+                        Password
+                      </FieldLabel>
+                      <Link
+                        to={AUTH_PATHS.FORGOT_PASSWORD}
+                        onClick={close}
+                        className="text-xs text-primary hover:underline font-medium"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                    <Input
+                      id={`modal-${field.name}`}
+                      name={field.name}
+                      type="password"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      aria-invalid={invalid}
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                    />
+                    {invalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
+                );
+              }}
             />
-          </div>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Signing in..." : "Sign In"}
-          </Button>
+
+            {formError && (
+              <p className="text-sm text-destructive" role="alert">
+                {formError}
+              </p>
+            )}
+
+            <form.Subscribe
+              selector={(state) => state.isSubmitting}
+              children={(isSubmitting) => (
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Signing in..." : "Sign In"}
+                </Button>
+              )}
+            />
+          </FieldGroup>
         </form>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link
+            to={AUTH_PATHS.SIGN_UP}
+            onClick={close}
+            className="text-primary hover:underline font-medium"
+          >
+            Sign Up
+          </Link>
+        </p>
       </DialogContent>
     </Dialog>
   );

@@ -5,6 +5,8 @@ import type {
   AuthSession,
   RegisterResult,
   ResendVerificationResult,
+  ForgotPasswordResult,
+  ResetPasswordResult,
 } from "./auth.types";
 
 export type RegisterPayload = components["schemas"]["RegisterDto"];
@@ -41,6 +43,25 @@ export const authApi = {
     const response = await apiClient.post<
       ApiEnvelope<ResendVerificationResult>
     >("/auth/resend-verification", { email });
+    return response.data.payload;
+  },
+
+  forgotPassword: async (email: string): Promise<ForgotPasswordResult> => {
+    const response = await apiClient.post<ApiEnvelope<ForgotPasswordResult>>(
+      "/auth/forgot-password",
+      { email },
+    );
+    return response.data.payload;
+  },
+
+  resetPassword: async (
+    token: string,
+    password: string,
+  ): Promise<ResetPasswordResult> => {
+    const response = await apiClient.post<ApiEnvelope<ResetPasswordResult>>(
+      "/auth/reset-password",
+      { token, password },
+    );
     return response.data.payload;
   },
 

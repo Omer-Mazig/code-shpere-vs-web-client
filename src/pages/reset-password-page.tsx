@@ -1,5 +1,6 @@
+import React from "react";
 import { useForm } from "@tanstack/react-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,31 +9,41 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { useAuth } from "@/features/auth/auth.context";
-import { AUTH_PATHS, FEED_PATHS } from "@/lib/routes.constants";
+import { authApi } from "@/features/auth/auth.api";
 import { getAuthErrorMessage } from "@/features/auth/auth.errors";
-import { signInSchema } from "@/features/auth/auth.schemas";
+import { resetPasswordSchema } from "@/features/auth/auth.schemas";
+import { AUTH_PATHS } from "@/lib/routes.constants";
 import { isFieldInvalid } from "@/lib/form";
-import React from "react";
 
-export const SignInPage = () => {
+export const ResetPasswordPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [formError, setFormError] = React.useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") ?? "";
+  const [formError, setFormError] = React.useState<string | null>(
+    token ? null : "This reset link is missing a token.",
+  );
 
   const form = useForm({
     defaultValues: {
-      email: "",
       password: "",
+      confirmPassword: "",
     },
     validators: {
-      onSubmit: signInSchema,
+      onSubmit: resetPasswordSchema,
     },
     onSubmit: async ({ value }) => {
+      if (!token) {
+        setFormError("This reset link is missing a token.");
+        return;
+      }
+
       setFormError(null);
       try {
-        await login(value.email, value.password);
-        navigate(FEED_PATHS.FEED);
+        await authApi.resetPassword(token, value.password);
+        navigate(AUTH_PATHS.SIGN_IN, {
+          replace: true,
+          state: { passwordReset: true },
+        });
       } catch (submitError) {
         setFormError(getAuthErrorMessage(submitError));
       }
@@ -42,14 +53,14 @@ export const SignInPage = () => {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold">Welcome back</h2>
+        <h2 className="text-2xl font-bold">Choose a new password</h2>
         <p className="text-muted-foreground mt-1">
-          Sign in to your CodeSphere account
+          Use at least 8 characters with a letter and a number.
         </p>
       </div>
 
       <form
-        id="sign-in-form"
+        id="reset-password-form"
         onSubmit={(event) => {
           event.preventDefault();
           form.handleSubmit();
@@ -57,44 +68,12 @@ export const SignInPage = () => {
       >
         <FieldGroup className="gap-4">
           <form.Field
-            name="email"
-            children={(field) => {
-              const invalid = isFieldInvalid(field);
-              return (
-                <Field data-invalid={invalid}>
-                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="email"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    aria-invalid={invalid}
-                    placeholder="you@example.com"
-                    autoComplete="email"
-                  />
-                  {invalid && <FieldError errors={field.state.meta.errors} />}
-                </Field>
-              );
-            }}
-          />
-
-          <form.Field
             name="password"
             children={(field) => {
               const invalid = isFieldInvalid(field);
               return (
                 <Field data-invalid={invalid}>
-                  <div className="flex items-center justify-between gap-2">
-                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                    <Link
-                      to={AUTH_PATHS.FORGOT_PASSWORD}
-                      className="text-xs text-primary hover:underline font-medium"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
+                  <FieldLabel htmlFor={field.name}>New password</FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -103,8 +82,32 @@ export const SignInPage = () => {
                     onBlur={field.handleBlur}
                     onChange={(event) => field.handleChange(event.target.value)}
                     aria-invalid={invalid}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
+                    autoComplete="new-password"
+                    disabled={!token}
+                  />
+                  {invalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
+            }}
+          />
+
+          <form.Field
+            name="confirmPassword"
+            children={(field) => {
+              const invalid = isFieldInvalid(field);
+              return (
+                <Field data-invalid={invalid}>
+                  <FieldLabel htmlFor={field.name}>Confirm password</FieldLabel>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    type="password"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    aria-invalid={invalid}
+                    autoComplete="new-password"
+                    disabled={!token}
                   />
                   {invalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>
@@ -124,9 +127,9 @@ export const SignInPage = () => {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !token}
               >
-                {isSubmitting ? "Signing in..." : "Sign In"}
+                {isSubmitting ? "Updating..." : "Update password"}
               </Button>
             )}
           />
@@ -134,12 +137,18 @@ export const SignInPage = () => {
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{" "}
         <Link
-          to={AUTH_PATHS.SIGN_UP}
+          to={AUTH_PATHS.FORGOT_PASSWORD}
           className="text-primary hover:underline font-medium"
         >
-          Sign Up
+          Request a new link
+        </Link>
+        {" · "}
+        <Link
+          to={AUTH_PATHS.SIGN_IN}
+          className="text-primary hover:underline font-medium"
+        >
+          Sign In
         </Link>
       </p>
     </div>

@@ -1,8 +1,16 @@
 import React from "react";
+import { useForm } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { articleEditorSchema } from "@/lib/form-schemas";
+import { isFieldInvalid } from "@/lib/form";
 
 type ArticleEditorProps = {
   initialTitle?: string;
@@ -26,80 +34,156 @@ export const ArticleEditor = ({
   isSubmitting = false,
   submitLabel = "Publish",
 }: ArticleEditorProps) => {
-  const [title, setTitle] = React.useState(initialTitle);
-  const [body, setBody] = React.useState(initialContent);
-  const [coverImageUrl, setCoverImageUrl] = React.useState(initialCoverImageUrl);
+  const publishIntentRef = React.useRef(true);
 
-  const handleSubmit = (publish: boolean) => {
-    if (!title.trim() || !body.trim()) return;
+  const form = useForm({
+    defaultValues: {
+      title: initialTitle,
+      body: initialContent,
+      coverImageUrl: initialCoverImageUrl,
+    },
+    validators: {
+      onSubmit: articleEditorSchema,
+    },
+    onSubmit: async ({ value }) => {
+      const contentBlocks = value.body
+        .split("\n\n")
+        .filter(Boolean)
+        .map((block) => {
+          if (block.startsWith("```")) {
+            return { type: "code", content: block.replace(/```/g, "").trim() };
+          }
+          if (block.startsWith("# ")) {
+            return { type: "heading", content: block.slice(2).trim() };
+          }
+          return { type: "paragraph", content: block.trim() };
+        });
 
-    const contentBlocks = body
-      .split("\n\n")
-      .filter(Boolean)
-      .map((block) => {
-        if (block.startsWith("```")) {
-          return { type: "code", content: block.replace(/```/g, "").trim() };
-        }
-        if (block.startsWith("# ")) {
-          return { type: "heading", content: block.slice(2).trim() };
-        }
-        return { type: "paragraph", content: block.trim() };
+      onSubmit({
+        title: value.title.trim(),
+        content: contentBlocks,
+        coverImageUrl: value.coverImageUrl.trim() || undefined,
+        isPublished: publishIntentRef.current,
       });
+    },
+  });
 
-    onSubmit({
-      title: title.trim(),
-      content: contentBlocks,
-      coverImageUrl: coverImageUrl.trim() || undefined,
-      isPublished: publish,
-    });
+  const submitWithIntent = (publish: boolean) => {
+    publishIntentRef.current = publish;
+    form.handleSubmit();
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="cover-image">Cover Image URL (optional)</Label>
-        <Input
-          id="cover-image"
-          placeholder="https://example.com/cover.jpg"
-          value={coverImageUrl}
-          onChange={(e) => setCoverImageUrl(e.target.value)}
+    <form
+      className="flex flex-col gap-6"
+      onSubmit={(event) => {
+        event.preventDefault();
+        submitWithIntent(true);
+      }}
+    >
+      <FieldGroup className="gap-6">
+        <form.Field
+          name="coverImageUrl"
+          children={(field) => {
+            const invalid = isFieldInvalid(field);
+            return (
+              <Field data-invalid={invalid}>
+                <FieldLabel htmlFor={field.name}>
+                  Cover Image URL (optional)
+                </FieldLabel>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  placeholder="https://example.com/cover.jpg"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  aria-invalid={invalid}
+                />
+                {invalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            );
+          }}
         />
-      </div>
 
-      <div className="flex flex-col gap-2">
-        <Input
-          placeholder="Article title..."
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="border-0 bg-transparent text-3xl font-bold focus-visible:ring-0 px-0"
+        <form.Field
+          name="title"
+          children={(field) => {
+            const invalid = isFieldInvalid(field);
+            return (
+              <Field data-invalid={invalid}>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  placeholder="Article title..."
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  aria-invalid={invalid}
+                  aria-label="Article title"
+                  className="border-0 bg-transparent text-3xl font-bold focus-visible:ring-0 px-0"
+                />
+                {invalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            );
+          }}
         />
-      </div>
 
-      <div className="flex flex-col gap-2">
-        <Textarea
-          placeholder="Write your article content here... Use markdown-like formatting: ``` for code blocks, # for headings."
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          rows={20}
-          className="resize-none border-0 bg-transparent text-base leading-relaxed focus-visible:ring-0 px-0"
+        <form.Field
+          name="body"
+          children={(field) => {
+            const invalid = isFieldInvalid(field);
+            return (
+              <Field data-invalid={invalid}>
+                <Textarea
+                  id={field.name}
+                  name={field.name}
+                  placeholder="Write your article content here... Use markdown-like formatting: ``` for code blocks, # for headings."
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  aria-invalid={invalid}
+                  aria-label="Article content"
+                  rows={20}
+                  className="resize-none border-0 bg-transparent text-base leading-relaxed focus-visible:ring-0 px-0"
+                />
+                {invalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            );
+          }}
         />
-      </div>
+      </FieldGroup>
 
-      <div className="flex gap-3 justify-end">
-        <Button
-          variant="outline"
-          onClick={() => handleSubmit(false)}
-          disabled={isSubmitting || !title.trim() || !body.trim()}
-        >
-          Save Draft
-        </Button>
-        <Button
-          onClick={() => handleSubmit(true)}
-          disabled={isSubmitting || !title.trim() || !body.trim()}
-        >
-          {isSubmitting ? "Saving..." : submitLabel}
-        </Button>
-      </div>
-    </div>
+      <form.Subscribe
+        selector={(state) =>
+          [state.values.title, state.values.body, state.isSubmitting] as const
+        }
+        children={([title, body, formSubmitting]) => {
+          const disabled =
+            isSubmitting ||
+            formSubmitting ||
+            !title.trim() ||
+            !body.trim();
+          return (
+            <div className="flex gap-3 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => submitWithIntent(false)}
+                disabled={disabled}
+              >
+                Save Draft
+              </Button>
+              <Button
+                type="submit"
+                disabled={disabled}
+              >
+                {isSubmitting || formSubmitting ? "Saving..." : submitLabel}
+              </Button>
+            </div>
+          );
+        }}
+      />
+    </form>
   );
 };

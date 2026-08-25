@@ -4,6 +4,8 @@ export const AUTH_PATHS = {
   SIGN_UP: "/auth/sign-up",
   CHECK_EMAIL: "/auth/check-email",
   VERIFY_EMAIL: "/auth/verify-email",
+  FORGOT_PASSWORD: "/auth/forgot-password",
+  RESET_PASSWORD: "/auth/reset-password",
 } as const;
 
 export const FEED_PATHS = {

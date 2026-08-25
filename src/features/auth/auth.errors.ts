@@ -27,6 +27,19 @@ export function getAuthErrorMessage(
     );
   }
 
+  if (apiError.errorCode === "PASSWORD_RESET_TOKEN_EXPIRED") {
+    return (
+      apiError.message ?? "This reset link has expired. Request a new one."
+    );
+  }
+
+  if (apiError.errorCode === "PASSWORD_RESET_TOKEN_INVALID") {
+    return (
+      apiError.message ??
+      "This reset link is invalid or has already been used."
+    );
+  }
+
   if (apiError.errorCode === "USER_EMAIL_EXISTS") {
     return "An account with this email already exists.";
   }

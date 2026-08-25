@@ -1,38 +1,43 @@
+import React from "react";
 import { useForm } from "@tanstack/react-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { useAuth } from "@/features/auth/auth.context";
-import { AUTH_PATHS, FEED_PATHS } from "@/lib/routes.constants";
+import { authApi } from "@/features/auth/auth.api";
 import { getAuthErrorMessage } from "@/features/auth/auth.errors";
-import { signInSchema } from "@/features/auth/auth.schemas";
+import { forgotPasswordSchema } from "@/features/auth/auth.schemas";
+import { AUTH_PATHS } from "@/lib/routes.constants";
 import { isFieldInvalid } from "@/lib/form";
-import React from "react";
 
-export const SignInPage = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
+export const ForgotPasswordPage = () => {
   const [formError, setFormError] = React.useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(
+    null,
+  );
+  const [devResetUrl, setDevResetUrl] = React.useState<string | undefined>();
 
   const form = useForm({
     defaultValues: {
       email: "",
-      password: "",
     },
     validators: {
-      onSubmit: signInSchema,
+      onSubmit: forgotPasswordSchema,
     },
     onSubmit: async ({ value }) => {
       setFormError(null);
+      setSuccessMessage(null);
+      setDevResetUrl(undefined);
       try {
-        await login(value.email, value.password);
-        navigate(FEED_PATHS.FEED);
+        const result = await authApi.forgotPassword(value.email);
+        setSuccessMessage(result.message);
+        setDevResetUrl(result.resetUrl);
       } catch (submitError) {
         setFormError(getAuthErrorMessage(submitError));
       }
@@ -42,14 +47,15 @@ export const SignInPage = () => {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold">Welcome back</h2>
+        <h2 className="text-2xl font-bold">Forgot password</h2>
         <p className="text-muted-foreground mt-1">
-          Sign in to your CodeSphere account
+          Enter your email and we&apos;ll send a reset link if an account
+          exists.
         </p>
       </div>
 
       <form
-        id="sign-in-form"
+        id="forgot-password-form"
         onSubmit={(event) => {
           event.preventDefault();
           form.handleSubmit();
@@ -80,42 +86,27 @@ export const SignInPage = () => {
             }}
           />
 
-          <form.Field
-            name="password"
-            children={(field) => {
-              const invalid = isFieldInvalid(field);
-              return (
-                <Field data-invalid={invalid}>
-                  <div className="flex items-center justify-between gap-2">
-                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                    <Link
-                      to={AUTH_PATHS.FORGOT_PASSWORD}
-                      className="text-xs text-primary hover:underline font-medium"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="password"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    aria-invalid={invalid}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                  {invalid && <FieldError errors={field.state.meta.errors} />}
-                </Field>
-              );
-            }}
-          />
-
           {formError && (
             <p className="text-sm text-destructive" role="alert">
               {formError}
             </p>
+          )}
+
+          {successMessage && (
+            <div className="space-y-2 rounded-md border bg-muted/40 p-3 text-sm">
+              <p>{successMessage}</p>
+              {devResetUrl && (
+                <FieldDescription>
+                  Dev reset link:{" "}
+                  <a
+                    href={devResetUrl}
+                    className="text-primary underline break-all"
+                  >
+                    {devResetUrl}
+                  </a>
+                </FieldDescription>
+              )}
+            </div>
           )}
 
           <form.Subscribe
@@ -126,7 +117,7 @@ export const SignInPage = () => {
                 className="w-full"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Signing in..." : "Sign In"}
+                {isSubmitting ? "Sending..." : "Send reset link"}
               </Button>
             )}
           />
@@ -134,12 +125,12 @@ export const SignInPage = () => {
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{" "}
+        Remembered it?{" "}
         <Link
-          to={AUTH_PATHS.SIGN_UP}
+          to={AUTH_PATHS.SIGN_IN}
           className="text-primary hover:underline font-medium"
         >
-          Sign Up
+          Sign In
         </Link>
       </p>
     </div>

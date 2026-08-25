@@ -13,3 +13,12 @@ export type ResendVerificationResult = {
   message: string;
   verificationUrl?: string;
 };
+
+export type ForgotPasswordResult = {
+  message: string;
+  resetUrl?: string;
+};
+
+export type ResetPasswordResult = {
+  message: string;
+};

@@ -1,9 +1,11 @@
 import React from "react";
+import { useForm, useStore } from "@tanstack/react-form";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Field, FieldError } from "@/components/ui/field";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import type { useCreateComment } from "../hooks/use-create-comment";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
@@ -11,6 +13,8 @@ import type { CommentMentionCandidate } from "../types";
 import { getMentionContext, insertMention } from "../comment-mentions";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
+import { commentSchema } from "@/lib/form-schemas";
+import { isFieldInvalid } from "@/lib/form";
 
 type CommentFormProps = {
   targetId: string;
@@ -33,7 +37,6 @@ export const CommentForm = ({
 }: CommentFormProps) => {
   const { user, isAuthenticated } = useAuth();
   const { open: openSignIn } = useSignInModal();
-  const [content, setContent] = React.useState("");
   const [cursorPosition, setCursorPosition] = React.useState(0);
   const [isMentionListOpen, setIsMentionListOpen] = React.useState(true);
   const [debouncedMentionQuery, setDebouncedMentionQuery] = React.useState<
@@ -41,6 +44,50 @@ export const CommentForm = ({
   >(undefined);
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
   const isReply = Boolean(parentId);
+
+  const form = useForm({
+    defaultValues: {
+      content: "",
+    },
+    validators: {
+      onSubmit: commentSchema,
+    },
+    onSubmit: async ({ value }) => {
+      if (!isAuthenticated) {
+        openSignIn();
+        return;
+      }
+
+      setPendingParentId(parentId ?? null);
+
+      await new Promise<void>((resolve, reject) => {
+        createComment.mutate(
+          {
+            content: value.content.trim(),
+            targetId,
+            targetType,
+            parentId,
+          },
+          {
+            onSuccess: (data) => {
+              setLastCreatedCommentId(data.id);
+              form.reset();
+              setCursorPosition(0);
+              setDebouncedMentionQuery(undefined);
+              onSuccess?.();
+              resolve();
+            },
+            onError: (error) => reject(error),
+            onSettled: () => {
+              setPendingParentId(undefined);
+            },
+          },
+        );
+      });
+    },
+  });
+
+  const content = useStore(form.store, (state) => state.values.content);
 
   const mentionContext = React.useMemo(
     () => getMentionContext(content, cursorPosition),
@@ -90,7 +137,7 @@ export const CommentForm = ({
       mentionContext,
       candidate.username,
     );
-    setContent(nextValue);
+    form.setFieldValue("content", nextValue);
     setCursorPosition(nextCursor);
     setIsMentionListOpen(false);
 
@@ -100,39 +147,6 @@ export const CommentForm = ({
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!isAuthenticated) {
-      openSignIn();
-      return;
-    }
-
-    if (!content.trim()) return;
-    setPendingParentId(parentId ?? null);
-
-    createComment.mutate(
-      {
-        content: content.trim(),
-        targetId,
-        targetType,
-        parentId,
-      },
-      {
-        onSuccess: (data) => {
-          setLastCreatedCommentId(data.id);
-          setContent("");
-          setCursorPosition(0);
-          setDebouncedMentionQuery(undefined);
-          onSuccess?.();
-        },
-        onSettled: () => {
-          setPendingParentId(undefined);
-        },
-      },
-    );
-  };
-
   const showMentionDropdown =
     Boolean(mentionContext) &&
     isMentionListOpen &&
@@ -140,7 +154,14 @@ export const CommentForm = ({
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!isAuthenticated) {
+          openSignIn();
+          return;
+        }
+        form.handleSubmit();
+      }}
       className="flex gap-3"
     >
       <UserAvatar
@@ -150,26 +171,47 @@ export const CommentForm = ({
       />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="relative">
-          <Textarea
-            ref={textareaRef}
-            placeholder={isReply ? "Write a reply…" : "Add a comment…"}
-            value={content}
-            onChange={(e) => {
-              setContent(e.target.value);
-              setCursorPosition(e.target.selectionStart ?? e.target.value.length);
-              setIsMentionListOpen(true);
+          <form.Field
+            name="content"
+            children={(field) => {
+              const invalid = isFieldInvalid(field);
+              return (
+                <Field data-invalid={invalid}>
+                  <Textarea
+                    ref={textareaRef}
+                    id={field.name}
+                    name={field.name}
+                    placeholder={isReply ? "Write a reply…" : "Add a comment…"}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value);
+                      setCursorPosition(
+                        e.target.selectionStart ?? e.target.value.length,
+                      );
+                      setIsMentionListOpen(true);
+                    }}
+                    onKeyUp={(e) => {
+                      const target = e.currentTarget;
+                      setCursorPosition(
+                        target.selectionStart ?? target.value.length,
+                      );
+                      setIsMentionListOpen(true);
+                    }}
+                    onClick={(e) => {
+                      const target = e.currentTarget;
+                      setCursorPosition(
+                        target.selectionStart ?? target.value.length,
+                      );
+                    }}
+                    aria-invalid={invalid}
+                    rows={1}
+                    className="min-h-11 max-h-40 field-sizing-content bg-background"
+                  />
+                  {invalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
             }}
-            onKeyUp={(e) => {
-              const target = e.currentTarget;
-              setCursorPosition(target.selectionStart ?? target.value.length);
-              setIsMentionListOpen(true);
-            }}
-            onClick={(e) => {
-              const target = e.currentTarget;
-              setCursorPosition(target.selectionStart ?? target.value.length);
-            }}
-            rows={1}
-            className="min-h-11 max-h-40 field-sizing-content bg-background"
           />
 
           {showMentionDropdown && (
@@ -224,21 +266,34 @@ export const CommentForm = ({
 
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">
-            {isAuthenticated ? "Tip: type @ to mention someone" : "Sign in to comment"}
+            {isAuthenticated
+              ? "Tip: type @ to mention someone"
+              : "Sign in to comment"}
           </p>
-          <Button
-            type="submit"
-            size="sm"
-            disabled={!content.trim() || createComment.isPending}
-          >
-            {createComment.isPending
-              ? isReply
-                ? "Replying…"
-                : "Posting…"
-              : isReply
-                ? "Reply"
-                : "Comment"}
-          </Button>
+          <form.Subscribe
+            selector={(state) =>
+              [state.values.content, state.isSubmitting] as const
+            }
+            children={([fieldContent, isSubmitting]) => (
+              <Button
+                type="submit"
+                size="sm"
+                disabled={
+                  !fieldContent.trim() ||
+                  isSubmitting ||
+                  createComment.isPending
+                }
+              >
+                {isSubmitting || createComment.isPending
+                  ? isReply
+                    ? "Replying…"
+                    : "Posting…"
+                  : isReply
+                    ? "Reply"
+                    : "Comment"}
+              </Button>
+            )}
+          />
         </div>
       </div>
     </form>

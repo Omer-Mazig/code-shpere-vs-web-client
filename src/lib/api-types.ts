@@ -68,6 +68,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/auth/forgot-password": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["AuthController_forgotPassword"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/reset-password": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["AuthController_resetPassword"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/auth/refresh": {
     parameters: {
       query?: never;
@@ -583,6 +615,8 @@ export interface components {
       | "EMAIL_NOT_VERIFIED"
       | "EMAIL_VERIFICATION_TOKEN_INVALID"
       | "EMAIL_VERIFICATION_TOKEN_EXPIRED"
+      | "PASSWORD_RESET_TOKEN_INVALID"
+      | "PASSWORD_RESET_TOKEN_EXPIRED"
       | "POST_NOT_FOUND"
       | "POST_UPDATE_FORBIDDEN"
       | "POST_DELETE_FORBIDDEN"
@@ -702,6 +736,29 @@ export interface components {
     ResendVerificationDto: {
       /** @example user@example.com */
       email: string;
+    };
+    ForgotPasswordResponseDto: {
+      /** @example If an account exists for that email, a password reset link has been sent. */
+      message: string;
+      /** @description Present only in non-production when a reset email was issued. */
+      resetUrl?: string;
+    };
+    ForgotPasswordDto: {
+      /** @example user@example.com */
+      email: string;
+    };
+    ResetPasswordResponseDto: {
+      /** @example Operation completed successfully */
+      message: string;
+    };
+    ResetPasswordDto: {
+      /** @example a1b2c3d4... */
+      token: string;
+      /**
+       * @description Password must be at least 8 characters and contain at least one letter and one number
+       * @example Password123
+       */
+      password: string;
     };
     LogoutResponseDto: {
       /** @example Operation completed successfully */
@@ -1386,6 +1443,114 @@ export interface operations {
         };
       };
       /** @description Unexpected server error. */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AuthController_forgotPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ForgotPasswordDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            payload: components["schemas"]["ForgotPasswordResponseDto"];
+            requestId: string;
+            /** Format: date-time */
+            timestamp: string;
+            meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+            warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponseDto"];
+        };
+      };
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponseDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AuthController_resetPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ResetPasswordDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            payload: components["schemas"]["ResetPasswordResponseDto"];
+            requestId: string;
+            /** Format: date-time */
+            timestamp: string;
+            meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+            warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponseDto"];
+        };
+      };
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponseDto"];
+        };
+      };
       500: {
         headers: {
           [name: string]: unknown;
