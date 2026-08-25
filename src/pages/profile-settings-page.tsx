@@ -16,61 +16,27 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { useAuth } from "@/features/auth/auth.context";
+import {
+  buildProfilePatch,
+  isProfilePatchEmpty,
+  profileFormValuesFromUser,
+  type ClearableProfileField,
+} from "@/features/users/build-profile-patch";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
 import { useUpdateProfile } from "@/features/users/hooks/use-update-profile";
+import type { UserProfile } from "@/features/users/types";
 import { profileSettingsSchema } from "@/lib/form-schemas";
 import { isFieldInvalid } from "@/lib/form";
 
 export const ProfileSettingsPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
-  const updateProfile = useUpdateProfile();
   const isOwnProfile = Boolean(id && isAuthenticated && user?.id === id);
 
   const { data: profile, isLoading } = useQuery({
     ...usersQueryOptionsFactory.myProfile(),
     enabled: isOwnProfile,
   });
-
-  const [notifyMentions, setNotifyMentions] = React.useState(true);
-  const [notifyFollowers, setNotifyFollowers] = React.useState(true);
-  const [notifyComments, setNotifyComments] = React.useState(true);
-
-  const form = useForm({
-    defaultValues: {
-      displayName: "",
-      bio: "",
-      location: "",
-      website: "",
-      github: "",
-      avatarUrl: "",
-    },
-    validators: {
-      onSubmit: profileSettingsSchema,
-    },
-    onSubmit: async ({ value }) => {
-      await updateProfile.mutateAsync({
-        displayName: value.displayName || undefined,
-        bio: value.bio || undefined,
-        location: value.location || undefined,
-        website: value.website || undefined,
-        github: value.github || undefined,
-        avatarUrl: value.avatarUrl || undefined,
-      });
-    },
-  });
-
-  React.useEffect(() => {
-    if (!profile) return;
-    form.reset({
-      displayName: profile.displayName ?? "",
-      bio: profile.bio ?? "",
-      location: profile.location ?? "",
-      website: profile.website ?? "",
-      github: profile.github ?? "",
-      avatarUrl: profile.avatarUrl ?? "",
-    });
-  }, [profile, form]);
 
   if (!id) {
     return <Navigate to="/feed" replace />;
@@ -80,21 +46,85 @@ export const ProfileSettingsPage = () => {
     return <Navigate to={`/profile/${id}/posts`} replace />;
   }
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto max-w-3xl px-4 py-6">
-        <Skeleton className="h-96 w-full rounded-xl" />
-      </div>
-    );
-  }
-
   if (!profile) {
+    if (isLoading) {
+      return (
+        <div className="container mx-auto max-w-3xl px-4 py-6">
+          <Skeleton className="h-96 w-full rounded-xl" />
+        </div>
+      );
+    }
+
     return (
       <div className="container mx-auto max-w-3xl px-4 py-6">
         <p className="text-sm text-muted-foreground">Unable to load settings.</p>
       </div>
     );
   }
+
+  return <ProfileSettingsForm key={profile.id} profile={profile} />;
+};
+
+function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
+  const updateProfile = useUpdateProfile();
+  const [cleared, setCleared] = React.useState<Set<ClearableProfileField>>(
+    () => new Set(),
+  );
+  const [notifyMentions, setNotifyMentions] = React.useState(true);
+  const [notifyFollowers, setNotifyFollowers] = React.useState(true);
+  const [notifyComments, setNotifyComments] = React.useState(true);
+
+  const loadedValues = React.useMemo(
+    () => profileFormValuesFromUser(profile),
+    [profile],
+  );
+  const loadedValuesRef = React.useRef(loadedValues);
+  const clearedRef = React.useRef(cleared);
+  loadedValuesRef.current = loadedValues;
+  clearedRef.current = cleared;
+
+  const form = useForm({
+    defaultValues: loadedValues,
+    validators: {
+      onSubmit: profileSettingsSchema,
+    },
+    onSubmit: async ({ value }) => {
+      const dto = buildProfilePatch(
+        value,
+        loadedValuesRef.current,
+        clearedRef.current,
+      );
+      if (isProfilePatchEmpty(dto)) {
+        form.reset(loadedValuesRef.current);
+        setCleared(new Set());
+        return;
+      }
+      await updateProfile.mutateAsync(dto);
+      setCleared(new Set());
+    },
+  });
+
+  React.useEffect(() => {
+    form.reset(loadedValues);
+    setCleared(new Set());
+  }, [loadedValues, form]);
+
+  const markCleared = (field: ClearableProfileField) => {
+    setCleared((prev) => {
+      const next = new Set(prev);
+      next.add(field);
+      return next;
+    });
+  };
+
+  const unmarkCleared = (field: ClearableProfileField) => {
+    setCleared((prev) => {
+      if (!prev.has(field)) return prev;
+      const next = new Set(prev);
+      next.delete(field);
+      return next;
+    });
+  };
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-6">
@@ -118,6 +148,10 @@ export const ProfileSettingsPage = () => {
               <UserRound className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-medium">General info</h2>
             </div>
+            <p className="text-sm text-muted-foreground">
+              Emptying a field and saving leaves the previous value. Use Clear
+              to remove it.
+            </p>
 
             <FieldGroup className="gap-4">
               <Field>
@@ -165,15 +199,27 @@ export const ProfileSettingsPage = () => {
                   const invalid = isFieldInvalid(field);
                   return (
                     <Field data-invalid={invalid}>
-                      <FieldLabel htmlFor={field.name}>Bio</FieldLabel>
+                      <ClearableFieldHeader
+                        htmlFor={field.name}
+                        label="Bio"
+                        showClear={canClearField(
+                          loadedValues.bio,
+                          field.state.value,
+                        )}
+                        onClear={() => {
+                          field.handleChange("");
+                          markCleared("bio");
+                        }}
+                      />
                       <Textarea
                         id={field.name}
                         name={field.name}
                         value={field.state.value}
                         onBlur={field.handleBlur}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
-                        }
+                        onChange={(event) => {
+                          unmarkCleared("bio");
+                          field.handleChange(event.target.value);
+                        }}
                         aria-invalid={invalid}
                         rows={4}
                         placeholder="Tell the community about yourself..."
@@ -193,15 +239,27 @@ export const ProfileSettingsPage = () => {
                     const invalid = isFieldInvalid(field);
                     return (
                       <Field data-invalid={invalid}>
-                        <FieldLabel htmlFor={field.name}>Location</FieldLabel>
+                        <ClearableFieldHeader
+                          htmlFor={field.name}
+                          label="Location"
+                          showClear={canClearField(
+                            loadedValues.location,
+                            field.state.value,
+                          )}
+                          onClear={() => {
+                            field.handleChange("");
+                            markCleared("location");
+                          }}
+                        />
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
+                          onChange={(event) => {
+                            unmarkCleared("location");
+                            field.handleChange(event.target.value);
+                          }}
                           aria-invalid={invalid}
                           placeholder="San Francisco, CA"
                         />
@@ -218,17 +276,27 @@ export const ProfileSettingsPage = () => {
                     const invalid = isFieldInvalid(field);
                     return (
                       <Field data-invalid={invalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          GitHub username
-                        </FieldLabel>
+                        <ClearableFieldHeader
+                          htmlFor={field.name}
+                          label="GitHub username"
+                          showClear={canClearField(
+                            loadedValues.github,
+                            field.state.value,
+                          )}
+                          onClear={() => {
+                            field.handleChange("");
+                            markCleared("github");
+                          }}
+                        />
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
+                          onChange={(event) => {
+                            unmarkCleared("github");
+                            field.handleChange(event.target.value);
+                          }}
                           aria-invalid={invalid}
                           placeholder="johndoe"
                         />
@@ -248,15 +316,27 @@ export const ProfileSettingsPage = () => {
                     const invalid = isFieldInvalid(field);
                     return (
                       <Field data-invalid={invalid}>
-                        <FieldLabel htmlFor={field.name}>Website</FieldLabel>
+                        <ClearableFieldHeader
+                          htmlFor={field.name}
+                          label="Website"
+                          showClear={canClearField(
+                            loadedValues.website,
+                            field.state.value,
+                          )}
+                          onClear={() => {
+                            field.handleChange("");
+                            markCleared("website");
+                          }}
+                        />
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
+                          onChange={(event) => {
+                            unmarkCleared("website");
+                            field.handleChange(event.target.value);
+                          }}
                           aria-invalid={invalid}
                           placeholder="https://example.com"
                         />
@@ -273,15 +353,27 @@ export const ProfileSettingsPage = () => {
                     const invalid = isFieldInvalid(field);
                     return (
                       <Field data-invalid={invalid}>
-                        <FieldLabel htmlFor={field.name}>Avatar URL</FieldLabel>
+                        <ClearableFieldHeader
+                          htmlFor={field.name}
+                          label="Avatar URL"
+                          showClear={canClearField(
+                            loadedValues.avatarUrl,
+                            field.state.value,
+                          )}
+                          onClear={() => {
+                            field.handleChange("");
+                            markCleared("avatarUrl");
+                          }}
+                        />
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
+                          onChange={(event) => {
+                            unmarkCleared("avatarUrl");
+                            field.handleChange(event.target.value);
+                          }}
                           aria-invalid={invalid}
                           placeholder="https://..."
                         />
@@ -368,3 +460,30 @@ export const ProfileSettingsPage = () => {
     </div>
   );
 };
+
+function canClearField(loadedValue: string, currentValue: string) {
+  return loadedValue.trim().length > 0 || currentValue.trim().length > 0;
+}
+
+function ClearableFieldHeader({
+  htmlFor,
+  label,
+  showClear,
+  onClear,
+}: {
+  htmlFor: string;
+  label: string;
+  showClear: boolean;
+  onClear: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
+      {showClear ? (
+        <Button type="button" variant="ghost" size="xs" onClick={onClear}>
+          Clear
+        </Button>
+      ) : null}
+    </div>
+  );
+}

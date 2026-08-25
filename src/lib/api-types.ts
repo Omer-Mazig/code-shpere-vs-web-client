@@ -771,15 +771,15 @@ export interface components {
             /** @example John Doe */
             displayName?: string;
             /** @example Full-stack developer */
-            bio?: string;
+            bio?: string | null;
             /** @example https://example.com/avatar.jpg */
-            avatarUrl?: string;
+            avatarUrl?: string | null;
             /** @example https://example.com */
-            website?: string;
+            website?: string | null;
             /** @example johndoe */
-            github?: string;
+            github?: string | null;
             /** @example San Francisco, CA */
-            location?: string;
+            location?: string | null;
         };
         FollowActionResponseDto: {
             /** @example Operation completed successfully */
