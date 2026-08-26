@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { interactionsApi } from "../interactions.api";
 import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-factory";
 import { articlesQueryOptionsFactory } from "@/features/articles/articles-query-options-factory";
 import { toast } from "sonner";
 import { commentsQueryOptionsFactory } from "@/features/comments/comments-query-options-factory";
 import { updateLikeInData } from "../like-cache";
+import { getApiError } from "@/lib/errors";
 import type { LikeTargetType } from "../types";
 
 export function useToggleLike(
@@ -49,10 +49,9 @@ export function useToggleLike(
       return { previousQueries };
     },
     onError: (error, variables, context) => {
-      // 409 = already liked / 400 = not liked — desired state matches, skip rollback
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status;
-        if (status === 409 || status === 400) return;
+      const errorCode = getApiError(error).errorCode;
+      if (errorCode === "ALREADY_LIKED" || errorCode === "NOT_LIKED") {
+        return;
       }
 
       // Roll back all caches

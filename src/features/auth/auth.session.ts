@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { ApiEnvelope } from "@/lib/types";
-import type { AuthSession } from "./auth.types";
+import type { AuthSession } from "./types";
 
 export type RefreshResult = {
   accessToken: AuthSession["accessToken"] | null;

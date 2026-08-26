@@ -12,7 +12,7 @@ import type {
   ResetPasswordDto,
   ResetPasswordResponseDto,
   VerifyEmailDto,
-} from "./auth.types";
+} from "./types";
 
 export const authApi = {
   login: async (email: string, password: string): Promise<AuthSession> => {

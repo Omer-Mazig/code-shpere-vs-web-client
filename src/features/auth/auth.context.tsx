@@ -7,7 +7,7 @@ import type {
   RegisterDto,
   RegisterResponseDto,
   ResendVerificationResponseDto,
-} from "./auth.types";
+} from "./types";
 import { authQueryOptionsFactory } from "./auth-query-options-factory";
 import { authApi } from "./auth.api";
 import { setUnauthorizedHandler } from "./auth.session";
