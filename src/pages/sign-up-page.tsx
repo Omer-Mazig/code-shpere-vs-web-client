@@ -14,7 +14,8 @@ import { useAuth } from "@/features/auth/auth.context";
 import { AUTH_PATHS } from "@/lib/routes.constants";
 import { getAuthErrorMessage } from "@/features/auth/auth.errors";
 import { signUpSchema } from "@/features/auth/auth.schemas";
-import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
+import { applyApiFieldErrors, isFieldInvalid } from "@/lib/form";
 
 export const SignUpPage = () => {
   const navigate = useNavigate();
@@ -46,12 +47,18 @@ export const SignUpPage = () => {
           state: { verificationUrl: result.verificationUrl },
         });
       } catch (submitError) {
-        setFormError(
-          getAuthErrorMessage(
-            submitError,
-            "Registration failed. Please try again.",
-          ),
+        const applied = applyApiFieldErrors(
+          form,
+          getApiError(submitError).details,
         );
+        if (!applied) {
+          setFormError(
+            getAuthErrorMessage(
+              submitError,
+              "Registration failed. Please try again.",
+            ),
+          );
+        }
       }
     },
   });

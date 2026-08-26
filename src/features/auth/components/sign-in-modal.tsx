@@ -21,7 +21,8 @@ import { useAuth } from "../auth.context";
 import { getAuthErrorMessage } from "../auth.errors";
 import { signInSchema } from "../auth.schemas";
 import { AUTH_PATHS } from "@/lib/routes.constants";
-import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
+import { applyApiFieldErrors, isFieldInvalid } from "@/lib/form";
 
 export const SignInModal = () => {
   const { isOpen, close } = useSignInModal();
@@ -43,7 +44,13 @@ export const SignInModal = () => {
         close();
         form.reset();
       } catch (submitError) {
-        setFormError(getAuthErrorMessage(submitError));
+        const applied = applyApiFieldErrors(
+          form,
+          getApiError(submitError).details,
+        );
+        if (!applied) {
+          setFormError(getAuthErrorMessage(submitError));
+        }
       }
     },
   });

@@ -605,6 +605,12 @@ export interface components {
          * @enum {string}
          */
         ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED";
+        ValidationFieldErrorDto: {
+            /** @example password */
+            field: string;
+            /** @example Password must be at least 8 characters and contain at least one letter and one number */
+            message: string;
+        };
         ApiErrorResponseDto: {
             /** @example 404 */
             statusCode: number;
@@ -622,6 +628,8 @@ export interface components {
              * @example 2026-02-15T21:10:35.120Z
              */
             timestamp: string;
+            /** @description Per-field validation errors. Present on request-pipe VALIDATION_ERROR responses. */
+            details?: components["schemas"]["ValidationFieldErrorDto"][];
         };
         AuthUserResponseDto: {
             id: string;

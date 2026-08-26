@@ -18,4 +18,6 @@ export type ApiEnvelopeMeta = components["schemas"]["ApiEnvelopeMetaDto"];
 export type ApiEnvelopeWarning = components["schemas"]["ApiEnvelopeWarningDto"];
 export type PaginatedMeta = components["schemas"]["PaginatedMetaDto"];
 export type ApiError = components["schemas"]["ApiErrorResponseDto"];
+export type ValidationFieldError =
+  components["schemas"]["ValidationFieldErrorDto"];
 export type ErrorCode = ApiError["errorCode"];

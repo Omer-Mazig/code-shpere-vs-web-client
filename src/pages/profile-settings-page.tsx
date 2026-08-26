@@ -25,7 +25,8 @@ import { usersQueryOptionsFactory } from "@/features/users/users-query-options-f
 import { useUpdateProfile } from "@/features/users/hooks/use-update-profile";
 import type { UserProfile } from "@/features/users/types";
 import { profileSettingsSchema } from "@/lib/form-schemas";
-import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
+import { applyApiFieldErrors, isFieldInvalid } from "@/lib/form";
 
 export const ProfileSettingsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -95,8 +96,12 @@ function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
         setCleared(new Set());
         return;
       }
-      await updateProfile.mutateAsync(dto);
-      setCleared(new Set());
+      try {
+        await updateProfile.mutateAsync(dto);
+        setCleared(new Set());
+      } catch (submitError) {
+        applyApiFieldErrors(form, getApiError(submitError).details);
+      }
     },
   });
 

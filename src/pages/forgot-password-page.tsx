@@ -14,7 +14,8 @@ import { authApi } from "@/features/auth/auth.api";
 import { getAuthErrorMessage } from "@/features/auth/auth.errors";
 import { forgotPasswordSchema } from "@/features/auth/auth.schemas";
 import { AUTH_PATHS } from "@/lib/routes.constants";
-import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
+import { applyApiFieldErrors, isFieldInvalid } from "@/lib/form";
 
 export const ForgotPasswordPage = () => {
   const [formError, setFormError] = React.useState<string | null>(null);
@@ -39,7 +40,13 @@ export const ForgotPasswordPage = () => {
         setSuccessMessage(result.message);
         setDevResetUrl(result.resetUrl);
       } catch (submitError) {
-        setFormError(getAuthErrorMessage(submitError));
+        const applied = applyApiFieldErrors(
+          form,
+          getApiError(submitError).details,
+        );
+        if (!applied) {
+          setFormError(getAuthErrorMessage(submitError));
+        }
       }
     },
   });

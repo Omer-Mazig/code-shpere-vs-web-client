@@ -13,7 +13,8 @@ import { AUTH_PATHS } from "@/lib/routes.constants";
 import { getAuthErrorMessage } from "@/features/auth/auth.errors";
 import { signInSchema } from "@/features/auth/auth.schemas";
 import { readReturnUrl } from "@/features/auth/return-url";
-import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
+import { applyApiFieldErrors, isFieldInvalid } from "@/lib/form";
 import React from "react";
 
 export const SignInPage = () => {
@@ -38,7 +39,13 @@ export const SignInPage = () => {
         await login(value.email, value.password);
         navigate(returnUrl, { replace: true });
       } catch (submitError) {
-        setFormError(getAuthErrorMessage(submitError));
+        const applied = applyApiFieldErrors(
+          form,
+          getApiError(submitError).details,
+        );
+        if (!applied) {
+          setFormError(getAuthErrorMessage(submitError));
+        }
       }
     },
   });

@@ -25,7 +25,7 @@ describe("getApiError", () => {
     });
   });
 
-  it("reads statusCode, errorCode, and message from the body", () => {
+  it("reads statusCode, errorCode, message, and details from the body", () => {
     expect(
       getApiError(
         makeAxiosError({
@@ -41,6 +41,32 @@ describe("getApiError", () => {
       statusCode: 400,
       errorCode: "USER_EMAIL_EXISTS",
       message: "Email already exists",
+    });
+  });
+
+  it("returns per-field details when the body includes them", () => {
+    expect(
+      getApiError(
+        makeAxiosError({
+          status: 400,
+          data: {
+            statusCode: 400,
+            errorCode: "VALIDATION_ERROR",
+            message: "Invalid request data",
+            details: [
+              { field: "password", message: "Password must be at least 8 characters" },
+              { field: "email" },
+            ],
+          },
+        }),
+      ),
+    ).toEqual({
+      statusCode: 400,
+      errorCode: "VALIDATION_ERROR",
+      message: "Invalid request data",
+      details: [
+        { field: "password", message: "Password must be at least 8 characters" },
+      ],
     });
   });
 

@@ -7,6 +7,36 @@ export function isNotFoundError(error: unknown): boolean {
 
 export type ParsedApiError = Partial<ApiError>;
 
+function readValidationDetails(
+  value: unknown,
+): NonNullable<ApiError["details"]> | undefined {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const details = value.flatMap((item) => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+
+    const field = "field" in item ? item.field : undefined;
+    const message = "message" in item ? item.message : undefined;
+    if (typeof field !== "string" || typeof message !== "string") {
+      return [];
+    }
+
+    const trimmedField = field.trim();
+    const trimmedMessage = message.trim();
+    if (!trimmedField || !trimmedMessage) {
+      return [];
+    }
+
+    return [{ field: trimmedField, message: trimmedMessage }];
+  });
+
+  return details.length > 0 ? details : undefined;
+}
+
 export function getApiError(error: unknown): ParsedApiError {
   if (!axios.isAxiosError(error)) {
     return {};
@@ -17,11 +47,20 @@ export function getApiError(error: unknown): ParsedApiError {
     return { statusCode: error.response?.status };
   }
 
-  const body = data as Partial<ApiError>;
+  const body = data as Record<string, unknown>;
+
+  const details = readValidationDetails(body.details);
 
   return {
-    statusCode: body.statusCode ?? error.response?.status,
-    errorCode: body.errorCode,
-    message: body.message,
+    statusCode:
+      typeof body.statusCode === "number"
+        ? body.statusCode
+        : error.response?.status,
+    errorCode:
+      typeof body.errorCode === "string"
+        ? (body.errorCode as ApiError["errorCode"])
+        : undefined,
+    message: typeof body.message === "string" ? body.message : undefined,
+    ...(details ? { details } : {}),
   };
 }

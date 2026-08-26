@@ -13,7 +13,8 @@ import { authApi } from "@/features/auth/auth.api";
 import { getAuthErrorMessage } from "@/features/auth/auth.errors";
 import { resetPasswordSchema } from "@/features/auth/auth.schemas";
 import { AUTH_PATHS } from "@/lib/routes.constants";
-import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
+import { applyApiFieldErrors, isFieldInvalid } from "@/lib/form";
 
 export const ResetPasswordPage = () => {
   const navigate = useNavigate();
@@ -45,7 +46,13 @@ export const ResetPasswordPage = () => {
           state: { passwordReset: true },
         });
       } catch (submitError) {
-        setFormError(getAuthErrorMessage(submitError));
+        const applied = applyApiFieldErrors(
+          form,
+          getApiError(submitError).details,
+        );
+        if (!applied) {
+          setFormError(getAuthErrorMessage(submitError));
+        }
       }
     },
   });
