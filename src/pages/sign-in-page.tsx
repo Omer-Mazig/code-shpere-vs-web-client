@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,16 +9,20 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { useAuth } from "@/features/auth/auth.context";
-import { AUTH_PATHS, FEED_PATHS } from "@/lib/routes.constants";
+import { AUTH_PATHS } from "@/lib/routes.constants";
 import { getAuthErrorMessage } from "@/features/auth/auth.errors";
 import { signInSchema } from "@/features/auth/auth.schemas";
+import { readReturnUrl } from "@/features/auth/return-url";
 import { isFieldInvalid } from "@/lib/form";
 import React from "react";
 
 export const SignInPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
   const [formError, setFormError] = React.useState<string | null>(null);
+  const returnUrl = readReturnUrl(searchParams, location.state);
 
   const form = useForm({
     defaultValues: {
@@ -32,7 +36,7 @@ export const SignInPage = () => {
       setFormError(null);
       try {
         await login(value.email, value.password);
-        navigate(FEED_PATHS.FEED);
+        navigate(returnUrl, { replace: true });
       } catch (submitError) {
         setFormError(getAuthErrorMessage(submitError));
       }

@@ -13,6 +13,7 @@ import { authApi } from "./auth.api";
 import { setUnauthorizedHandler } from "./auth.session";
 import { AppLoader } from "@/components/shared/app-loader";
 import { AUTH_PATHS } from "@/lib/routes.constants";
+import { signInPathWithReturnUrl } from "./return-url";
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -67,7 +68,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (redirectToLogin) {
         const currentPath = window.location.pathname;
         if (!currentPath.startsWith(AUTH_PATHS.AUTH)) {
-          window.location.assign(AUTH_PATHS.SIGN_IN);
+          window.location.assign(
+            signInPathWithReturnUrl(
+              `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            ),
+          );
         }
       }
     },
