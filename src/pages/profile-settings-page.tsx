@@ -2,10 +2,9 @@ import React from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
-import { Bell, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -70,9 +69,6 @@ function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
   const [cleared, setCleared] = React.useState<Set<ClearableProfileField>>(
     () => new Set(),
   );
-  const [notifyMentions, setNotifyMentions] = React.useState(true);
-  const [notifyFollowers, setNotifyFollowers] = React.useState(true);
-  const [notifyComments, setNotifyComments] = React.useState(true);
 
   const loadedValues = React.useMemo(
     () => profileFormValuesFromUser(profile),
@@ -132,7 +128,7 @@ function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold">Settings</h1>
           <p className="text-sm text-muted-foreground">
-            Manage profile and account preferences.
+            Manage your public profile.
           </p>
         </header>
 
@@ -386,58 +382,6 @@ function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
                 />
               </div>
             </FieldGroup>
-          </section>
-
-          <section className="space-y-4 rounded-lg border p-4">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-muted-foreground" />
-              <h2 className="font-medium">Notification management</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Preference toggles are temporarily local-only. Backend persistence
-              will be wired in a future step.
-            </p>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between rounded-md border p-3">
-                <div>
-                  <p className="text-sm font-medium">Mentions</p>
-                  <p className="text-xs text-muted-foreground">
-                    Notify when someone mentions you in posts or comments.
-                  </p>
-                </div>
-                <Switch
-                  checked={notifyMentions}
-                  onCheckedChange={setNotifyMentions}
-                />
-              </div>
-
-              <div className="flex items-center justify-between rounded-md border p-3">
-                <div>
-                  <p className="text-sm font-medium">New followers</p>
-                  <p className="text-xs text-muted-foreground">
-                    Notify when a new user follows you.
-                  </p>
-                </div>
-                <Switch
-                  checked={notifyFollowers}
-                  onCheckedChange={setNotifyFollowers}
-                />
-              </div>
-
-              <div className="flex items-center justify-between rounded-md border p-3">
-                <div>
-                  <p className="text-sm font-medium">Replies and comments</p>
-                  <p className="text-xs text-muted-foreground">
-                    Notify when someone replies to your content.
-                  </p>
-                </div>
-                <Switch
-                  checked={notifyComments}
-                  onCheckedChange={setNotifyComments}
-                />
-              </div>
-            </div>
           </section>
 
           <div className="flex justify-end">
