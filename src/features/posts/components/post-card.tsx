@@ -1,11 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import type { Post as PostType } from "../types";
 import { PostActions } from "./post-actions";
 import { FollowButton } from "@/features/users/components/follow-button";
-import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
 import { useAuth } from "@/features/auth/auth.context";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { RelativeTime } from "@/components/shared/relative-time";
@@ -467,24 +466,16 @@ const ActionsBar = ({ onCommentClick }: PostActionsBarProps) => {
 
 const FollowAuthorButton = () => {
   const post = usePost();
-  const { isAuthenticated, user } = useAuth();
   const authorId = post.author?.id;
 
   if (!authorId) {
     return null;
   }
 
-  const shouldFetchProfile = isAuthenticated && user?.id !== authorId;
-
-  const { data: authorProfile } = useQuery({
-    ...usersQueryOptionsFactory.profile(authorId),
-    enabled: shouldFetchProfile,
-  });
-
   return (
     <FollowButton
       userId={authorId}
-      isFollowing={authorProfile?.isFollowing ?? false}
+      isFollowing={post.author?.isFollowing ?? false}
     />
   );
 };

@@ -807,6 +807,7 @@ export interface components {
             username: string;
             displayName: string | null;
             avatarUrl: string | null;
+            isFollowing: boolean;
         };
         PostCommentPreviewResponseDto: {
             id: string;
@@ -857,6 +858,7 @@ export interface components {
             username: string;
             displayName: string | null;
             avatarUrl: string | null;
+            isFollowing: boolean;
         };
         ArticleResponseDto: {
             id: string;
