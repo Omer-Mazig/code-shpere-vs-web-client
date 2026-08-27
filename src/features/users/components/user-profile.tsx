@@ -49,6 +49,7 @@ export const UserProfile = ({
           <FollowButton
             userId={profile.id}
             isFollowing={profile.isFollowing}
+            allowUnfollow
           />
         }
       />

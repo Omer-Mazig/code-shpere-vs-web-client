@@ -84,6 +84,12 @@ describe("query option factories", () => {
       "profile",
       "u1",
     ]);
+    expect(usersQueryOptionsFactory.preview("u1").queryKey).toEqual([
+      "users",
+      "profile",
+      "preview",
+      "u1",
+    ]);
     expect(usersQueryOptionsFactory.followers("u1").queryKey).toEqual([
       "users",
       "followers",

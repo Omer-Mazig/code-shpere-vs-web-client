@@ -4,12 +4,23 @@ import { RootLayout } from "@/components/layout/root-layout";
 import { AppLayout } from "@/components/layout/app-layout";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { NotFoundPage } from "@/pages/not-found-page";
+import { useAuth } from "@/features/auth/auth.context";
 
 import { authRoutes } from "./auth.router";
 import { feedRoutes } from "./feed.router";
 import { articleRoutes } from "./article.router";
 import { profileRoutes } from "./profile.router";
-import { AUTH_PATHS, FEED_PATHS } from "../routes.constants";
+import { AUTH_PATHS, ARTICLE_PATHS, FEED_PATHS } from "../routes.constants";
+
+const HomeIndexRedirect = () => {
+  const { isAuthenticated } = useAuth();
+  return (
+    <Navigate
+      to={isAuthenticated ? FEED_PATHS.FEED : ARTICLE_PATHS.ARTICLES}
+      replace
+    />
+  );
+};
 
 export const router = createBrowserRouter([
   {
@@ -26,10 +37,9 @@ export const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          // Redirect index to feed
           {
             index: true,
-            element: <Navigate to={FEED_PATHS.FEED} replace />,
+            element: <HomeIndexRedirect />,
           },
           ...feedRoutes,
           ...articleRoutes,

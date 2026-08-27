@@ -7,11 +7,19 @@ import { RequireAuth } from "@/features/auth/components/require-auth";
 export const feedRoutes: RouteObject[] = [
   {
     path: "feed",
-    element: <FeedPage />,
+    element: (
+      <RequireAuth>
+        <FeedPage />
+      </RequireAuth>
+    ),
   },
   {
     path: "feed/:id",
-    element: <PostDetailPage />,
+    element: (
+      <RequireAuth>
+        <PostDetailPage />
+      </RequireAuth>
+    ),
   },
   {
     path: "notifications",

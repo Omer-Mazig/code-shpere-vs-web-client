@@ -32,6 +32,18 @@ export const usersQueryOptionsFactory = {
       staleTime: 1000 * 60 * 5, // 5 minutes
     }),
 
+  // ["users", "profile", "preview", targetUserId]
+  preview: (targetUserId: string) =>
+    queryOptions({
+      queryKey: [
+        ...usersQueryOptionsFactory.allProfiles().queryKey,
+        "preview",
+        targetUserId,
+      ],
+      queryFn: () => usersApi.getProfilePreview(targetUserId),
+      staleTime: 1000 * 60 * 5,
+    }),
+
   // ["users", "suggestions", viewerId, limit] — viewerId keeps results fresh across sign-in/out
   suggestions: (limit = 5, viewerId?: string) =>
     queryOptions({

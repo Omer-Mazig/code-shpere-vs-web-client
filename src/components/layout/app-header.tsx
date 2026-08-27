@@ -41,9 +41,12 @@ export const AppHeader = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const homePath = isAuthenticated ? FEED_PATHS.FEED : ARTICLE_PATHS.ARTICLES;
 
   const navItems = [
-    { label: "Feed", path: FEED_PATHS.FEED, icon: Home },
+    ...(isAuthenticated
+      ? [{ label: "Feed", path: FEED_PATHS.FEED, icon: Home }]
+      : []),
     { label: "Articles", path: ARTICLE_PATHS.ARTICLES, icon: BookOpen },
     ...(isAuthenticated
       ? [
@@ -76,7 +79,7 @@ export const AppHeader = () => {
           </Button>
 
           <Link
-            to="/"
+            to={homePath}
             className="group flex items-center gap-2"
           >
             <span className="flex size-7 items-center justify-center rounded-lg bg-linear-to-br from-primary to-glow shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">

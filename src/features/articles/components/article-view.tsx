@@ -3,6 +3,7 @@ import type { Article } from "../types";
 import { LikeButton } from "@/features/interactions/components/like-button";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { RelativeTime } from "@/components/shared/relative-time";
+import { FollowButton } from "@/features/users/components/follow-button";
 
 type ArticleViewProps = {
   article: Article;
@@ -34,7 +35,7 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
               size="lg"
             />
           </Link>
-          <div>
+          <div className="min-w-0 flex-1">
             <Link
               to={`/profile/${article.author.id}`}
               className="text-sm font-medium hover:underline"
@@ -45,6 +46,10 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
               <RelativeTime date={article.createdAt} />
             </p>
           </div>
+          <FollowButton
+            userId={article.author.id}
+            isFollowing={article.author.isFollowing}
+          />
         </div>
       )}
 

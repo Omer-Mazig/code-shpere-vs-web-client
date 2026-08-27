@@ -1,43 +1,30 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SideCard } from "@/components/shared/side-card";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { useAuth } from "@/features/auth/auth.context";
-import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { useFollowUser } from "../hooks/use-follow-user";
 import { usersQueryOptionsFactory } from "../users-query-options-factory";
+import { FollowingBadge } from "./follow-button";
 import type { SuggestedUser } from "../types";
 
 const SUGGESTIONS_LIMIT = 4;
 
 const SuggestedUserRow = ({ user }: { user: SuggestedUser }) => {
-  const { isAuthenticated } = useAuth();
-  const { open: openSignIn } = useSignInModal();
-  const { followMutation, unfollowMutation } = useFollowUser(user.id);
-  // Suggestions only ever contain users the viewer doesn't follow yet,
-  // so follow state is tracked locally after the action.
+  const { followMutation } = useFollowUser(user.id);
   const [isFollowing, setIsFollowing] = useState(false);
-
-  const handleToggle = () => {
-    if (!isAuthenticated) {
-      openSignIn();
-      return;
-    }
-
-    if (isFollowing) {
-      unfollowMutation.mutate();
-      setIsFollowing(false);
-    } else {
-      followMutation.mutate();
-      setIsFollowing(true);
-    }
-  };
-
   const profilePath = `/profile/${user.id}`;
+
+  const handleFollow = () => {
+    setIsFollowing(true);
+    followMutation.mutate(undefined, {
+      onError: () => setIsFollowing(false),
+    });
+  };
 
   return (
     <div className="flex items-center gap-2.5">
@@ -64,24 +51,20 @@ const SuggestedUserRow = ({ user }: { user: SuggestedUser }) => {
         </p>
       </div>
 
-      <Button
-        variant={isFollowing ? "outline" : "secondary"}
-        size="xs"
-        className="shrink-0"
-        onClick={handleToggle}
-      >
-        {isFollowing ? (
-          <>
-            <Check className="animate-scale-in" />
-            Following
-          </>
-        ) : (
-          <>
-            <Plus />
-            Follow
-          </>
-        )}
-      </Button>
+      {isFollowing ? (
+        <FollowingBadge />
+      ) : (
+        <Button
+          variant="secondary"
+          size="xs"
+          className="shrink-0"
+          disabled={followMutation.isPending}
+          onClick={handleFollow}
+        >
+          <Plus />
+          Follow
+        </Button>
+      )}
     </div>
   );
 };

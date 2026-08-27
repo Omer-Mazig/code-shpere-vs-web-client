@@ -5,6 +5,7 @@ import type {
   UpdateProfileDto,
   FollowUser,
   SuggestedUser,
+  UserPreview,
 } from "./types";
 
 export const usersApi = {
@@ -16,6 +17,13 @@ export const usersApi = {
   getProfile: async (targetUserId: string): Promise<UserProfile> => {
     const response = await apiClient.get<ApiEnvelope<UserProfile>>(
       `/users/${targetUserId}`,
+    );
+    return response.data.payload;
+  },
+
+  getProfilePreview: async (targetUserId: string): Promise<UserPreview> => {
+    const response = await apiClient.get<ApiEnvelope<UserPreview>>(
+      `/users/${targetUserId}/preview`,
     );
     return response.data.payload;
   },
