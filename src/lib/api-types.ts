@@ -596,6 +596,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HealthController_check"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -604,7 +620,7 @@ export interface components {
          * @description Domain error code emitted by the backend.
          * @enum {string}
          */
-        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED";
+        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED" | "SEED_DISABLED";
         ValidationFieldErrorDto: {
             /** @example password */
             field: string;
@@ -1104,6 +1120,23 @@ export interface components {
         };
         SeedClearResponseDto: {
             cleared: boolean;
+        };
+        HealthIndicatorDto: {
+            /** @enum {string} */
+            status: "up" | "down";
+        };
+        HealthResponseDto: {
+            /** @enum {string} */
+            status: "ok" | "error" | "shutting_down";
+            info?: {
+                [key: string]: components["schemas"]["HealthIndicatorDto"];
+            };
+            error?: {
+                [key: string]: components["schemas"]["HealthIndicatorDto"];
+            };
+            details?: {
+                [key: string]: components["schemas"]["HealthIndicatorDto"];
+            };
         };
     };
     responses: never;
@@ -5832,6 +5865,187 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    HealthController_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Health Check is successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example ok */
+                        status?: string;
+                        /**
+                         * @example {
+                         *       "database": {
+                         *         "status": "up"
+                         *       }
+                         *     }
+                         */
+                        info?: {
+                            [key: string]: {
+                                status: string;
+                            } & {
+                                [key: string]: unknown;
+                            };
+                        } | null;
+                        /** @example {} */
+                        error?: {
+                            [key: string]: {
+                                status: string;
+                            } & {
+                                [key: string]: unknown;
+                            };
+                        } | null;
+                        /**
+                         * @example {
+                         *       "database": {
+                         *         "status": "up"
+                         *       }
+                         *     }
+                         */
+                        details?: {
+                            [key: string]: {
+                                status: string;
+                            } & {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description The Health Check is not successful */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example error */
+                        status?: string;
+                        /**
+                         * @example {
+                         *       "database": {
+                         *         "status": "up"
+                         *       }
+                         *     }
+                         */
+                        info?: {
+                            [key: string]: {
+                                status: string;
+                            } & {
+                                [key: string]: unknown;
+                            };
+                        } | null;
+                        /**
+                         * @example {
+                         *       "redis": {
+                         *         "status": "down",
+                         *         "message": "Could not connect"
+                         *       }
+                         *     }
+                         */
+                        error?: {
+                            [key: string]: {
+                                status: string;
+                            } & {
+                                [key: string]: unknown;
+                            };
+                        } | null;
+                        /**
+                         * @example {
+                         *       "database": {
+                         *         "status": "up"
+                         *       },
+                         *       "redis": {
+                         *         "status": "down",
+                         *         "message": "Could not connect"
+                         *       }
+                         *     }
+                         */
+                        details?: {
+                            [key: string]: {
+                                status: string;
+                            } & {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
                 };
             };
         };
