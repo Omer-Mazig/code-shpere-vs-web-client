@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Article } from "../types";
 import { LikeButton } from "@/features/interactions/components/like-button";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar, getUserDisplayName } from "@/components/shared/user-avatar";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { FollowButton } from "@/features/users/components/follow-button";
 
@@ -29,6 +29,7 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
           <Link
             to={`/profile/${article.author.id}`}
             className="shrink-0"
+            aria-label={getUserDisplayName(article.author)}
           >
             <UserAvatar
               user={article.author}

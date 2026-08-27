@@ -13,9 +13,12 @@ type UserAvatarProps = {
   className?: string;
 };
 
+export const getUserDisplayName = (user?: AvatarUser | null) =>
+  user?.displayName?.trim() || user?.username?.trim() || "User";
+
 export const getUserInitials = (user?: AvatarUser | null) => {
-  const source = user?.displayName?.trim() || user?.username?.trim() || "?";
-  return source.charAt(0).toUpperCase();
+  const source = user?.displayName?.trim() || user?.username?.trim();
+  return source ? source.charAt(0).toUpperCase() : "?";
 };
 
 export const UserAvatar = ({
@@ -23,16 +26,15 @@ export const UserAvatar = ({
   size = "default",
   className,
 }: UserAvatarProps) => {
-  const label = user?.displayName || user?.username || "User";
-
   return (
     <Avatar
+      aria-hidden="true"
       size={size}
       className={cn(className)}
     >
       <AvatarImage
         src={user?.avatarUrl ?? undefined}
-        alt={label}
+        alt=""
       />
       <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
     </Avatar>

@@ -80,6 +80,7 @@ export const PostActions = ({ post, onCommentClick }: PostActionsProps) => {
         variant="ghost"
         size="sm"
         className="gap-2 text-muted-foreground"
+        aria-label={`Comments, ${post.commentsCount}`}
         onClick={() => onCommentClick?.()}
       >
         <MessageCircle className="h-4 w-4" />

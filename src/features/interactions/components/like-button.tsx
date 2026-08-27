@@ -43,6 +43,10 @@ export const LikeButton = ({
         "gap-2",
         isLiked ? "text-red-500 hover:text-red-600" : "text-muted-foreground",
       )}
+      aria-pressed={isLiked}
+      aria-label={
+        isLiked ? `Unlike, ${likesCount}` : `Like, ${likesCount}`
+      }
       onClick={handleClick}
     >
       <Heart

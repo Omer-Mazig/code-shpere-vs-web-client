@@ -6,8 +6,25 @@ export const AppLayout = () => {
   return (
     <TooltipProvider>
       <div className="flex min-h-screen flex-col bg-muted/40">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-100 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-md focus:ring-2 focus:ring-ring"
+          onClick={(event) => {
+            event.preventDefault();
+            const main = document.getElementById("main");
+            if (!main) return;
+            main.focus();
+            main.scrollIntoView();
+          }}
+        >
+          Skip to content
+        </a>
         <AppHeader />
-        <main className="flex-1">
+        <main
+          id="main"
+          tabIndex={-1}
+          className="flex-1 outline-none"
+        >
           <Outlet />
         </main>
       </div>

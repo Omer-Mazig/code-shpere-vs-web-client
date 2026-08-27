@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SideCard } from "@/components/shared/side-card";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar, getUserDisplayName } from "@/components/shared/user-avatar";
 import { useAuth } from "@/features/auth/auth.context";
 import { useFollowUser } from "../hooks/use-follow-user";
 import { usersQueryOptionsFactory } from "../users-query-options-factory";
@@ -31,6 +31,7 @@ const SuggestedUserRow = ({ user }: { user: SuggestedUser }) => {
       <Link
         to={profilePath}
         className="shrink-0"
+        aria-label={getUserDisplayName(user)}
       >
         <UserAvatar
           user={user}

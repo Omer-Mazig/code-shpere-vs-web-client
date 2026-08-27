@@ -6,7 +6,7 @@ import type { Post as PostType } from "../types";
 import { PostActions } from "./post-actions";
 import { FollowButton } from "@/features/users/components/follow-button";
 import { useAuth } from "@/features/auth/auth.context";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar, getUserDisplayName } from "@/components/shared/user-avatar";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -132,6 +132,7 @@ const Header = ({ rightSlot }: PostHeaderProps) => {
         <Link
           to={`/profile/${author.id}`}
           className="shrink-0"
+          aria-label={getUserDisplayName(author)}
         >
           <UserAvatar
             user={author}

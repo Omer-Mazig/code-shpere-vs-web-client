@@ -26,7 +26,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ModeToggle } from "@/components/shared/mode-toggle";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import {
+  getUserDisplayName,
+  UserAvatar,
+} from "@/components/shared/user-avatar";
 import { useAuth } from "@/features/auth/auth.context";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import {
@@ -129,8 +132,13 @@ export const AppHeader = () => {
                 size="sm"
                 className="gap-2"
               >
-                <PenSquare className="h-4 w-4" />
-                <span className="hidden sm:inline">Write</span>
+                <PenSquare
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                />
+                <span className="sr-only sm:not-sr-only sm:inline">
+                  Write
+                </span>
               </Button>
             </Link>
           )}
@@ -147,6 +155,7 @@ export const AppHeader = () => {
                   variant="ghost"
                   size="sm"
                   className="gap-2"
+                  aria-label={getUserDisplayName(user)}
                 >
                   <UserAvatar
                     user={user}

@@ -35,10 +35,21 @@ export const NotificationBell = () => {
           variant="ghost"
           size="icon-sm"
           className="relative"
+          aria-label={
+            count > 0
+              ? `Notifications, ${count} unread`
+              : "Notifications"
+          }
         >
-          <Bell className="h-5 w-5" />
+          <Bell
+            className="h-5 w-5"
+            aria-hidden="true"
+          />
           {count > 0 ? (
-            <Badge className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full px-1.5 text-[10px]">
+            <Badge
+              aria-hidden="true"
+              className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full px-1.5 text-[10px]"
+            >
               {count > 99 ? "99+" : count}
             </Badge>
           ) : null}

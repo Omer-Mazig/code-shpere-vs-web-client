@@ -8,7 +8,7 @@ import { CommentForm } from "./comments-form";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar, getUserDisplayName } from "@/components/shared/user-avatar";
 import { RelativeTime } from "@/components/shared/relative-time";
 import {
   DropdownMenu,
@@ -159,6 +159,7 @@ export const CommentItem = ({
           <Link
             to={`/profile/${comment.author.id}`}
             className="shrink-0"
+            aria-label={getUserDisplayName(comment.author)}
           >
             <UserAvatar
               user={comment.author}

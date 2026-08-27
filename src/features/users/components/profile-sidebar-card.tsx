@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar, getUserDisplayName } from "@/components/shared/user-avatar";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { usersQueryOptionsFactory } from "../users-query-options-factory";
@@ -74,6 +74,7 @@ const AuthedProfileCard = ({ userId }: { userId: string }) => {
         <Link
           to={profilePath}
           className="inline-block"
+          aria-label={getUserDisplayName(profile)}
         >
           <UserAvatar
             user={profile}

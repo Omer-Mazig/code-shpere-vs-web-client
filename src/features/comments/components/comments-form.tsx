@@ -15,6 +15,7 @@ import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { commentSchema } from "@/lib/form-schemas";
 import { isFieldInvalid } from "@/lib/form";
+import { cn } from "@/lib/utils";
 
 type CommentFormProps = {
   targetId: string;
@@ -39,10 +40,12 @@ export const CommentForm = ({
   const { open: openSignIn } = useSignInModal();
   const [cursorPosition, setCursorPosition] = React.useState(0);
   const [isMentionListOpen, setIsMentionListOpen] = React.useState(true);
+  const [activeMentionIndex, setActiveMentionIndex] = React.useState(0);
   const [debouncedMentionQuery, setDebouncedMentionQuery] = React.useState<
     string | undefined
   >(undefined);
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const mentionListId = React.useId();
   const isReply = Boolean(parentId);
 
   const form = useForm({
@@ -152,6 +155,54 @@ export const CommentForm = ({
     isMentionListOpen &&
     (mentionCandidates.length > 0 || isMentionLoading);
 
+  React.useEffect(() => {
+    setActiveMentionIndex(0);
+  }, [debouncedMentionQuery, mentionCandidates.length]);
+
+  const activeMention =
+    mentionCandidates.length > 0
+      ? mentionCandidates[
+          Math.min(activeMentionIndex, mentionCandidates.length - 1)
+        ]
+      : undefined;
+  const activeMentionOptionId = activeMention
+    ? `${mentionListId}-${activeMention.id}`
+    : undefined;
+
+  const handleMentionKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    if (!showMentionDropdown) return;
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setIsMentionListOpen(false);
+      return;
+    }
+
+    if (mentionCandidates.length === 0) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveMentionIndex((index) => (index + 1) % mentionCandidates.length);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveMentionIndex(
+        (index) =>
+          (index - 1 + mentionCandidates.length) % mentionCandidates.length,
+      );
+      return;
+    }
+
+    if (event.key === "Enter" && !event.shiftKey && activeMention) {
+      event.preventDefault();
+      handleInsertMention(activeMention);
+    }
+  };
+
   return (
     <form
       onSubmit={(event) => {
@@ -183,6 +234,16 @@ export const CommentForm = ({
                     name={field.name}
                     placeholder={isReply ? "Write a reply…" : "Add a comment…"}
                     value={field.state.value}
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={showMentionDropdown}
+                    aria-controls={
+                      showMentionDropdown ? mentionListId : undefined
+                    }
+                    aria-activedescendant={
+                      showMentionDropdown ? activeMentionOptionId : undefined
+                    }
+                    aria-label={isReply ? "Write a reply" : "Add a comment"}
                     onBlur={field.handleBlur}
                     onChange={(e) => {
                       field.handleChange(e.target.value);
@@ -191,12 +252,12 @@ export const CommentForm = ({
                       );
                       setIsMentionListOpen(true);
                     }}
+                    onKeyDown={handleMentionKeyDown}
                     onKeyUp={(e) => {
                       const target = e.currentTarget;
                       setCursorPosition(
                         target.selectionStart ?? target.value.length,
                       );
-                      setIsMentionListOpen(true);
                     }}
                     onClick={(e) => {
                       const target = e.currentTarget;
@@ -215,7 +276,12 @@ export const CommentForm = ({
           />
 
           {showMentionDropdown && (
-            <div className="absolute z-20 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
+            <div
+              id={mentionListId}
+              role="listbox"
+              aria-label="Mention suggestions"
+              className="absolute z-20 mt-1 w-full rounded-md border bg-popover p-1 shadow-md"
+            >
               {isMentionLoading && mentionCandidates.length === 0
                 ? Array.from({ length: 4 }).map((_, index) => (
                     <div
@@ -229,32 +295,43 @@ export const CommentForm = ({
                       </div>
                     </div>
                   ))
-                : mentionCandidates.map((candidate) => (
-                    <button
-                      key={candidate.id}
-                      type="button"
-                      className="flex w-full items-center justify-between gap-2 rounded px-2 py-1 text-left text-sm hover:bg-accent"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        handleInsertMention(candidate);
-                      }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <UserAvatar
-                          user={candidate}
-                          size="sm"
-                        />
-                        <div className="flex flex-col">
-                          <span className="font-medium leading-tight">
-                            {candidate.displayName ?? candidate.username}
-                          </span>
-                          <span className="text-xs text-muted-foreground leading-tight">
-                            @{candidate.username}
-                          </span>
+                : mentionCandidates.map((candidate, index) => {
+                    const isActive = candidate.id === activeMention?.id;
+                    return (
+                      <button
+                        key={candidate.id}
+                        id={`${mentionListId}-${candidate.id}`}
+                        type="button"
+                        role="option"
+                        aria-selected={isActive}
+                        tabIndex={-1}
+                        className={cn(
+                          "flex w-full items-center justify-between gap-2 rounded px-2 py-1 text-left text-sm hover:bg-accent",
+                          isActive && "bg-accent",
+                        )}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleInsertMention(candidate);
+                        }}
+                        onMouseEnter={() => setActiveMentionIndex(index)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <UserAvatar
+                            user={candidate}
+                            size="sm"
+                          />
+                          <div className="flex flex-col">
+                            <span className="font-medium leading-tight">
+                              {candidate.displayName ?? candidate.username}
+                            </span>
+                            <span className="text-xs text-muted-foreground leading-tight">
+                              @{candidate.username}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
               {mentionCandidates.length > 0 && isMentionFetching && (
                 <div className="flex items-center justify-center px-2 py-1.5">
                   <Spinner className="size-3.5 text-muted-foreground" />
