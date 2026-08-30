@@ -9,6 +9,7 @@ export type ResendVerificationDto =
   components["schemas"]["ResendVerificationDto"];
 export type ForgotPasswordDto = components["schemas"]["ForgotPasswordDto"];
 export type ResetPasswordDto = components["schemas"]["ResetPasswordDto"];
+export type ChangePasswordDto = components["schemas"]["ChangePasswordDto"];
 export type RegisterResponseDto = components["schemas"]["RegisterResponseDto"];
 export type ResendVerificationResponseDto =
   components["schemas"]["ResendVerificationResponseDto"];

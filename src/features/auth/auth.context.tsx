@@ -24,6 +24,7 @@ type AuthContextValue = {
   verifyEmail: (token: string) => Promise<void>;
   resendVerification: (email: string) => Promise<ResendVerificationResponseDto>;
   logout: () => Promise<void>;
+  applySession: (session: AuthSession) => void;
 };
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(
@@ -199,6 +200,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       verifyEmail,
       resendVerification,
       logout,
+      applySession,
     }),
     [
       user,
@@ -208,6 +210,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       verifyEmail,
       resendVerification,
       logout,
+      applySession,
     ],
   );
 

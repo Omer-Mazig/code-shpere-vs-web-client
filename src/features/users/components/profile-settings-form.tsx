@@ -2,7 +2,7 @@ import React from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useForm, useStore } from "@tanstack/react-form";
 import { useBlocker } from "react-router-dom";
-import { UserRound } from "lucide-react";
+import { KeyRound, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,10 +36,17 @@ import {
 } from "../build-notification-preferences-patch";
 import { usersQueryOptionsFactory } from "../users-query-options-factory";
 import { NotificationPreferencesSettings } from "./notification-preferences-settings";
+import { DeactivateAccountSettings } from "./deactivate-account-settings";
 import { useUpdateProfile } from "../hooks/use-update-profile";
 import { useUpdateNotificationPreferences } from "../hooks/use-update-notification-preferences";
+import { useDeactivateAccount } from "../hooks/use-deactivate-account";
+import { useChangePassword } from "@/features/auth/hooks/use-change-password";
 import type { NotificationPreferences, UserProfile } from "../types";
-import { settingsFormSchema, type SettingsFormValues } from "@/lib/form-schemas";
+import {
+  isPasswordChangeRequested,
+  settingsFormSchema,
+  type SettingsFormValues,
+} from "@/lib/form-schemas";
 import { getApiError } from "@/lib/errors";
 import { applyApiFieldErrors, isFieldInvalid } from "@/lib/form";
 import { QueryBoundary } from "@/components/errors/query-boundary";
@@ -61,6 +68,9 @@ function settingsFormValuesFromLoaded(
     comments: prefs.comments,
     likes: prefs.likes,
     newFollowers: prefs.newFollowers,
+    currentPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
   };
 }
 
@@ -86,7 +96,8 @@ function isSettingsDirty(
         prefsFromSettingsValues(values),
         prefsFromSettingsValues(loaded),
       ),
-    )
+    ) ||
+    isPasswordChangeRequested(values)
   );
 }
 
@@ -124,6 +135,9 @@ export const ProfileSettingsForm = ({
 }) => {
   const updateProfile = useUpdateProfile();
   const updatePrefs = useUpdateNotificationPreferences();
+  const changePassword = useChangePassword();
+  const deactivateAccount = useDeactivateAccount();
+  const deactivatingRef = React.useRef(false);
 
   const loadedValues = React.useMemo(
     () => settingsFormValuesFromLoaded(profile, prefs),
@@ -145,9 +159,12 @@ export const ProfileSettingsForm = ({
         prefsFromSettingsValues(loaded),
       );
 
+      const wantsPassword = isPasswordChangeRequested(value);
+
       if (
         isProfilePatchEmpty(profileDto) &&
-        isNotificationPreferencesPatchEmpty(prefsDto)
+        isNotificationPreferencesPatchEmpty(prefsDto) &&
+        !wantsPassword
       ) {
         form.reset(loaded);
         return;
@@ -160,6 +177,15 @@ export const ProfileSettingsForm = ({
         if (!isNotificationPreferencesPatchEmpty(prefsDto)) {
           await updatePrefs.mutateAsync(prefsDto);
         }
+        if (wantsPassword) {
+          await changePassword.mutateAsync({
+            currentPassword: value.currentPassword,
+            newPassword: value.newPassword,
+          });
+        }
+        form.setFieldValue("currentPassword", "");
+        form.setFieldValue("newPassword", "");
+        form.setFieldValue("confirmNewPassword", "");
         toast.success("Settings saved");
       } catch (submitError) {
         applyApiFieldErrors(form, getApiError(submitError).details);
@@ -178,11 +204,17 @@ export const ProfileSettingsForm = ({
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
   const isDirty = isSettingsDirty(values, loadedValues);
   const isSaving =
-    isSubmitting || updateProfile.isPending || updatePrefs.isPending;
+    isSubmitting ||
+    updateProfile.isPending ||
+    updatePrefs.isPending ||
+    changePassword.isPending;
+  const isDeactivating = deactivateAccount.isPending;
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname,
+      isDirty &&
+      !deactivatingRef.current &&
+      currentLocation.pathname !== nextLocation.pathname,
   );
 
   React.useEffect(() => {
@@ -190,6 +222,9 @@ export const ProfileSettingsForm = ({
       return;
     }
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (deactivatingRef.current) {
+        return;
+      }
       event.preventDefault();
       event.returnValue = "";
     };
@@ -203,7 +238,7 @@ export const ProfileSettingsForm = ({
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold">Settings</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your public profile and notifications.
+            Manage your public profile, password, and notifications.
           </p>
         </header>
 
@@ -397,21 +432,137 @@ export const ProfileSettingsForm = ({
             </FieldGroup>
           </section>
 
+          <section className="space-y-4 rounded-lg border p-4">
+            <div className="flex items-center gap-2">
+              <KeyRound className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-medium">Password</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Leave these blank to keep your current password. Changing it signs
+              other devices out.
+            </p>
+
+            <FieldGroup className="gap-4">
+              <form.Field
+                name="currentPassword"
+                children={(field) => {
+                  const invalid = isFieldInvalid(field);
+                  return (
+                    <Field data-invalid={invalid}>
+                      <FieldLabel htmlFor={field.name}>
+                        Current password
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="password"
+                        autoComplete="current-password"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        aria-invalid={invalid}
+                      />
+                      {invalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <form.Field
+                  name="newPassword"
+                  children={(field) => {
+                    const invalid = isFieldInvalid(field);
+                    return (
+                      <Field data-invalid={invalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          New password
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          type="password"
+                          autoComplete="new-password"
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          aria-invalid={invalid}
+                        />
+                        {invalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+                <form.Field
+                  name="confirmNewPassword"
+                  children={(field) => {
+                    const invalid = isFieldInvalid(field);
+                    return (
+                      <Field data-invalid={invalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          Confirm new password
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          type="password"
+                          autoComplete="new-password"
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          aria-invalid={invalid}
+                        />
+                        {invalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+              </div>
+            </FieldGroup>
+          </section>
+
           <NotificationPreferencesSettings
             values={prefsFromSettingsValues(values)}
-            disabled={isSaving}
+            disabled={isSaving || isDeactivating}
             onToggle={(key, checked) => form.setFieldValue(key, checked)}
           />
 
           <div className="flex justify-end">
             <Button
               type="submit"
-              disabled={!isDirty || isSaving}
+              disabled={!isDirty || isSaving || isDeactivating}
             >
               {isSaving ? "Saving..." : "Save changes"}
             </Button>
           </div>
         </form>
+
+        <DeactivateAccountSettings
+          disabled={isSaving || isDeactivating}
+          isPending={isDeactivating}
+          onConfirm={() => {
+            deactivatingRef.current = true;
+            void deactivateAccount.mutateAsync().catch((deactivateError) => {
+              deactivatingRef.current = false;
+              toast.error(
+                getApiError(deactivateError).message ??
+                  "Could not deactivate your account.",
+              );
+            });
+          }}
+        />
       </div>
 
       <AlertDialog

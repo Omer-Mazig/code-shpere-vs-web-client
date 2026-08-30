@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { passwordSchema } from "@/features/auth/auth.schemas";
 
 const emptyOrUrl = z
   .string()
@@ -28,10 +29,58 @@ export const notificationPreferencesFormSchema = z.object({
   newFollowers: z.boolean(),
 });
 
-export const settingsFormSchema = z.object({
-  ...profileSettingsSchema.shape,
-  ...notificationPreferencesFormSchema.shape,
+export const settingsPasswordFieldsSchema = z.object({
+  currentPassword: z.string(),
+  newPassword: z.string(),
+  confirmNewPassword: z.string(),
 });
+
+export function isPasswordChangeRequested(values: {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}): boolean {
+  return (
+    values.currentPassword.length > 0 ||
+    values.newPassword.length > 0 ||
+    values.confirmNewPassword.length > 0
+  );
+}
+
+export const settingsFormSchema = z
+  .object({
+    ...profileSettingsSchema.shape,
+    ...notificationPreferencesFormSchema.shape,
+    ...settingsPasswordFieldsSchema.shape,
+  })
+  .superRefine((data, ctx) => {
+    if (!isPasswordChangeRequested(data)) {
+      return;
+    }
+
+    if (!data.currentPassword) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["currentPassword"],
+        message: "Current password is required",
+      });
+    }
+
+    const parsedNewPassword = passwordSchema.safeParse(data.newPassword);
+    if (!parsedNewPassword.success) {
+      for (const issue of parsedNewPassword.error.issues) {
+        ctx.addIssue({ ...issue, path: ["newPassword"] });
+      }
+    }
+
+    if (data.newPassword !== data.confirmNewPassword) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["confirmNewPassword"],
+        message: "Passwords do not match",
+      });
+    }
+  });
 
 export type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 

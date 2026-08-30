@@ -9,3 +9,5 @@ export type NotificationPreferences =
   components["schemas"]["NotificationPreferencesResponseDto"];
 export type UpdateNotificationPreferencesDto =
   components["schemas"]["UpdateNotificationPreferencesDto"];
+export type DeactivateAccountResponseDto =
+  components["schemas"]["DeactivateAccountResponseDto"];

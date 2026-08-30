@@ -8,6 +8,7 @@ import type {
   UserPreview,
   NotificationPreferences,
   UpdateNotificationPreferencesDto,
+  DeactivateAccountResponseDto,
 } from "./types";
 
 export const usersApi = {
@@ -51,6 +52,13 @@ export const usersApi = {
     const response = await apiClient.patch<
       ApiEnvelope<NotificationPreferences>
     >("/users/me/notification-preferences", dto);
+    return response.data.payload;
+  },
+
+  deactivate: async (): Promise<DeactivateAccountResponseDto> => {
+    const response = await apiClient.post<
+      ApiEnvelope<DeactivateAccountResponseDto>
+    >("/users/me/deactivate");
     return response.data.payload;
   },
 

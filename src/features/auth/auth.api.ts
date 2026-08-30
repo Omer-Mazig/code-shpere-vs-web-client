@@ -2,6 +2,7 @@ import { apiClient, setAccessToken } from "@/lib/api-client";
 import type { ApiEnvelope } from "@/lib/types";
 import type {
   AuthSession,
+  ChangePasswordDto,
   ForgotPasswordDto,
   ForgotPasswordResponseDto,
   LoginDto,
@@ -70,6 +71,14 @@ export const authApi = {
     const response = await apiClient.post<ApiEnvelope<ResetPasswordResponseDto>>(
       "/auth/reset-password",
       payload,
+    );
+    return response.data.payload;
+  },
+
+  changePassword: async (dto: ChangePasswordDto): Promise<AuthSession> => {
+    const response = await apiClient.post<ApiEnvelope<AuthSession>>(
+      "/auth/change-password",
+      dto,
     );
     return response.data.payload;
   },
