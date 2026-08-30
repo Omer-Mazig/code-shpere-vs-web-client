@@ -1,15 +1,14 @@
 import type { ProfileSettingsFormValues } from "@/lib/form-schemas";
 import type { UpdateProfileDto } from "./types";
 
-export const CLEARABLE_PROFILE_FIELDS = [
+const PROFILE_PATCH_FIELDS = [
+  "displayName",
   "bio",
   "location",
   "website",
   "github",
   "avatarUrl",
 ] as const;
-
-export type ClearableProfileField = (typeof CLEARABLE_PROFILE_FIELDS)[number];
 
 export function profileFormValuesFromUser(profile: {
   displayName?: string | null;
@@ -32,31 +31,15 @@ export function profileFormValuesFromUser(profile: {
 export function buildProfilePatch(
   values: ProfileSettingsFormValues,
   loaded: ProfileSettingsFormValues,
-  cleared: ReadonlySet<ClearableProfileField>,
 ): UpdateProfileDto {
   const dto: UpdateProfileDto = {};
 
-  if (values.displayName !== loaded.displayName) {
-    const trimmed = values.displayName.trim();
-    if (trimmed.length > 0) {
-      dto.displayName = trimmed;
-    }
-  }
-
-  for (const field of CLEARABLE_PROFILE_FIELDS) {
-    if (cleared.has(field)) {
-      if (loaded[field].trim().length > 0) {
-        dto[field] = null;
-      }
+  for (const field of PROFILE_PATCH_FIELDS) {
+    if (values[field] === loaded[field]) {
       continue;
     }
-
-    if (values[field] !== loaded[field]) {
-      const trimmed = values[field].trim();
-      if (trimmed.length > 0) {
-        dto[field] = trimmed;
-      }
-    }
+    const trimmed = values[field].trim();
+    dto[field] = trimmed.length > 0 ? trimmed : null;
   }
 
   return dto;

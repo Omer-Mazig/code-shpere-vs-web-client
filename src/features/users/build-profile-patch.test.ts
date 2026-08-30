@@ -4,7 +4,6 @@ import {
   buildProfilePatch,
   isProfilePatchEmpty,
   profileFormValuesFromUser,
-  type ClearableProfileField,
 } from "./build-profile-patch";
 
 const loaded: ProfileSettingsFormValues = {
@@ -19,45 +18,28 @@ const loaded: ProfileSettingsFormValues = {
 describe("buildProfilePatch", () => {
   it("sends only dirty fields", () => {
     expect(
-      buildProfilePatch(
-        { ...loaded, location: "Manchester" },
-        loaded,
-        new Set(),
-      ),
+      buildProfilePatch({ ...loaded, location: "Manchester" }, loaded),
     ).toEqual({ location: "Manchester" });
   });
 
-  it("omits emptied fields unless they were explicitly cleared", () => {
+  it("sends null for emptied fields", () => {
     expect(
-      buildProfilePatch({ ...loaded, bio: "", website: "" }, loaded, new Set()),
-    ).toEqual({});
+      buildProfilePatch({ ...loaded, bio: "", website: "   " }, loaded),
+    ).toEqual({ bio: null, website: null });
   });
 
-  it("sends null for explicitly cleared optional fields that had a value", () => {
-    const cleared = new Set<ClearableProfileField>(["bio", "github"]);
+  it("sends null when displayName is emptied", () => {
     expect(
-      buildProfilePatch({ ...loaded, bio: "", github: "" }, loaded, cleared),
-    ).toEqual({ bio: null, github: null });
+      buildProfilePatch({ ...loaded, displayName: "" }, loaded),
+    ).toEqual({ displayName: null });
   });
 
-  it("does not send null when clearing an already empty field", () => {
+  it("does not send a field that is already empty", () => {
     const emptyLoaded = profileFormValuesFromUser({
       displayName: "Ada",
       bio: null,
     });
-    expect(
-      buildProfilePatch(
-        emptyLoaded,
-        emptyLoaded,
-        new Set<ClearableProfileField>(["bio"]),
-      ),
-    ).toEqual({});
-  });
-
-  it("does not clear displayName when the input is emptied", () => {
-    expect(
-      buildProfilePatch({ ...loaded, displayName: "" }, loaded, new Set()),
-    ).toEqual({});
+    expect(buildProfilePatch(emptyLoaded, emptyLoaded)).toEqual({});
   });
 });
 

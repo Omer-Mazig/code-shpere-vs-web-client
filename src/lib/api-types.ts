@@ -831,7 +831,7 @@ export interface components {
         };
         UpdateProfileDto: {
             /** @example John Doe */
-            displayName?: string;
+            displayName?: string | null;
             /** @example Full-stack developer */
             bio?: string | null;
             /** @example https://example.com/avatar.jpg */

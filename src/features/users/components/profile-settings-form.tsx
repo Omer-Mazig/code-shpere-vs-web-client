@@ -1,7 +1,9 @@
 import React from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useForm } from "@tanstack/react-form";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useBlocker } from "react-router-dom";
 import { UserRound } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,16 +16,30 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   buildProfilePatch,
   isProfilePatchEmpty,
   profileFormValuesFromUser,
-  type ClearableProfileField,
 } from "../build-profile-patch";
+import {
+  buildNotificationPreferencesPatch,
+  isNotificationPreferencesPatchEmpty,
+} from "../build-notification-preferences-patch";
 import { usersQueryOptionsFactory } from "../users-query-options-factory";
 import { NotificationPreferencesSettings } from "./notification-preferences-settings";
 import { useUpdateProfile } from "../hooks/use-update-profile";
-import type { UserProfile } from "../types";
-import { profileSettingsSchema } from "@/lib/form-schemas";
+import { useUpdateNotificationPreferences } from "../hooks/use-update-notification-preferences";
+import type { NotificationPreferences, UserProfile } from "../types";
+import { settingsFormSchema, type SettingsFormValues } from "@/lib/form-schemas";
 import { getApiError } from "@/lib/errors";
 import { applyApiFieldErrors, isFieldInvalid } from "@/lib/form";
 import { QueryBoundary } from "@/components/errors/query-boundary";
@@ -35,14 +51,57 @@ const ProfileSettingsSkeleton = () => (
   </div>
 );
 
+function settingsFormValuesFromLoaded(
+  profile: UserProfile,
+  prefs: NotificationPreferences,
+): SettingsFormValues {
+  return {
+    ...profileFormValuesFromUser(profile),
+    mentions: prefs.mentions,
+    comments: prefs.comments,
+    likes: prefs.likes,
+    newFollowers: prefs.newFollowers,
+  };
+}
+
+function prefsFromSettingsValues(
+  values: SettingsFormValues,
+): NotificationPreferences {
+  return {
+    mentions: values.mentions,
+    comments: values.comments,
+    likes: values.likes,
+    newFollowers: values.newFollowers,
+  };
+}
+
+function isSettingsDirty(
+  values: SettingsFormValues,
+  loaded: SettingsFormValues,
+): boolean {
+  return (
+    !isProfilePatchEmpty(buildProfilePatch(values, loaded)) ||
+    !isNotificationPreferencesPatchEmpty(
+      buildNotificationPreferencesPatch(
+        prefsFromSettingsValues(values),
+        prefsFromSettingsValues(loaded),
+      ),
+    )
+  );
+}
+
 const ProfileSettingsContent = () => {
   const { data: profile } = useSuspenseQuery(
     usersQueryOptionsFactory.myProfile(),
+  );
+  const { data: prefs } = useSuspenseQuery(
+    usersQueryOptionsFactory.notificationPreferences(),
   );
   return (
     <ProfileSettingsForm
       key={profile.id}
       profile={profile}
+      prefs={prefs}
     />
   );
 };
@@ -58,69 +117,85 @@ export const ProfileSettings = () => (
 
 export const ProfileSettingsForm = ({
   profile,
+  prefs,
 }: {
   profile: UserProfile;
+  prefs: NotificationPreferences;
 }) => {
   const updateProfile = useUpdateProfile();
-  const [cleared, setCleared] = React.useState<Set<ClearableProfileField>>(
-    () => new Set(),
-  );
+  const updatePrefs = useUpdateNotificationPreferences();
 
   const loadedValues = React.useMemo(
-    () => profileFormValuesFromUser(profile),
-    [profile],
+    () => settingsFormValuesFromLoaded(profile, prefs),
+    [profile, prefs],
   );
   const loadedValuesRef = React.useRef(loadedValues);
-  const clearedRef = React.useRef(cleared);
   loadedValuesRef.current = loadedValues;
-  clearedRef.current = cleared;
 
   const form = useForm({
     defaultValues: loadedValues,
     validators: {
-      onSubmit: profileSettingsSchema,
+      onSubmit: settingsFormSchema,
     },
     onSubmit: async ({ value }) => {
-      const dto = buildProfilePatch(
-        value,
-        loadedValuesRef.current,
-        clearedRef.current,
+      const loaded = loadedValuesRef.current;
+      const profileDto = buildProfilePatch(value, loaded);
+      const prefsDto = buildNotificationPreferencesPatch(
+        prefsFromSettingsValues(value),
+        prefsFromSettingsValues(loaded),
       );
-      if (isProfilePatchEmpty(dto)) {
-        form.reset(loadedValuesRef.current);
-        setCleared(new Set());
+
+      if (
+        isProfilePatchEmpty(profileDto) &&
+        isNotificationPreferencesPatchEmpty(prefsDto)
+      ) {
+        form.reset(loaded);
         return;
       }
+
       try {
-        await updateProfile.mutateAsync(dto);
-        setCleared(new Set());
+        if (!isProfilePatchEmpty(profileDto)) {
+          await updateProfile.mutateAsync(profileDto);
+        }
+        if (!isNotificationPreferencesPatchEmpty(prefsDto)) {
+          await updatePrefs.mutateAsync(prefsDto);
+        }
+        toast.success("Settings saved");
       } catch (submitError) {
         applyApiFieldErrors(form, getApiError(submitError).details);
+        toast.error(
+          getApiError(submitError).message ?? "Could not save settings.",
+        );
       }
     },
   });
 
   React.useEffect(() => {
     form.reset(loadedValues);
-    setCleared(new Set());
   }, [loadedValues, form]);
 
-  const markCleared = (field: ClearableProfileField) => {
-    setCleared((prev) => {
-      const next = new Set(prev);
-      next.add(field);
-      return next;
-    });
-  };
+  const values = useStore(form.store, (state) => state.values);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const isDirty = isSettingsDirty(values, loadedValues);
+  const isSaving =
+    isSubmitting || updateProfile.isPending || updatePrefs.isPending;
 
-  const unmarkCleared = (field: ClearableProfileField) => {
-    setCleared((prev) => {
-      if (!prev.has(field)) return prev;
-      const next = new Set(prev);
-      next.delete(field);
-      return next;
-    });
-  };
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  React.useEffect(() => {
+    if (!isDirty) {
+      return;
+    }
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty]);
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-6">
@@ -128,7 +203,7 @@ export const ProfileSettingsForm = ({
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold">Settings</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your public profile.
+            Manage your public profile and notifications.
           </p>
         </header>
 
@@ -144,10 +219,6 @@ export const ProfileSettingsForm = ({
               <UserRound className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-medium">General info</h2>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Emptying a field and saving leaves the previous value. Use Clear
-              to remove it.
-            </p>
 
             <FieldGroup className="gap-4">
               <Field>
@@ -195,27 +266,15 @@ export const ProfileSettingsForm = ({
                   const invalid = isFieldInvalid(field);
                   return (
                     <Field data-invalid={invalid}>
-                      <ClearableFieldHeader
-                        htmlFor={field.name}
-                        label="Bio"
-                        showClear={canClearField(
-                          loadedValues.bio,
-                          field.state.value,
-                        )}
-                        onClear={() => {
-                          field.handleChange("");
-                          markCleared("bio");
-                        }}
-                      />
+                      <FieldLabel htmlFor={field.name}>Bio</FieldLabel>
                       <Textarea
                         id={field.name}
                         name={field.name}
                         value={field.state.value}
                         onBlur={field.handleBlur}
-                        onChange={(event) => {
-                          unmarkCleared("bio");
-                          field.handleChange(event.target.value);
-                        }}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
                         aria-invalid={invalid}
                         rows={4}
                         placeholder="Tell the community about yourself..."
@@ -235,27 +294,15 @@ export const ProfileSettingsForm = ({
                     const invalid = isFieldInvalid(field);
                     return (
                       <Field data-invalid={invalid}>
-                        <ClearableFieldHeader
-                          htmlFor={field.name}
-                          label="Location"
-                          showClear={canClearField(
-                            loadedValues.location,
-                            field.state.value,
-                          )}
-                          onClear={() => {
-                            field.handleChange("");
-                            markCleared("location");
-                          }}
-                        />
+                        <FieldLabel htmlFor={field.name}>Location</FieldLabel>
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(event) => {
-                            unmarkCleared("location");
-                            field.handleChange(event.target.value);
-                          }}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
                           aria-invalid={invalid}
                           placeholder="San Francisco, CA"
                         />
@@ -272,27 +319,17 @@ export const ProfileSettingsForm = ({
                     const invalid = isFieldInvalid(field);
                     return (
                       <Field data-invalid={invalid}>
-                        <ClearableFieldHeader
-                          htmlFor={field.name}
-                          label="GitHub username"
-                          showClear={canClearField(
-                            loadedValues.github,
-                            field.state.value,
-                          )}
-                          onClear={() => {
-                            field.handleChange("");
-                            markCleared("github");
-                          }}
-                        />
+                        <FieldLabel htmlFor={field.name}>
+                          GitHub username
+                        </FieldLabel>
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(event) => {
-                            unmarkCleared("github");
-                            field.handleChange(event.target.value);
-                          }}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
                           aria-invalid={invalid}
                           placeholder="johndoe"
                         />
@@ -312,27 +349,15 @@ export const ProfileSettingsForm = ({
                     const invalid = isFieldInvalid(field);
                     return (
                       <Field data-invalid={invalid}>
-                        <ClearableFieldHeader
-                          htmlFor={field.name}
-                          label="Website"
-                          showClear={canClearField(
-                            loadedValues.website,
-                            field.state.value,
-                          )}
-                          onClear={() => {
-                            field.handleChange("");
-                            markCleared("website");
-                          }}
-                        />
+                        <FieldLabel htmlFor={field.name}>Website</FieldLabel>
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(event) => {
-                            unmarkCleared("website");
-                            field.handleChange(event.target.value);
-                          }}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
                           aria-invalid={invalid}
                           placeholder="https://example.com"
                         />
@@ -349,27 +374,15 @@ export const ProfileSettingsForm = ({
                     const invalid = isFieldInvalid(field);
                     return (
                       <Field data-invalid={invalid}>
-                        <ClearableFieldHeader
-                          htmlFor={field.name}
-                          label="Avatar URL"
-                          showClear={canClearField(
-                            loadedValues.avatarUrl,
-                            field.state.value,
-                          )}
-                          onClear={() => {
-                            field.handleChange("");
-                            markCleared("avatarUrl");
-                          }}
-                        />
+                        <FieldLabel htmlFor={field.name}>Avatar URL</FieldLabel>
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(event) => {
-                            unmarkCleared("avatarUrl");
-                            field.handleChange(event.target.value);
-                          }}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
                           aria-invalid={invalid}
                           placeholder="https://..."
                         />
@@ -384,52 +397,61 @@ export const ProfileSettingsForm = ({
             </FieldGroup>
           </section>
 
+          <NotificationPreferencesSettings
+            values={prefsFromSettingsValues(values)}
+            disabled={isSaving}
+            onToggle={(key, checked) => form.setFieldValue(key, checked)}
+          />
+
           <div className="flex justify-end">
-            <form.Subscribe
-              selector={(state) => state.isSubmitting}
-              children={(isSubmitting) => (
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || updateProfile.isPending}
-                >
-                  {isSubmitting || updateProfile.isPending
-                    ? "Saving..."
-                    : "Save changes"}
-                </Button>
-              )}
-            />
+            <Button
+              type="submit"
+              disabled={!isDirty || isSaving}
+            >
+              {isSaving ? "Saving..." : "Save changes"}
+            </Button>
           </div>
         </form>
-
-        <NotificationPreferencesSettings />
       </div>
+
+      <AlertDialog
+        open={blocker.state === "blocked"}
+        onOpenChange={(open) => {
+          if (!open && blocker.state === "blocked") {
+            blocker.reset();
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave without saving?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved settings. If you leave now, those changes will
+              be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                if (blocker.state === "blocked") {
+                  blocker.reset();
+                }
+              }}
+            >
+              Stay
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (blocker.state === "blocked") {
+                  blocker.proceed();
+                }
+              }}
+            >
+              Leave
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
-
-function canClearField(loadedValue: string, currentValue: string) {
-  return loadedValue.trim().length > 0 || currentValue.trim().length > 0;
-}
-
-function ClearableFieldHeader({
-  htmlFor,
-  label,
-  showClear,
-  onClear,
-}: {
-  htmlFor: string;
-  label: string;
-  showClear: boolean;
-  onClear: () => void;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
-      {showClear ? (
-        <Button type="button" variant="ghost" size="xs" onClick={onClear}>
-          Clear
-        </Button>
-      ) : null}
-    </div>
-  );
-}

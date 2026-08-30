@@ -21,6 +21,20 @@ export const profileSettingsSchema = z.object({
 
 export type ProfileSettingsFormValues = z.infer<typeof profileSettingsSchema>;
 
+export const notificationPreferencesFormSchema = z.object({
+  mentions: z.boolean(),
+  comments: z.boolean(),
+  likes: z.boolean(),
+  newFollowers: z.boolean(),
+});
+
+export const settingsFormSchema = z.object({
+  ...profileSettingsSchema.shape,
+  ...notificationPreferencesFormSchema.shape,
+});
+
+export type SettingsFormValues = z.infer<typeof settingsFormSchema>;
+
 export const createPostSchema = z.object({
   content: z
     .string()
