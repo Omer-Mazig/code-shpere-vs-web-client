@@ -6,6 +6,8 @@ import type {
   FollowUser,
   SuggestedUser,
   UserPreview,
+  NotificationPreferences,
+  UpdateNotificationPreferencesDto,
 } from "./types";
 
 export const usersApi = {
@@ -33,6 +35,22 @@ export const usersApi = {
       "/users/me",
       dto,
     );
+    return response.data.payload;
+  },
+
+  getNotificationPreferences: async (): Promise<NotificationPreferences> => {
+    const response = await apiClient.get<ApiEnvelope<NotificationPreferences>>(
+      "/users/me/notification-preferences",
+    );
+    return response.data.payload;
+  },
+
+  updateNotificationPreferences: async (
+    dto: UpdateNotificationPreferencesDto,
+  ): Promise<NotificationPreferences> => {
+    const response = await apiClient.patch<
+      ApiEnvelope<NotificationPreferences>
+    >("/users/me/notification-preferences", dto);
     return response.data.payload;
   },
 

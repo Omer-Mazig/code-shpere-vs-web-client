@@ -57,6 +57,17 @@ export const usersQueryOptionsFactory = {
       staleTime: 1000 * 60 * 5,
     }),
 
+  // ["users", "notification-preferences"]
+  notificationPreferences: () =>
+    queryOptions({
+      queryKey: [
+        ...usersQueryOptionsFactory.all().queryKey,
+        "notification-preferences",
+      ],
+      queryFn: () => usersApi.getNotificationPreferences(),
+      staleTime: 1000 * 60 * 5,
+    }),
+
   // ["users", "followers", userId]
   followers: (userId: string) =>
     infiniteQueryOptions({

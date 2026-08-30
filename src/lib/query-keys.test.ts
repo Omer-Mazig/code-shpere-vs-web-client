@@ -90,6 +90,10 @@ describe("query option factories", () => {
       "preview",
       "u1",
     ]);
+    expect(usersQueryOptionsFactory.notificationPreferences().queryKey).toEqual([
+      "users",
+      "notification-preferences",
+    ]);
     expect(usersQueryOptionsFactory.followers("u1").queryKey).toEqual([
       "users",
       "followers",
