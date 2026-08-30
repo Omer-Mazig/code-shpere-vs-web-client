@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
 import { useAuth } from "@/features/auth/auth.context";
 import { MyProfile } from "@/features/users/components/my-profile";
@@ -28,61 +28,22 @@ const LockedProfileRoute = ({ profileId }: { profileId: string }) => {
   return <LockedProfile preview={preview} />;
 };
 
-export const ProfileLayoutRouteGate = ({
+const AuthenticatedProfileLayout = ({
+  profileId,
+  isOwnProfile,
   activeTab,
   children,
-}: ProfileLayoutRouteGateProps) => {
-  const { id } = useParams<{ id: string }>();
-  const { user, isAuthenticated } = useAuth();
-  const profileId = id ?? "";
-  const isOwnProfile = isAuthenticated && user?.id === profileId;
-
-  const { data: profile, isLoading } = useQuery({
-    ...(isOwnProfile
+}: {
+  profileId: string;
+  isOwnProfile: boolean;
+  activeTab: ProfileActiveTab;
+  children: ProfileLayoutRouteGateProps["children"];
+}) => {
+  const { data: profile } = useSuspenseQuery(
+    isOwnProfile
       ? usersQueryOptionsFactory.myProfile()
-      : usersQueryOptionsFactory.profile(profileId)),
-    enabled: Boolean(profileId) && isAuthenticated,
-  });
-
-  if (!isAuthenticated) {
-    if (!profileId) {
-      return (
-        <div className="container mx-auto max-w-4xl px-4 py-6">
-          <p className="text-muted-foreground">User not found.</p>
-        </div>
-      );
-    }
-
-    return (
-      <QueryBoundary
-        fallback={
-          <div className="container mx-auto max-w-lg px-4 py-16">
-            <Skeleton className="mx-auto h-72 w-full max-w-lg rounded-2xl" />
-          </div>
-        }
-        ErrorFallback={PageErrorFallback}
-        resetKeys={[profileId]}
-      >
-        <LockedProfileRoute profileId={profileId} />
-      </QueryBoundary>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto max-w-4xl px-4 py-6">
-        <Skeleton className="h-96 w-full rounded-xl" />
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="container mx-auto max-w-4xl px-4 py-6">
-        <p className="text-muted-foreground">User not found.</p>
-      </div>
-    );
-  }
+      : usersQueryOptionsFactory.profile(profileId),
+  );
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-6">
@@ -112,5 +73,59 @@ export const ProfileLayoutRouteGate = ({
         )}
       </div>
     </div>
+  );
+};
+
+export const ProfileLayoutRouteGate = ({
+  activeTab,
+  children,
+}: ProfileLayoutRouteGateProps) => {
+  const { id } = useParams<{ id: string }>();
+  const { user, isAuthenticated } = useAuth();
+  const profileId = id ?? "";
+  const isOwnProfile = Boolean(isAuthenticated && user?.id === profileId);
+
+  if (!profileId) {
+    return (
+      <div className="container mx-auto max-w-4xl px-4 py-6">
+        <p className="text-muted-foreground">User not found.</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <QueryBoundary
+        fallback={
+          <div className="container mx-auto max-w-lg px-4 py-16">
+            <Skeleton className="mx-auto h-72 w-full max-w-lg rounded-2xl" />
+          </div>
+        }
+        ErrorFallback={PageErrorFallback}
+        resetKeys={[profileId]}
+      >
+        <LockedProfileRoute profileId={profileId} />
+      </QueryBoundary>
+    );
+  }
+
+  return (
+    <QueryBoundary
+      fallback={
+        <div className="container mx-auto max-w-4xl px-4 py-6">
+          <Skeleton className="h-96 w-full rounded-xl" />
+        </div>
+      }
+      ErrorFallback={PageErrorFallback}
+      resetKeys={[profileId, isOwnProfile]}
+    >
+      <AuthenticatedProfileLayout
+        profileId={profileId}
+        isOwnProfile={isOwnProfile}
+        activeTab={activeTab}
+      >
+        {children}
+      </AuthenticatedProfileLayout>
+    </QueryBoundary>
   );
 };

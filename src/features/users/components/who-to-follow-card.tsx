@@ -95,22 +95,32 @@ export const WhoToFollowCard = () => {
     usersQueryOptionsFactory.suggestions(SUGGESTIONS_LIMIT, user?.id),
   );
 
-  if (isError || (data && data.items.length === 0)) return null;
+  const items = data?.items ?? [];
 
-  return (
-    <SideCard kicker="who_to_follow">
-      {isPending ? (
-        <RowsSkeleton />
-      ) : (
+  if (items.length > 0) {
+    return (
+      <SideCard kicker="who_to_follow">
         <div className="stagger-children flex flex-col gap-4">
-          {data?.items.map((suggested) => (
+          {items.map((suggested) => (
             <SuggestedUserRow
               key={suggested.id}
               user={suggested}
             />
           ))}
         </div>
-      )}
-    </SideCard>
-  );
+      </SideCard>
+    );
+  }
+
+  if (isError) return null;
+
+  if (isPending) {
+    return (
+      <SideCard kicker="who_to_follow">
+        <RowsSkeleton />
+      </SideCard>
+    );
+  }
+
+  return null;
 };

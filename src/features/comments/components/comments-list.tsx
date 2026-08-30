@@ -1,10 +1,9 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import type { useCreateComment } from "../hooks/use-create-comment";
 import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import React from "react";
 import { CommentItem } from "./comments-item";
 import { Button } from "@/components/ui/button";
-import { CommentsSkeleton } from "./comments-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MessageCircle } from "lucide-react";
@@ -33,17 +32,15 @@ export const CommentsList = ({
   setLastCreatedCommentId,
   setPendingParentId,
 }: CommentsListProps) => {
-  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
-    useInfiniteQuery(commentsQueryOptionsFactory.thread(targetId, targetType));
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useSuspenseInfiniteQuery(
+      commentsQueryOptionsFactory.thread(targetId, targetType),
+    );
 
   const comments = React.useMemo(
-    () => data?.pages.flatMap((page) => page.items) ?? [],
+    () => data.pages.flatMap((page) => page.items),
     [data],
   );
-
-  if (isFetching && comments.length === 0) {
-    return <CommentsSkeleton />;
-  }
 
   if (comments.length === 0 && pendingParentId !== null) {
     return (

@@ -38,6 +38,7 @@ export const CommentsSection = ({
       <QueryBoundary
         fallback={<CommentsSkeleton />}
         ErrorFallback={InlineErrorFallback}
+        resetKeys={[targetId, targetType]}
       >
         <CommentsList
           targetId={targetId}
