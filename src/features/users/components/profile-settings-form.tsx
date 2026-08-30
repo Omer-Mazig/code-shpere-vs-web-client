@@ -20,6 +20,7 @@ import {
   type ClearableProfileField,
 } from "../build-profile-patch";
 import { usersQueryOptionsFactory } from "../users-query-options-factory";
+import { NotificationPreferencesSettings } from "./notification-preferences-settings";
 import { useUpdateProfile } from "../hooks/use-update-profile";
 import type { UserProfile } from "../types";
 import { profileSettingsSchema } from "@/lib/form-schemas";
@@ -399,6 +400,8 @@ export const ProfileSettingsForm = ({
             />
           </div>
         </form>
+
+        <NotificationPreferencesSettings />
       </div>
     </div>
   );
