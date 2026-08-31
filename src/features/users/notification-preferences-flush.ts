@@ -19,8 +19,7 @@ export const NOTIFICATION_PREFERENCES_FLUSH_DEBOUNCE_MS = 200;
  *
  * The four switches share one DB row, and the API is a read-modify-write
  * merge. Two overlapping PATCHes (`{ likes: false }` then `{ mentions: false }`)
- * can persist the wrong document. The like button avoids this because each
- * like is its own row; we cannot copy that pattern here.
+ * can persist the wrong document.
  *
  * This controller never touches React Query. The hook owns the cache (user
  * intent) and the network. We only decide:

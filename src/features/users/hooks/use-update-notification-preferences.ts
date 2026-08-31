@@ -8,15 +8,11 @@ import {
   createNotificationPreferencesFlushController,
   NOTIFICATION_PREFERENCES_FLUSH_DEBOUNCE_MS,
 } from "../notification-preferences-flush";
-import type {
-  NotificationPreferences,
-  UpdateNotificationPreferencesDto,
-} from "../types";
+import type { UpdateNotificationPreferencesDto } from "../types";
 
 export function useUpdateNotificationPreferences() {
   const queryClient = useQueryClient();
-  const queryKey =
-    usersQueryOptionsFactory.notificationPreferences().queryKey;
+  const queryKey = usersQueryOptionsFactory.notificationPreferences().queryKey;
   const controllerRef = useRef(createNotificationPreferencesFlushController());
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const runFlushRef = useRef<() => void>(() => {});
@@ -30,7 +26,7 @@ export function useUpdateNotificationPreferences() {
   // Keep a stable callback so the debounce timer and unmount cleanup always
   // call the latest flush (queryClient, mutation, controller).
   runFlushRef.current = () => {
-    const cache = queryClient.getQueryData<NotificationPreferences>(queryKey);
+    const cache = queryClient.getQueryData(queryKey);
     if (!cache) {
       return;
     }
@@ -83,14 +79,14 @@ export function useUpdateNotificationPreferences() {
   };
 
   const mutate = (dto: UpdateNotificationPreferencesDto) => {
-    const current = queryClient.getQueryData<NotificationPreferences>(queryKey);
+    const current = queryClient.getQueryData(queryKey);
     if (!current) {
       return;
     }
 
     // Cache updates synchronously so the switch flips before the network.
     controllerRef.current.seedIfEmpty(current);
-    queryClient.setQueryData<NotificationPreferences>(queryKey, {
+    queryClient.setQueryData(queryKey, {
       ...current,
       ...dto,
     });
