@@ -24,6 +24,13 @@ export const PROFILE_PATHS = {
   PROFILE: "/profile/:id",
 } as const;
 
+export const SETTINGS_PATHS = {
+  ROOT: "/settings",
+  PROFILE: "/settings/profile",
+  ACCOUNT: "/settings/account",
+  NOTIFICATIONS: "/settings/notifications",
+} as const;
+
 export const NOTIFICATION_PATHS = {
   NOTIFICATIONS: "/notifications",
 } as const;

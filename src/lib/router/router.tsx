@@ -10,6 +10,7 @@ import { authRoutes } from "./auth.router";
 import { feedRoutes } from "./feed.router";
 import { articleRoutes } from "./article.router";
 import { profileRoutes } from "./profile.router";
+import { settingsRoutes } from "./settings.router";
 import { AUTH_PATHS, ARTICLE_PATHS, FEED_PATHS } from "../routes.constants";
 
 const HomeIndexRedirect = () => {
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
           ...feedRoutes,
           ...articleRoutes,
           ...profileRoutes,
+          ...settingsRoutes,
         ],
       },
       // Catch-all route for undefined paths

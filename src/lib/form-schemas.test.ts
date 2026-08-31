@@ -1,49 +1,37 @@
 import { describe, expect, it } from "vitest";
 import {
+  accountSettingsSchema,
   isPasswordChangeRequested,
-  settingsFormSchema,
 } from "./form-schemas";
 
-const baseSettings = {
-  displayName: "Ada",
-  bio: "",
-  location: "",
-  github: "",
-  website: "",
-  avatarUrl: "",
-  mentions: true,
-  comments: true,
-  likes: true,
-  newFollowers: true,
+const emptyPasswords = {
   currentPassword: "",
   newPassword: "",
   confirmNewPassword: "",
 };
 
-describe("settingsFormSchema", () => {
+describe("accountSettingsSchema", () => {
   it("accepts empty password fields so Save can skip a password change", () => {
-    expect(settingsFormSchema.safeParse(baseSettings).success).toBe(true);
-    expect(isPasswordChangeRequested(baseSettings)).toBe(false);
+    expect(accountSettingsSchema.safeParse(emptyPasswords).success).toBe(true);
+    expect(isPasswordChangeRequested(emptyPasswords)).toBe(false);
   });
 
   it("requires current, policy-valid new, and matching confirm when any password field is filled", () => {
-    const missingCurrent = settingsFormSchema.safeParse({
-      ...baseSettings,
+    const missingCurrent = accountSettingsSchema.safeParse({
+      ...emptyPasswords,
       newPassword: "Password2",
       confirmNewPassword: "Password2",
     });
     expect(missingCurrent.success).toBe(false);
 
-    const weakNew = settingsFormSchema.safeParse({
-      ...baseSettings,
+    const weakNew = accountSettingsSchema.safeParse({
       currentPassword: "Password1",
       newPassword: "short",
       confirmNewPassword: "short",
     });
     expect(weakNew.success).toBe(false);
 
-    const mismatch = settingsFormSchema.safeParse({
-      ...baseSettings,
+    const mismatch = accountSettingsSchema.safeParse({
       currentPassword: "Password1",
       newPassword: "Password2",
       confirmNewPassword: "Password3",
@@ -53,8 +41,7 @@ describe("settingsFormSchema", () => {
       expect(mismatch.error.issues[0]?.message).toBe("Passwords do not match");
     }
 
-    const valid = settingsFormSchema.safeParse({
-      ...baseSettings,
+    const valid = accountSettingsSchema.safeParse({
       currentPassword: "Password1",
       newPassword: "Password2",
       confirmNewPassword: "Password2",

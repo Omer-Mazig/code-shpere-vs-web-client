@@ -47,13 +47,8 @@ export function isPasswordChangeRequested(values: {
   );
 }
 
-export const settingsFormSchema = z
-  .object({
-    ...profileSettingsSchema.shape,
-    ...notificationPreferencesFormSchema.shape,
-    ...settingsPasswordFieldsSchema.shape,
-  })
-  .superRefine((data, ctx) => {
+export const accountSettingsSchema = settingsPasswordFieldsSchema.superRefine(
+  (data, ctx) => {
     if (!isPasswordChangeRequested(data)) {
       return;
     }
@@ -80,9 +75,10 @@ export const settingsFormSchema = z
         message: "Passwords do not match",
       });
     }
-  });
+  },
+);
 
-export type SettingsFormValues = z.infer<typeof settingsFormSchema>;
+export type AccountSettingsFormValues = z.infer<typeof accountSettingsSchema>;
 
 export const createPostSchema = z.object({
   content: z

@@ -1,6 +1,6 @@
 import { Navigate, useParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/auth.context";
-import { ProfileSettings } from "@/features/users/components/profile-settings-form";
+import { SETTINGS_PATHS } from "@/lib/routes.constants";
 
 export const ProfileSettingsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,5 +25,10 @@ export const ProfileSettingsPage = () => {
     );
   }
 
-  return <ProfileSettings />;
+  return (
+    <Navigate
+      to={SETTINGS_PATHS.ROOT}
+      replace
+    />
+  );
 };

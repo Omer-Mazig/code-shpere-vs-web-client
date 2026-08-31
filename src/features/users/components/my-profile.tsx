@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SETTINGS_PATHS } from "@/lib/routes.constants";
 import type { UserProfile } from "../types";
 import {
   ProfileShell,
@@ -36,7 +37,7 @@ export const MyProfile = ({
       <ProfileShell.Cover />
       <ProfileShell.Header
         actions={
-          <Link to={`/profile/${profile.id}/settings`}>
+          <Link to={SETTINGS_PATHS.ROOT}>
             <Button
               type="button"
               variant="outline"

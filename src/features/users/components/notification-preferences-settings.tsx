@@ -1,4 +1,6 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Field,
   FieldContent,
@@ -7,6 +9,10 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
+import { QueryBoundary } from "@/components/errors/query-boundary";
+import { PageErrorFallback } from "@/components/errors/page-error-fallback";
+import { usersQueryOptionsFactory } from "../users-query-options-factory";
+import { useUpdateNotificationPreferences } from "../hooks/use-update-notification-preferences";
 import type { NotificationPreferences } from "../types";
 
 const PREFERENCE_ROWS: {
@@ -36,13 +42,41 @@ const PREFERENCE_ROWS: {
   },
 ];
 
+const SettingsSectionSkeleton = () => (
+  <Skeleton className="h-64 w-full rounded-xl" />
+);
+
+const NotificationPreferencesContent = () => {
+  const { data: prefs } = useSuspenseQuery(
+    usersQueryOptionsFactory.notificationPreferences(),
+  );
+  const updatePrefs = useUpdateNotificationPreferences();
+
+  return (
+    <NotificationPreferencesSettings
+      values={prefs}
+      disabled={updatePrefs.isPending}
+      onToggle={(key, checked) => updatePrefs.mutate({ [key]: checked })}
+    />
+  );
+};
+
+export const NotificationSettings = () => (
+  <QueryBoundary
+    fallback={<SettingsSectionSkeleton />}
+    ErrorFallback={PageErrorFallback}
+  >
+    <NotificationPreferencesContent />
+  </QueryBoundary>
+);
+
 type NotificationPreferencesSettingsProps = {
   values: NotificationPreferences;
   disabled?: boolean;
   onToggle: (key: keyof NotificationPreferences, checked: boolean) => void;
 };
 
-export const NotificationPreferencesSettings = ({
+const NotificationPreferencesSettings = ({
   values,
   disabled = false,
   onToggle,
@@ -53,7 +87,8 @@ export const NotificationPreferencesSettings = ({
       <h2 className="font-medium">Notifications</h2>
     </div>
     <p className="text-sm text-muted-foreground">
-      Choose which activity creates an in-app notification.
+      Changes save immediately. Choose which activity creates an in-app
+      notification.
     </p>
 
     <FieldGroup className="gap-4">
