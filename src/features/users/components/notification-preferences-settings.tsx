@@ -55,7 +55,6 @@ const NotificationPreferencesContent = () => {
   return (
     <NotificationPreferencesSettings
       values={prefs}
-      disabled={updatePrefs.isPending}
       onToggle={(key, checked) => updatePrefs.mutate({ [key]: checked })}
     />
   );
@@ -72,13 +71,11 @@ export const NotificationSettings = () => (
 
 type NotificationPreferencesSettingsProps = {
   values: NotificationPreferences;
-  disabled?: boolean;
   onToggle: (key: keyof NotificationPreferences, checked: boolean) => void;
 };
 
 const NotificationPreferencesSettings = ({
   values,
-  disabled = false,
   onToggle,
 }: NotificationPreferencesSettingsProps) => (
   <section className="space-y-4 rounded-lg border p-4">
@@ -106,7 +103,6 @@ const NotificationPreferencesSettings = ({
             <Switch
               id={switchId}
               checked={values[row.key]}
-              disabled={disabled}
               onCheckedChange={(checked) => onToggle(row.key, checked)}
             />
           </Field>
