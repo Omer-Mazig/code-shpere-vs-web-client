@@ -27,12 +27,15 @@ export function useUpdateNotificationPreferences() {
       usersApi.updateNotificationPreferences(dto),
   });
 
+  // Keep a stable callback so the debounce timer and unmount cleanup always
+  // call the latest flush (queryClient, mutation, controller).
   runFlushRef.current = () => {
     const cache = queryClient.getQueryData<NotificationPreferences>(queryKey);
     if (!cache) {
       return;
     }
 
+    // null = already in flight (queued) or cache matches lastConfirmed.
     const dto = controllerRef.current.beginFlush(cache);
     if (!dto) {
       return;
@@ -42,9 +45,11 @@ export function useUpdateNotificationPreferences() {
       (prefs) => {
         const { applyServerToCache, shouldFlushAgain } =
           controllerRef.current.onSuccess(prefs);
+        // Skip if the user toggled again — cache already has newer intent.
         if (applyServerToCache) {
           queryClient.setQueryData(queryKey, prefs);
         }
+        // The queued toggle's debounce already elapsed while we were in flight.
         if (shouldFlushAgain) {
           runFlushRef.current();
         }
@@ -83,17 +88,20 @@ export function useUpdateNotificationPreferences() {
       return;
     }
 
+    // Cache updates synchronously so the switch flips before the network.
     controllerRef.current.seedIfEmpty(current);
     queryClient.setQueryData<NotificationPreferences>(queryKey, {
       ...current,
       ...dto,
     });
+    // Drop an in-flight GET so it cannot overwrite the optimistic cache.
     void queryClient.cancelQueries({ queryKey });
     scheduleFlush();
   };
 
   useEffect(() => {
     return () => {
+      // Leaving the page mid-debounce would otherwise drop the last toggle.
       if (!debounceTimerRef.current) {
         return;
       }
