@@ -628,6 +628,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MediaController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/media/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MediaController_getById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dev/seed": {
         parameters: {
             query?: never;
@@ -684,7 +716,7 @@ export interface components {
          * @description Domain error code emitted by the backend.
          * @enum {string}
          */
-        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED" | "SEED_DISABLED";
+        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED" | "MEDIA_NOT_FOUND" | "MEDIA_INVALID_TYPE" | "MEDIA_TOO_LARGE" | "MEDIA_FILE_REQUIRED" | "MEDIA_STORAGE_NOT_CONFIGURED" | "SEED_DISABLED";
         ValidationFieldErrorDto: {
             /** @example password */
             field: string;
@@ -1240,6 +1272,19 @@ export interface components {
         ShareActionResponseDto: {
             /** @example Operation completed successfully */
             message: string;
+        };
+        MediaObjectResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Authenticated GET path for the stored image.
+             * @example /api/media/550e8400-e29b-41d4-a716-446655440000
+             */
+            url: string;
+            /** @example image/png */
+            mimeType: string;
+            /** @example 248 */
+            byteSize: number;
         };
         SeedRunResponseDto: {
             users: number;
@@ -6235,6 +6280,198 @@ export interface operations {
                         meta?: components["schemas"]["ApiEnvelopeMetaDto"];
                         warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
                     };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    MediaController_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["MediaObjectResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    MediaController_getById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Raw image bytes. Not wrapped in the JSON success envelope. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
+                    "image/png": string;
+                    "image/gif": string;
+                    "image/webp": string;
                 };
             };
             /** @description Request validation or domain validation failed. */
