@@ -12,11 +12,13 @@ import {
 import { articleEditorSchema } from "@/lib/form-schemas";
 import { isFieldInvalid } from "@/lib/form";
 import type { CreateArticleDto } from "../types";
+import { TopicPicker } from "@/features/topics/components/topic-picker";
 
 type ArticleEditorProps = {
   initialTitle?: string;
   initialContent?: string;
   initialCoverImageUrl?: string;
+  initialTopicIds?: string[];
   onSubmit: (data: CreateArticleDto) => void;
   isSubmitting?: boolean;
   submitLabel?: string;
@@ -26,6 +28,7 @@ export const ArticleEditor = ({
   initialTitle = "",
   initialContent = "",
   initialCoverImageUrl = "",
+  initialTopicIds = [],
   onSubmit,
   isSubmitting = false,
   submitLabel = "Publish",
@@ -37,6 +40,7 @@ export const ArticleEditor = ({
       title: initialTitle,
       body: initialContent,
       coverImageUrl: initialCoverImageUrl,
+      topicIds: initialTopicIds as string[],
     },
     validators: {
       onSubmit: articleEditorSchema,
@@ -60,6 +64,7 @@ export const ArticleEditor = ({
         content: contentBlocks,
         coverImageUrl: value.coverImageUrl.trim() || undefined,
         isPublished: publishIntentRef.current,
+        topicIds: value.topicIds.length > 0 ? value.topicIds : undefined,
       });
     },
   });
@@ -123,6 +128,20 @@ export const ArticleEditor = ({
               </Field>
             );
           }}
+        />
+
+        <form.Field
+          name="topicIds"
+          children={(field) => (
+            <Field>
+              <FieldLabel>Topics (optional)</FieldLabel>
+              <TopicPicker
+                value={field.state.value}
+                onChange={field.handleChange}
+                disabled={isSubmitting}
+              />
+            </Field>
+          )}
         />
 
         <form.Field

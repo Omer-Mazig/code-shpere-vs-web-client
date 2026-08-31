@@ -3,6 +3,7 @@ import { Clock, Heart, MessageCircle } from "lucide-react";
 import type { Article } from "../types";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { RelativeTime } from "@/components/shared/relative-time";
+import { TopicChips } from "@/features/topics/components/topic-chips";
 
 type ArticleCardProps = {
   article: Article;
@@ -53,6 +54,10 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
         <h3 className="text-lg font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {article.title}
         </h3>
+        <TopicChips
+          topics={article.topics}
+          className="mt-2 flex flex-wrap gap-1.5"
+        />
         {excerpt && (
           <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
             {excerpt}

@@ -8,6 +8,7 @@ import {
   ShortcutsCard,
 } from "@/features/users/components/profile-rail-cards";
 import { WhoToFollowCard } from "@/features/users/components/who-to-follow-card";
+import { TopicsToFollowCard } from "@/features/topics/components/topics-to-follow-card";
 import { SuggestedArticlesCard } from "@/features/articles/components/suggested-articles-card";
 import { AdCard } from "@/components/shared/ad-card";
 import { SideCard } from "@/components/shared/side-card";
@@ -84,6 +85,7 @@ export const FeedPage = () => {
             <div className="flex h-full flex-col gap-4">
               <SuggestedArticlesCard />
               <WhoToFollowCard />
+              <TopicsToFollowCard />
               <div className="sticky top-20 flex flex-col gap-4">
                 <AdCard />
                 <FooterCard />

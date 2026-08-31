@@ -30,6 +30,8 @@ import {
 import { useDeletePost } from "../hooks/use-delete-post";
 import { useUpdatePost } from "../hooks/use-update-post";
 import { postsQueryOptionsFactory } from "../posts-query-options-factory";
+import { TopicChips } from "@/features/topics/components/topic-chips";
+import { TopicPicker } from "@/features/topics/components/topic-picker";
 import { toast } from "sonner";
 import { SharedPostEmbed } from "./shared-post-embed";
 
@@ -297,16 +299,30 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
   const { post, isEditing, cancelEditing } = usePostContext();
   const updatePost = useUpdatePost();
   const [editContent, setEditContent] = React.useState(post.content);
+  const [editTopicIds, setEditTopicIds] = React.useState(
+    () => post.topics.map((topic) => topic.id),
+  );
 
   React.useEffect(() => {
     setEditContent(post.content);
-  }, [post.content, isEditing]);
+    setEditTopicIds(post.topics.map((topic) => topic.id));
+  }, [post.content, post.topics, isEditing]);
 
   const handleSaveEdit = () => {
     const nextContent = editContent.trim();
-    if (!nextContent || nextContent === post.content) {
+    const currentTopicIds = post.topics.map((topic) => topic.id);
+    const topicsChanged =
+      editTopicIds.length !== currentTopicIds.length ||
+      editTopicIds.some((id) => !currentTopicIds.includes(id));
+
+    if (!nextContent) {
+      return;
+    }
+
+    if (nextContent === post.content && !topicsChanged) {
       cancelEditing();
       setEditContent(post.content);
+      setEditTopicIds(currentTopicIds);
       return;
     }
 
@@ -315,7 +331,10 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
     }
 
     updatePost.mutate(
-      { id: post.id, dto: { content: nextContent } },
+      {
+        id: post.id,
+        dto: { content: nextContent, topicIds: editTopicIds },
+      },
       {
         onSuccess: () => cancelEditing(),
         onError: () => {
@@ -326,10 +345,14 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
   };
 
   if (isEditing) {
+    const currentTopicIds = post.topics.map((topic) => topic.id);
+    const topicsChanged =
+      editTopicIds.length !== currentTopicIds.length ||
+      editTopicIds.some((id) => !currentTopicIds.includes(id));
     const canSave =
       Boolean(editContent.trim()) &&
-      editContent.trim() !== post.content &&
       editContent.trim().length <= POST_CONTENT_MAX_LENGTH &&
+      (editContent.trim() !== post.content || topicsChanged) &&
       !updatePost.isPending;
 
     return (
@@ -347,6 +370,11 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
             className="pointer-events-none"
           />
         )}
+        <TopicPicker
+          value={editTopicIds}
+          onChange={setEditTopicIds}
+          disabled={updatePost.isPending}
+        />
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">
             {editContent.length}/{POST_CONTENT_MAX_LENGTH}
@@ -359,6 +387,7 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
               onClick={() => {
                 cancelEditing();
                 setEditContent(post.content);
+                setEditTopicIds(currentTopicIds);
               }}
             >
               Cancel
@@ -399,7 +428,7 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
       commentary
     );
 
-  if (!linkedCommentary && !embed) {
+  if (!linkedCommentary && !embed && post.topics.length === 0) {
     return null;
   }
 
@@ -407,6 +436,10 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
     <div>
       {linkedCommentary}
       {embed}
+      <TopicChips
+        topics={post.topics}
+        className="mt-2 flex flex-wrap gap-1.5"
+      />
     </div>
   );
 };

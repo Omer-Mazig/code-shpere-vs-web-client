@@ -5,6 +5,7 @@ import { Field, FieldError } from "@/components/ui/field";
 import type { useCreatePost } from "../hooks/use-create-post";
 import { useAuth } from "@/features/auth/auth.context";
 import { useViewer } from "@/features/users/hooks/use-viewer";
+import { TopicPicker } from "@/features/topics/components/topic-picker";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { toast } from "sonner";
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -23,6 +24,7 @@ export const CreatePostForm = ({ createPost }: CreatePostFormProps) => {
   const form = useForm({
     defaultValues: {
       content: "",
+      topicIds: [] as string[],
     },
     validators: {
       onSubmit: createPostSchema,
@@ -33,7 +35,10 @@ export const CreatePostForm = ({ createPost }: CreatePostFormProps) => {
         return;
       }
 
-      await createPost.mutateAsync({ content: value.content.trim() });
+      await createPost.mutateAsync({
+        content: value.content.trim(),
+        topicIds: value.topicIds.length > 0 ? value.topicIds : undefined,
+      });
       toast.success("Post created!");
       form.reset();
     },
@@ -82,6 +87,18 @@ export const CreatePostForm = ({ createPost }: CreatePostFormProps) => {
           }}
         />
       </div>
+      <form.Field
+        name="topicIds"
+        children={(field) => (
+          <div className="mt-3">
+            <TopicPicker
+              value={field.state.value}
+              onChange={field.handleChange}
+              disabled={createPost.isPending}
+            />
+          </div>
+        )}
+      />
       <div className="mt-3 flex justify-end">
         <form.Subscribe
           selector={(state) => [state.values.content, state.isSubmitting] as const}

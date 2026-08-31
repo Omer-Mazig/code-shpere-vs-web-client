@@ -101,6 +101,7 @@ export const createPostSchema = z.object({
     .trim()
     .min(1, "Write something before posting")
     .max(5000, "Post must be at most 5000 characters"),
+  topicIds: z.array(z.string().uuid()).max(5),
 });
 
 export type CreatePostFormValues = z.infer<typeof createPostSchema>;
@@ -129,6 +130,7 @@ export const articleEditorSchema = z.object({
     .max(200, "Title must be at most 200 characters"),
   body: z.string().trim().min(1, "Content is required"),
   coverImageUrl: emptyOrUrl,
+  topicIds: z.array(z.string().uuid()).max(5),
 });
 
 export type ArticleEditorFormValues = z.infer<typeof articleEditorSchema>;

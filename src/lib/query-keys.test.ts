@@ -4,6 +4,7 @@ import { commentsQueryOptionsFactory } from "@/features/comments/comments-query-
 import { notificationsQueryOptionsFactory } from "@/features/notifications/notifications-query-options-factory";
 import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-factory";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
+import { topicsQueryOptionsFactory } from "@/features/topics/topics-query-options-factory";
 
 describe("query option factories", () => {
   it("nests auth keys under auth", () => {
@@ -102,6 +103,20 @@ describe("query option factories", () => {
     expect(usersQueryOptionsFactory.following("u1").queryKey).toEqual([
       "users",
       "following",
+      "u1",
+    ]);
+  });
+
+  it("nests topic keys under topics", () => {
+    expect(topicsQueryOptionsFactory.all().queryKey).toEqual(["topics"]);
+    expect(topicsQueryOptionsFactory.list().queryKey).toEqual([
+      "topics",
+      "list",
+      "guest",
+    ]);
+    expect(topicsQueryOptionsFactory.list("u1").queryKey).toEqual([
+      "topics",
+      "list",
       "u1",
     ]);
   });

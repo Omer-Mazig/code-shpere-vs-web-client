@@ -9,6 +9,8 @@ import {
 import { toast } from "sonner";
 import { SideCard } from "@/components/shared/side-card";
 import { useAuth } from "@/features/auth/auth.context";
+import { TopicsDialog } from "@/features/topics/components/topics-dialog";
+import { useState } from "react";
 
 /* Dummy quick actions below the profile card — real features come later */
 
@@ -19,24 +21,40 @@ const SHORTCUTS: { icon: LucideIcon; label: string }[] = [
   { icon: CalendarDays, label: "Events" },
 ];
 
-export const ShortcutsCard = () => (
-  <SideCard
-    kicker="shortcuts"
-    contentClassName="-mx-2 flex flex-col"
-  >
-    {SHORTCUTS.map(({ icon: Icon, label }) => (
-      <button
-        key={label}
-        type="button"
-        onClick={() => toast(`${label} is coming soon`)}
-        className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+export const ShortcutsCard = () => {
+  const [topicsOpen, setTopicsOpen] = useState(false);
+
+  return (
+    <>
+      <SideCard
+        kicker="shortcuts"
+        contentClassName="-mx-2 flex flex-col"
       >
-        <Icon className="size-4" />
-        {label}
-      </button>
-    ))}
-  </SideCard>
-);
+        {SHORTCUTS.map(({ icon: Icon, label }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => {
+              if (label === "Topics") {
+                setTopicsOpen(true);
+                return;
+              }
+              toast(`${label} is coming soon`);
+            }}
+            className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Icon className="size-4" />
+            {label}
+          </button>
+        ))}
+      </SideCard>
+      <TopicsDialog
+        open={topicsOpen}
+        onOpenChange={setTopicsOpen}
+      />
+    </>
+  );
+};
 
 const STAT_ROWS = [
   { label: "Profile views", value: 17, delta: "+4 this week" },

@@ -4,6 +4,7 @@ import { LikeButton } from "@/features/interactions/components/like-button";
 import { UserAvatar, getUserDisplayName } from "@/components/shared/user-avatar";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { FollowButton } from "@/features/users/components/follow-button";
+import { TopicChips } from "@/features/topics/components/topic-chips";
 
 type ArticleViewProps = {
   article: Article;
@@ -23,6 +24,10 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
       )}
 
       <h1 className="text-4xl font-bold leading-tight mb-4">{article.title}</h1>
+      <TopicChips
+        topics={article.topics}
+        className="mb-6 flex flex-wrap gap-1.5"
+      />
 
       {article.author && (
         <div className="flex items-center gap-3 mb-8 pb-8 border-b">
