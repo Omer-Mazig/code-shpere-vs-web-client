@@ -922,6 +922,15 @@ export interface components {
             followedAt: string;
         };
         PostLikedNotificationPayloadDto: {
+            /** @description Up to the last 3 unique actor ids, most recent first */
+            actorIds?: string[];
+            /** @description Display names aligned with actorIds */
+            actorNames?: string[];
+            /**
+             * @description Unique actor count for this unread collapsed row
+             * @example 10
+             */
+            actorCount?: number;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -938,6 +947,15 @@ export interface components {
             createdAt: string;
         };
         PostCommentedNotificationPayloadDto: {
+            /** @description Up to the last 3 unique actor ids, most recent first */
+            actorIds?: string[];
+            /** @description Display names aligned with actorIds */
+            actorNames?: string[];
+            /**
+             * @description Unique actor count for this unread collapsed row
+             * @example 10
+             */
+            actorCount?: number;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -975,6 +993,15 @@ export interface components {
             createdAt: string;
         };
         NewFollowerNotificationPayloadDto: {
+            /** @description Up to the last 3 unique actor ids, most recent first */
+            actorIds?: string[];
+            /** @description Display names aligned with actorIds */
+            actorNames?: string[];
+            /**
+             * @description Unique actor count for this unread collapsed row
+             * @example 10
+             */
+            actorCount?: number;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -1022,6 +1049,8 @@ export interface components {
             isRead: boolean;
             /** Format: date-time */
             createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
             /** Format: date-time */
             readAt: string | null;
         };
@@ -3863,7 +3892,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Server-Sent Events stream. Event names: notification.created (NotificationResponseDto), notification.unread_count (UnreadCountResponseDto), ping (NotificationStreamPingEventDto). */
+            /** @description Server-Sent Events stream. Event names: notification.created (NotificationResponseDto), notification.updated (NotificationResponseDto), notification.unread_count (UnreadCountResponseDto), ping (NotificationStreamPingEventDto). */
             200: {
                 headers: {
                     [name: string]: unknown;

@@ -90,3 +90,36 @@ export function getNotificationTargetInfo(
 export function getNotificationVerb(type: NotificationType): string {
   return NOTIFICATION_VERBS[type];
 }
+
+export type NotificationCollapsedOthers =
+  | { kind: "named"; actorId: string; actorName: string }
+  | { kind: "count"; count: number };
+
+export function getNotificationCollapsedOthers(
+  payload: NotificationPayload,
+): NotificationCollapsedOthers | null {
+  const actorCount =
+    "actorCount" in payload && typeof payload.actorCount === "number"
+      ? payload.actorCount
+      : 1;
+  if (actorCount < 2) {
+    return null;
+  }
+
+  const actorIds =
+    "actorIds" in payload && Array.isArray(payload.actorIds)
+      ? payload.actorIds
+      : [];
+  const actorNames =
+    "actorNames" in payload && Array.isArray(payload.actorNames)
+      ? payload.actorNames
+      : [];
+  const secondId = actorIds[1];
+  const secondName = actorNames[1];
+
+  if (actorCount === 2 && secondId && secondName) {
+    return { kind: "named", actorId: secondId, actorName: secondName };
+  }
+
+  return { kind: "count", count: actorCount - 1 };
+}

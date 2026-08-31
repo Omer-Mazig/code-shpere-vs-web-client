@@ -13,13 +13,28 @@ export function upsertNotificationInList(
     return oldData;
   }
 
-  const [firstPage, ...restPages] = oldData.pages;
-  const alreadyExists = firstPage.items.some(
-    (item) => item.id === notification.id,
-  );
-  if (alreadyExists) {
-    return oldData;
-  }
+  let alreadyExists = false;
+  const pagesWithout = oldData.pages.map((page) => {
+    const nextItems = page.items.filter((item) => {
+      if (item.id !== notification.id) {
+        return true;
+      }
+      alreadyExists = true;
+      return false;
+    });
+    if (nextItems.length === page.items.length) {
+      return page;
+    }
+    return { ...page, items: nextItems };
+  });
+
+  const [firstPage, ...restPages] = pagesWithout;
+  const nextTotal =
+    typeof firstPage.meta.total === "number"
+      ? alreadyExists
+        ? firstPage.meta.total
+        : firstPage.meta.total + 1
+      : firstPage.meta.total;
 
   return {
     ...oldData,
@@ -29,10 +44,7 @@ export function upsertNotificationInList(
         items: [notification, ...firstPage.items],
         meta: {
           ...firstPage.meta,
-          total:
-            typeof firstPage.meta.total === "number"
-              ? firstPage.meta.total + 1
-              : firstPage.meta.total,
+          total: nextTotal,
         },
       },
       ...restPages,

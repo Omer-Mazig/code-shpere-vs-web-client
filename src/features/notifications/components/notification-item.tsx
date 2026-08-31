@@ -11,6 +11,7 @@ import {
   getNotificationHref,
   getNotificationTargetInfo,
   getNotificationVerb,
+  getNotificationCollapsedOthers,
 } from "../notification-links";
 
 type NotificationItemProps = {
@@ -28,6 +29,7 @@ export const NotificationItem = ({
   const href = getNotificationHref(payload);
   const actorName = payload.actorName;
   const actorHref = `/profile/${payload.actorId}`;
+  const collapsedOthers = getNotificationCollapsedOthers(payload);
   const targetInfo = getNotificationTargetInfo(payload);
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.8 });
 
@@ -93,7 +95,25 @@ export const NotificationItem = ({
             </Link>
           ) : (
             <span className="font-semibold">{actorName}</span>
-          )}{" "}
+          )}
+          {collapsedOthers?.kind === "named" ? (
+            <>
+              {" "}
+              and{" "}
+              <Link
+                to={`/profile/${collapsedOthers.actorId}`}
+                className="font-semibold underline-offset-2 hover:underline"
+              >
+                {collapsedOthers.actorName}
+              </Link>
+            </>
+          ) : collapsedOthers?.kind === "count" ? (
+            <>
+              {" "}
+              and {collapsedOthers.count}{" "}
+              {collapsedOthers.count === 1 ? "other" : "others"}
+            </>
+          ) : null}{" "}
           {getNotificationVerb(notification.type)}
           {targetInfo ? (
             <>
@@ -108,9 +128,12 @@ export const NotificationItem = ({
           ) : null}
         </p>
         <p className="text-[11px] text-muted-foreground">
-          {formatDistanceToNow(new Date(notification.createdAt), {
-            addSuffix: true,
-          })}
+          {formatDistanceToNow(
+            new Date(notification.updatedAt ?? notification.createdAt),
+            {
+              addSuffix: true,
+            },
+          )}
         </p>
       </div>
     </div>

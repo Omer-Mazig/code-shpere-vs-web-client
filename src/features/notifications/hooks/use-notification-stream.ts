@@ -72,6 +72,15 @@ export const useNotificationStream = (enabled = true) => {
           toast.info(`${actorName} sent you a new notification`);
         });
 
+        eventSource.addEventListener("notification.updated", (event) => {
+          const nextNotification = parseSseData<Notification>(
+            (event as MessageEvent<string>).data,
+          );
+          if (!nextNotification) return;
+
+          upsertNotificationInCache(queryClient, nextNotification);
+        });
+
         eventSource.addEventListener("notification.unread_count", (event) => {
           const unreadPayload = parseSseData<NotificationsStreamUnreadCountEvent>(
             (event as MessageEvent<string>).data,

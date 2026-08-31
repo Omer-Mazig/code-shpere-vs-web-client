@@ -27,6 +27,7 @@ function notification(overrides: Partial<Notification> = {}): Notification {
     },
     isRead: false,
     createdAt: "2026-08-01T00:00:00.000Z",
+    updatedAt: "2026-08-01T00:00:00.000Z",
     readAt: null,
     ...overrides,
   };
@@ -61,11 +62,30 @@ describe("upsertNotificationInList", () => {
     expect(upsertNotificationInList(empty, notification())).toBe(empty);
   });
 
-  it("does not duplicate an existing notification", () => {
-    const existing = notification();
-    const old = list([existing]);
+  it("replaces an existing notification and moves it to the front", () => {
+    const existing = notification({ payload: {
+      ...notification().payload,
+      actorName: "Ada",
+    }});
+    const older = notification({ id: "n-old" });
+    const old = list([older, existing]);
+    const incoming = notification({
+      payload: {
+        ...existing.payload,
+        actorName: "Bob",
+        actorCount: 2,
+      },
+      updatedAt: "2026-08-02T00:00:00.000Z",
+    });
 
-    expect(upsertNotificationInList(old, existing)).toBe(old);
+    const next = upsertNotificationInList(old, incoming);
+
+    expect(next?.pages[0].items.map((item) => item.id)).toEqual([
+      "n1",
+      "n-old",
+    ]);
+    expect(next?.pages[0].items[0].payload.actorName).toBe("Bob");
+    expect(next?.pages[0].meta.total).toBe(2);
   });
 
   it("prepends a new notification and increments total", () => {

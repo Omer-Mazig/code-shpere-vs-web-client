@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { NotificationPayload } from "./types";
 import {
+  getNotificationCollapsedOthers,
   getNotificationHref,
   getNotificationTargetInfo,
   getNotificationVerb,
@@ -170,5 +171,40 @@ describe("getNotificationVerb", () => {
     );
     expect(getNotificationVerb("NEW_FOLLOWER")).toBe("started following you");
     expect(getNotificationVerb("USER_MENTIONED")).toBe("mentioned you");
+  });
+});
+
+describe("getNotificationCollapsedOthers", () => {
+  it("returns null for a single actor", () => {
+    expect(getNotificationCollapsedOthers(postLiked())).toBeNull();
+    expect(
+      getNotificationCollapsedOthers(postLiked({ actorCount: 1 })),
+    ).toBeNull();
+  });
+
+  it("names the second actor when there are exactly two", () => {
+    expect(
+      getNotificationCollapsedOthers(
+        postLiked({
+          actorId: "bob",
+          actorName: "Bob",
+          actorIds: ["bob", "ada"],
+          actorNames: ["Bob", "Ada"],
+          actorCount: 2,
+        }),
+      ),
+    ).toEqual({ kind: "named", actorId: "ada", actorName: "Ada" });
+  });
+
+  it("uses count copy for three or more actors", () => {
+    expect(
+      getNotificationCollapsedOthers(
+        postLiked({
+          actorCount: 10,
+          actorIds: ["a", "b", "c"],
+          actorNames: ["A", "B", "C"],
+        }),
+      ),
+    ).toEqual({ kind: "count", count: 9 });
   });
 });
