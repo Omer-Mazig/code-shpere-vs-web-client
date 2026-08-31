@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldError } from "@/components/ui/field";
 import type { useCreatePost } from "../hooks/use-create-post";
 import { useAuth } from "@/features/auth/auth.context";
+import { useViewer } from "@/features/users/hooks/use-viewer";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { toast } from "sonner";
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -16,6 +17,7 @@ type CreatePostFormProps = {
 
 export const CreatePostForm = ({ createPost }: CreatePostFormProps) => {
   const { user, isAuthenticated } = useAuth();
+  const viewer = useViewer();
   const { open: openSignIn } = useSignInModal();
 
   const form = useForm({
@@ -51,7 +53,7 @@ export const CreatePostForm = ({ createPost }: CreatePostFormProps) => {
     >
       <div className="flex gap-3">
         <UserAvatar
-          user={user}
+          user={viewer ?? user}
           size="lg"
         />
         <form.Field

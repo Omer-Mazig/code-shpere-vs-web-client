@@ -12,6 +12,7 @@ import { commentsQueryOptionsFactory } from "../comments-query-options-factory";
 import type { CommentMentionCandidate, CommentTargetType } from "../types";
 import { getMentionContext, insertMention } from "../comment-mentions";
 import { useAuth } from "@/features/auth/auth.context";
+import { useViewer } from "@/features/users/hooks/use-viewer";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { commentSchema } from "@/lib/form-schemas";
 import { isFieldInvalid } from "@/lib/form";
@@ -37,6 +38,7 @@ export const CommentForm = ({
   setPendingParentId,
 }: CommentFormProps) => {
   const { user, isAuthenticated } = useAuth();
+  const viewer = useViewer();
   const { open: openSignIn } = useSignInModal();
   const [cursorPosition, setCursorPosition] = React.useState(0);
   const [isMentionListOpen, setIsMentionListOpen] = React.useState(true);
@@ -216,7 +218,7 @@ export const CommentForm = ({
       className="flex gap-3"
     >
       <UserAvatar
-        user={user}
+        user={viewer ?? user}
         size={isReply ? "sm" : "default"}
         className="mt-0.5"
       />

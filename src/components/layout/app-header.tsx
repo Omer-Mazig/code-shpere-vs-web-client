@@ -31,6 +31,7 @@ import {
   UserAvatar,
 } from "@/components/shared/user-avatar";
 import { useAuth } from "@/features/auth/auth.context";
+import { useViewer } from "@/features/users/hooks/use-viewer";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import {
   FEED_PATHS,
@@ -42,6 +43,8 @@ import { cn } from "@/lib/utils";
 
 export const AppHeader = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const viewer = useViewer();
+  const chromeUser = viewer ?? user;
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const homePath = isAuthenticated ? FEED_PATHS.FEED : ARTICLE_PATHS.ARTICLES;
@@ -148,21 +151,21 @@ export const AppHeader = () => {
             <ModeToggle />
           </div>
 
-          {isAuthenticated && user ? (
+          {isAuthenticated && chromeUser ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="gap-2"
-                  aria-label={getUserDisplayName(user)}
+                  aria-label={getUserDisplayName(chromeUser)}
                 >
                   <UserAvatar
-                    user={user}
+                    user={chromeUser}
                     size="sm"
                   />
                   <span className="hidden sm:inline max-w-[100px] truncate">
-                    {user.displayName ?? user.username}
+                    {chromeUser.displayName ?? chromeUser.username}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
