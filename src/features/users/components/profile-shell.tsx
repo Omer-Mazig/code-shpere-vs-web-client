@@ -13,11 +13,7 @@ export type ProfileTab = {
   to: string;
 };
 
-export type ProfileActiveTab =
-  | "posts"
-  | "articles"
-  | "followers"
-  | "following";
+export type ProfileActiveTab = "posts" | "articles" | "followers" | "following";
 
 type ProfileContextValue = {
   profile: UserProfile;
@@ -71,7 +67,7 @@ const coverGradient = (seed: string) => {
 
 const Cover = ({ imageUrl }: CoverProps) => {
   const { profile } = useProfile();
-  const resolvedImage = imageUrl ?? null;
+  const resolvedImage = imageUrl ?? profile.coverImageUrl ?? null;
   const altLabel = profile.displayName ?? profile.username;
 
   return (
@@ -209,10 +205,7 @@ type StatLinkProps = {
 };
 
 const StatLink = ({ to, count, label }: StatLinkProps) => (
-  <NavLink
-    to={to}
-    className="hover:underline"
-  >
+  <NavLink to={to} className="hover:underline">
     <strong className="text-foreground">{count}</strong>{" "}
     <span className="text-muted-foreground">{label}</span>
   </NavLink>

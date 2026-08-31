@@ -27,6 +27,7 @@ import { getApiError } from "@/lib/errors";
 import { applyApiFieldErrors, isFieldInvalid } from "@/lib/form";
 import { QueryBoundary } from "@/components/errors/query-boundary";
 import { PageErrorFallback } from "@/components/errors/page-error-fallback";
+import { ProfileImageField } from "./profile-image-field";
 import { SettingsLeaveDialog } from "./settings-leave-dialog";
 
 const SettingsSectionSkeleton = () => (
@@ -37,12 +38,7 @@ const ProfileSettingsContent = () => {
   const { data: profile } = useSuspenseQuery(
     usersQueryOptionsFactory.myProfile(),
   );
-  return (
-    <ProfileSettingsForm
-      key={profile.id}
-      profile={profile}
-    />
-  );
+  return <ProfileSettingsForm key={profile.id} profile={profile} />;
 };
 
 export const ProfileSettings = () => (
@@ -135,6 +131,50 @@ export const ProfileSettingsForm = ({ profile }: { profile: UserProfile }) => {
           </p>
 
           <FieldGroup className="gap-4">
+            <form.Field
+              name="avatarUrl"
+              children={(field) => {
+                const invalid = isFieldInvalid(field);
+                return (
+                  <ProfileImageField
+                    id={field.name}
+                    label="Avatar"
+                    description="Shown on your profile, posts, and comments. JPEG, PNG, GIF, or WebP, up to 10MB."
+                    value={field.state.value}
+                    invalid={invalid}
+                    errors={field.state.meta.errors}
+                    preview="avatar"
+                    username={profile.username}
+                    displayName={values.displayName || profile.displayName}
+                    disabled={isSaving}
+                    onChange={field.handleChange}
+                  />
+                );
+              }}
+            />
+
+            <form.Field
+              name="coverImageUrl"
+              children={(field) => {
+                const invalid = isFieldInvalid(field);
+                return (
+                  <ProfileImageField
+                    id={field.name}
+                    label="Cover image"
+                    description="Shown behind your profile header. JPEG, PNG, GIF, or WebP, up to 10MB."
+                    value={field.state.value}
+                    invalid={invalid}
+                    errors={field.state.meta.errors}
+                    preview="cover"
+                    username={profile.username}
+                    displayName={values.displayName || profile.displayName}
+                    disabled={isSaving}
+                    onChange={field.handleChange}
+                  />
+                );
+              }}
+            />
+
             <form.Field
               name="displayName"
               children={(field) => {
@@ -239,66 +279,34 @@ export const ProfileSettingsForm = ({ profile }: { profile: UserProfile }) => {
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <form.Field
-                name="website"
-                children={(field) => {
-                  const invalid = isFieldInvalid(field);
-                  return (
-                    <Field data-invalid={invalid}>
-                      <FieldLabel htmlFor={field.name}>Website</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
-                        }
-                        aria-invalid={invalid}
-                        placeholder="https://example.com"
-                      />
-                      {invalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
-              <form.Field
-                name="avatarUrl"
-                children={(field) => {
-                  const invalid = isFieldInvalid(field);
-                  return (
-                    <Field data-invalid={invalid}>
-                      <FieldLabel htmlFor={field.name}>Avatar URL</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
-                        }
-                        aria-invalid={invalid}
-                        placeholder="https://..."
-                      />
-                      {invalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
-            </div>
+            <form.Field
+              name="website"
+              children={(field) => {
+                const invalid = isFieldInvalid(field);
+                return (
+                  <Field data-invalid={invalid}>
+                    <FieldLabel htmlFor={field.name}>Website</FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      aria-invalid={invalid}
+                      placeholder="https://example.com"
+                    />
+                    {invalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
+                );
+              }}
+            />
           </FieldGroup>
         </section>
 
         <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={!isDirty || isSaving}
-          >
+          <Button type="submit" disabled={!isDirty || isSaving}>
             {isSaving ? "Saving..." : "Save changes"}
           </Button>
         </div>

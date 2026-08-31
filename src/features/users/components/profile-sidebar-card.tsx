@@ -5,15 +5,25 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { UserAvatar, getUserDisplayName } from "@/components/shared/user-avatar";
+import {
+  UserAvatar,
+  getUserDisplayName,
+} from "@/components/shared/user-avatar";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { usersQueryOptionsFactory } from "../users-query-options-factory";
 import { AUTH_PATHS } from "@/lib/routes.constants";
 
 /** IDE-window style banner with fake traffic-light controls. */
-const CardBanner = () => (
-  <div className="relative h-16 shrink-0 bg-linear-to-r from-primary via-purple-500 to-glow">
+const CardBanner = ({ imageUrl }: { imageUrl?: string | null }) => (
+  <div className="relative h-16 shrink-0 overflow-hidden bg-linear-to-r from-primary via-purple-500 to-glow">
+    {imageUrl ? (
+      <img
+        src={imageUrl}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+    ) : null}
     <div className="bg-grid-dots absolute inset-0 opacity-30" />
     <div className="absolute top-2.5 left-3 flex gap-1.5">
       <span className="size-2 rounded-full bg-white/50" />
@@ -68,7 +78,7 @@ const AuthedProfileCard = ({ userId }: { userId: string }) => {
 
   return (
     <Card className="animate-fade-up gap-0 overflow-hidden py-0 pb-3">
-      <CardBanner />
+      <CardBanner imageUrl={profile.coverImageUrl} />
       {/* relative so the overlapping avatar paints above the positioned banner */}
       <div className="relative px-4">
         <Link
@@ -130,10 +140,7 @@ const AuthedProfileCard = ({ userId }: { userId: string }) => {
         >
           <Link to={profilePath}>
             View profile
-            <ArrowRight
-              className="size-3.5"
-              data-icon="inline-end"
-            />
+            <ArrowRight className="size-3.5" data-icon="inline-end" />
           </Link>
         </Button>
       </div>
@@ -164,17 +171,10 @@ const GuestProfileCard = () => {
         </p>
 
         <div className="mt-4 flex flex-col gap-2">
-          <Button
-            size="sm"
-            onClick={() => openSignIn()}
-          >
+          <Button size="sm" onClick={() => openSignIn()}>
             Sign in
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
+          <Button variant="outline" size="sm" asChild>
             <Link to={AUTH_PATHS.SIGN_UP}>Create account</Link>
           </Button>
         </div>

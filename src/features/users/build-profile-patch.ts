@@ -8,6 +8,7 @@ const PROFILE_PATCH_FIELDS = [
   "website",
   "github",
   "avatarUrl",
+  "coverImageUrl",
 ] as const;
 
 export function profileFormValuesFromUser(profile: {
@@ -17,6 +18,7 @@ export function profileFormValuesFromUser(profile: {
   website?: string | null;
   github?: string | null;
   avatarUrl?: string | null;
+  coverImageUrl?: string | null;
 }): ProfileSettingsFormValues {
   return {
     displayName: profile.displayName ?? "",
@@ -25,6 +27,7 @@ export function profileFormValuesFromUser(profile: {
     website: profile.website ?? "",
     github: profile.github ?? "",
     avatarUrl: profile.avatarUrl ?? "",
+    coverImageUrl: profile.coverImageUrl ?? "",
   };
 }
 

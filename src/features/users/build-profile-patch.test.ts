@@ -13,6 +13,7 @@ const loaded: ProfileSettingsFormValues = {
   website: "https://ada.dev",
   github: "ada",
   avatarUrl: "https://example.com/ada.png",
+  coverImageUrl: "",
 };
 
 describe("buildProfilePatch", () => {

@@ -9,6 +9,20 @@ const emptyOrUrl = z
     "Enter a valid URL",
   );
 
+const mediaObjectPath =
+  /^\/api\/media\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const emptyOrProfileImage = z
+  .string()
+  .trim()
+  .refine(
+    (value) =>
+      value === "" ||
+      mediaObjectPath.test(value) ||
+      z.url().safeParse(value).success,
+    "Choose an image to upload",
+  );
+
 export const profileSettingsSchema = z.object({
   displayName: z
     .string()
@@ -17,7 +31,8 @@ export const profileSettingsSchema = z.object({
   location: z.string().max(100, "Location must be at most 100 characters"),
   github: z.string().max(100, "GitHub username must be at most 100 characters"),
   website: emptyOrUrl,
-  avatarUrl: emptyOrUrl,
+  avatarUrl: emptyOrProfileImage,
+  coverImageUrl: emptyOrProfileImage,
 });
 
 export type ProfileSettingsFormValues = z.infer<typeof profileSettingsSchema>;

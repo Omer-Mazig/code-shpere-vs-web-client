@@ -388,6 +388,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MediaController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/media/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MediaController_getById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/posts": {
         parameters: {
             query?: never;
@@ -628,38 +660,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/media": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["MediaController_upload"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/media/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["MediaController_getById"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/dev/seed": {
         parameters: {
             query?: never;
@@ -863,6 +863,7 @@ export interface components {
             displayName: string | null;
             bio: string | null;
             avatarUrl: string | null;
+            coverImageUrl: string | null;
             website: string | null;
             github: string | null;
             location: string | null;
@@ -907,8 +908,16 @@ export interface components {
             displayName?: string | null;
             /** @example Full-stack developer */
             bio?: string | null;
-            /** @example https://example.com/avatar.jpg */
+            /**
+             * @description Uploaded media path from POST /media, an https URL, or null to clear.
+             * @example /api/media/550e8400-e29b-41d4-a716-446655440000
+             */
             avatarUrl?: string | null;
+            /**
+             * @description Uploaded media path from POST /media, an https URL, or null to clear.
+             * @example /api/media/550e8400-e29b-41d4-a716-446655440000
+             */
+            coverImageUrl?: string | null;
             /** @example https://example.com */
             website?: string | null;
             /** @example johndoe */
@@ -1096,6 +1105,19 @@ export interface components {
         StreamTokenResponseDto: {
             streamToken: string;
         };
+        MediaObjectResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Authenticated GET path for the stored image.
+             * @example /api/media/550e8400-e29b-41d4-a716-446655440000
+             */
+            url: string;
+            /** @example image/png */
+            mimeType: string;
+            /** @example 248 */
+            byteSize: number;
+        };
         PostAuthorResponseDto: {
             id: string;
             username: string;
@@ -1272,19 +1294,6 @@ export interface components {
         ShareActionResponseDto: {
             /** @example Operation completed successfully */
             message: string;
-        };
-        MediaObjectResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /**
-             * @description Authenticated GET path for the stored image.
-             * @example /api/media/550e8400-e29b-41d4-a716-446655440000
-             */
-            url: string;
-            /** @example image/png */
-            mimeType: string;
-            /** @example 248 */
-            byteSize: number;
         };
         SeedRunResponseDto: {
             users: number;
@@ -4011,6 +4020,198 @@ export interface operations {
             };
         };
     };
+    MediaController_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["MediaObjectResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    MediaController_getById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Raw image bytes. Not wrapped in the JSON success envelope. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
+                    "image/png": string;
+                    "image/gif": string;
+                    "image/webp": string;
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     PostsController_getFeed: {
         parameters: {
             query?: {
@@ -6280,198 +6481,6 @@ export interface operations {
                         meta?: components["schemas"]["ApiEnvelopeMetaDto"];
                         warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
                     };
-                };
-            };
-            /** @description Request validation or domain validation failed. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Authentication failed or missing credentials. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description User is authenticated but not allowed to perform action. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Resource state conflict. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Rate limit exceeded. */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    MediaController_upload: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file: string;
-                };
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        payload: components["schemas"]["MediaObjectResponseDto"];
-                        /**
-                         * @description Request identifier generated by the backend.
-                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
-                         */
-                        requestId: string;
-                        /**
-                         * Format: date-time
-                         * @description UTC timestamp when the response was generated.
-                         * @example 2026-02-15T21:10:35.120Z
-                         */
-                        timestamp: string;
-                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
-                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
-                    };
-                };
-            };
-            /** @description Request validation or domain validation failed. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Authentication failed or missing credentials. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description User is authenticated but not allowed to perform action. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Resource state conflict. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Rate limit exceeded. */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    MediaController_getById: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Raw image bytes. Not wrapped in the JSON success envelope. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/jpeg": string;
-                    "image/png": string;
-                    "image/gif": string;
-                    "image/webp": string;
                 };
             };
             /** @description Request validation or domain validation failed. */
