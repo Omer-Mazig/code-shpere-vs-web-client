@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldError } from "@/components/ui/field";
 import type { useCreatePost } from "../hooks/use-create-post";
+import type { Post } from "../types";
 import { useAuth } from "@/features/auth/auth.context";
 import { useViewer } from "@/features/users/hooks/use-viewer";
 import { TopicPicker } from "@/features/topics/components/topic-picker";
@@ -11,12 +12,17 @@ import { toast } from "sonner";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { createPostSchema } from "@/lib/form-schemas";
 import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
 
 type CreatePostFormProps = {
   createPost: ReturnType<typeof useCreatePost>;
+  onCreated?: (post: Post) => void;
 };
 
-export const CreatePostForm = ({ createPost }: CreatePostFormProps) => {
+export const CreatePostForm = ({
+  createPost,
+  onCreated,
+}: CreatePostFormProps) => {
   const { user, isAuthenticated } = useAuth();
   const viewer = useViewer();
   const { open: openSignIn } = useSignInModal();
@@ -35,12 +41,17 @@ export const CreatePostForm = ({ createPost }: CreatePostFormProps) => {
         return;
       }
 
-      await createPost.mutateAsync({
-        content: value.content.trim(),
-        topicIds: value.topicIds.length > 0 ? value.topicIds : undefined,
-      });
-      toast.success("Post created!");
-      form.reset();
+      try {
+        const post = await createPost.mutateAsync({
+          content: value.content.trim(),
+          topicIds: value.topicIds.length > 0 ? value.topicIds : undefined,
+        });
+        toast.success("Post created!");
+        onCreated?.(post);
+        form.reset();
+      } catch (error) {
+        toast.error(getApiError(error).message ?? "Could not create post");
+      }
     },
   });
 

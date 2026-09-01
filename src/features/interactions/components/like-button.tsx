@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Heart } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToggleLike } from "../hooks/use-toggle-like";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
+import { getApiError } from "@/lib/errors";
 import type { LikeTargetType } from "../types";
 
 type LikeButtonProps = {
@@ -34,7 +36,18 @@ export const LikeButton = ({
       return;
     }
     setJustLiked(!isLiked);
-    toggle(isLiked);
+    toggle(isLiked, {
+      onError: (error) => {
+        const errorCode = getApiError(error).errorCode;
+        if (errorCode === "ALREADY_LIKED" || errorCode === "NOT_LIKED") {
+          return;
+        }
+        setJustLiked(false);
+        toast.error(
+          `Failed to ${isLiked ? "unlike" : "like"} this ${targetType.toLowerCase()}`,
+        );
+      },
+    });
   };
 
   return (

@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { articlesApi } from "../articles.api";
 import { articlesQueryOptionsFactory } from "../articles-query-options-factory";
 import type { CreateArticleDto } from "../types";
-import { toast } from "sonner";
 
 export function useCreateArticle() {
   const queryClient = useQueryClient();
@@ -14,7 +13,6 @@ export function useCreateArticle() {
       queryClient.invalidateQueries({
         queryKey: articlesQueryOptionsFactory.lists().queryKey,
       });
-      toast.success("Article created!");
     },
   });
 }

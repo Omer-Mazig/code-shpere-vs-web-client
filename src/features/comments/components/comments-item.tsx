@@ -401,7 +401,11 @@ export const CommentItem = ({
               disabled={deleteComment.isPending}
               onClick={(event) => {
                 event.preventDefault();
-                deleteComment.mutate(comment.id);
+                deleteComment.mutate(comment.id, {
+                  onError: () => {
+                    toast.error("Could not delete comment");
+                  },
+                });
               }}
             >
               {deleteComment.isPending ? "Deleting…" : "Delete"}

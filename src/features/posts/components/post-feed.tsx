@@ -6,15 +6,19 @@ import { PostFeedCard } from "./post-feed-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import type { useCreatePost } from "../hooks/use-create-post";
 import type { PostQueryDto } from "../types";
 
 type PostFeedProps = {
-  createPost?: ReturnType<typeof useCreatePost>;
+  lastCreatedPostId?: string | null;
+  isCreating?: boolean;
   queryDto?: Partial<Omit<PostQueryDto, "page">>;
 };
 
-export const PostFeed = ({ createPost, queryDto }: PostFeedProps) => {
+export const PostFeed = ({
+  lastCreatedPostId,
+  isCreating,
+  queryDto,
+}: PostFeedProps) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useSuspenseInfiniteQuery(postsQueryOptionsFactory.feedList(queryDto));
 
@@ -46,7 +50,7 @@ export const PostFeed = ({ createPost, queryDto }: PostFeedProps) => {
 
   return (
     <div className="flex flex-col gap-4">
-      {createPost?.isPending && (
+      {isCreating && (
         <div className="opacity-80">
           <FeedSkeleton count={1} />
         </div>
@@ -55,7 +59,7 @@ export const PostFeed = ({ createPost, queryDto }: PostFeedProps) => {
         <PostFeedCard
           key={post.id}
           post={post}
-          isNew={post.id === createPost?.lastCreatedPostId}
+          isNew={post.id === lastCreatedPostId}
         />
       ))}
 

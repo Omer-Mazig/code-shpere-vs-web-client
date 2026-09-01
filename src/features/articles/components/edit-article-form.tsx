@@ -2,9 +2,11 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Lock } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useAuth } from "@/features/auth/auth.context";
+import { getApiError } from "@/lib/errors";
 import { articleDetailPath } from "@/lib/routes.constants";
 import { articlesQueryOptionsFactory } from "../articles-query-options-factory";
 import { useUpdateArticle } from "../hooks/use-update-article";
@@ -55,9 +57,10 @@ export const EditArticleForm = ({ slug }: EditArticleFormProps) => {
           topicIds: data.topicIds ?? [],
         },
       });
+      toast.success("Article updated!");
       navigate(articleDetailPath(updated.slug));
-    } catch {
-      return;
+    } catch (error) {
+      toast.error(getApiError(error).message ?? "Could not update article");
     }
   };
 

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CreatePostForm } from "@/features/posts/components/create-post-form";
 import { PostFeed, FeedSkeleton } from "@/features/posts/components/post-feed";
 import { QueryBoundary } from "@/components/errors/query-boundary";
@@ -50,6 +51,9 @@ const FooterCard = () => (
 
 export const FeedPage = () => {
   const createPost = useCreatePost();
+  const [lastCreatedPostId, setLastCreatedPostId] = useState<string | null>(
+    null,
+  );
 
   return (
     <div className="bg-grid-dots min-h-full">
@@ -69,13 +73,19 @@ export const FeedPage = () => {
           {/* Center — composer + feed */}
           <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
             <div className="animate-fade-up">
-              <CreatePostForm createPost={createPost} />
+              <CreatePostForm
+                createPost={createPost}
+                onCreated={(post) => setLastCreatedPostId(post.id)}
+              />
             </div>
             <QueryBoundary
               fallback={<FeedSkeleton />}
               ErrorFallback={InlineErrorFallback}
             >
-              <PostFeed createPost={createPost} />
+              <PostFeed
+                lastCreatedPostId={lastCreatedPostId}
+                isCreating={createPost.isPending}
+              />
             </QueryBoundary>
           </div>
 

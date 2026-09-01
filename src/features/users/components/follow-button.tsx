@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/features/auth/auth.context";
 import { useFollowUser } from "../hooks/use-follow-user";
+import { getApiError } from "@/lib/errors";
+import { toast } from "sonner";
 
 type FollowButtonProps = {
   userId: string;
@@ -65,7 +67,16 @@ export const FollowButton = ({
             <AlertDialogAction
               variant="destructive"
               disabled={unfollowMutation.isPending}
-              onClick={() => unfollowMutation.mutate()}
+              onClick={() =>
+                unfollowMutation.mutate(undefined, {
+                  onError: (error) => {
+                    if (getApiError(error).errorCode === "USER_NOT_FOLLOWED") {
+                      return;
+                    }
+                    toast.error("Failed to unfollow user");
+                  },
+                })
+              }
             >
               Unfollow
             </AlertDialogAction>
@@ -79,7 +90,16 @@ export const FollowButton = ({
     <Button
       size="sm"
       disabled={followMutation.isPending}
-      onClick={() => followMutation.mutate()}
+      onClick={() =>
+        followMutation.mutate(undefined, {
+          onError: (error) => {
+            if (getApiError(error).errorCode === "USER_ALREADY_FOLLOWED") {
+              return;
+            }
+            toast.error("Failed to follow user");
+          },
+        })
+      }
     >
       Follow
     </Button>

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,6 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { getApiError } from "@/lib/errors";
 import { ARTICLE_PATHS } from "@/lib/routes.constants";
 import { articlesQueryOptionsFactory } from "../articles-query-options-factory";
 import { useDeleteArticle } from "../hooks/use-delete-article";
@@ -62,7 +64,13 @@ export const ArticleDeleteDialog = ({
                     queryKey: articlesQueryOptionsFactory.details(article.slug)
                       .queryKey,
                   });
+                  toast.success("Article deleted");
                   navigate(ARTICLE_PATHS.ARTICLES);
+                },
+                onError: (error) => {
+                  toast.error(
+                    getApiError(error).message ?? "Could not delete article",
+                  );
                 },
               });
             }}

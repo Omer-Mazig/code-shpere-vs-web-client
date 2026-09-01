@@ -33,6 +33,7 @@ import { postsQueryOptionsFactory } from "../posts-query-options-factory";
 import { TopicChips } from "@/features/topics/components/topic-chips";
 import { TopicPicker } from "@/features/topics/components/topic-picker";
 import { toast } from "sonner";
+import { getApiError } from "@/lib/errors";
 import { SharedPostEmbed } from "./shared-post-embed";
 
 const POST_CONTENT_MAX_LENGTH = 5000;
@@ -233,6 +234,11 @@ const OwnerMenu = () => {
                       queryKey: postsQueryOptionsFactory.details(post.id)
                         .queryKey,
                     });
+                  },
+                  onError: (error) => {
+                    toast.error(
+                      getApiError(error).message ?? "Could not delete post",
+                    );
                   },
                 });
               }}

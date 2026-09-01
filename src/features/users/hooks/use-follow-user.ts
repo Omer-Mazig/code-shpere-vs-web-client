@@ -5,7 +5,6 @@ import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-f
 import { articlesQueryOptionsFactory } from "@/features/articles/articles-query-options-factory";
 import { updateFollowInData } from "../follow-cache";
 import { getApiError } from "@/lib/errors";
-import { toast } from "sonner";
 
 const followCacheQueryKeys = [
   postsQueryOptionsFactory.all().queryKey,
@@ -66,7 +65,6 @@ export function useFollowUser(targetUserId: string) {
       if (context?.previousQueries) {
         rollbackFollow(context.previousQueries);
       }
-      toast.error("Failed to follow user");
     },
     onSettled: () => {
       invalidateFollowCaches(["users", "follow", targetUserId]);
@@ -85,7 +83,6 @@ export function useFollowUser(targetUserId: string) {
       if (context?.previousQueries) {
         rollbackFollow(context.previousQueries);
       }
-      toast.error("Failed to unfollow user");
     },
     onSettled: () => {
       invalidateFollowCaches(["users", "unfollow", targetUserId]);

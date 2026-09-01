@@ -23,7 +23,9 @@ import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { cn } from "@/lib/utils";
 import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
 import { resharePostSchema } from "@/lib/form-schemas";
+import { toast } from "sonner";
 import type { Post as PostType, SharedPostPreview } from "../types";
 import { SharedPostEmbed } from "./shared-post-embed";
 import { useCopyPostLink, useResharePost } from "../hooks/use-share-post";
@@ -58,12 +60,17 @@ export const PostActions = ({ post, onCommentClick }: PostActionsProps) => {
       onSubmit: resharePostSchema,
     },
     onSubmit: async ({ value }) => {
-      await reshare.mutateAsync({
-        content: value.content.trim(),
-        sharedPostId: post.id,
-      });
-      form.reset();
-      setReshareOpen(false);
+      try {
+        await reshare.mutateAsync({
+          content: value.content.trim(),
+          sharedPostId: post.id,
+        });
+        toast.success("Post shared");
+        form.reset();
+        setReshareOpen(false);
+      } catch (error) {
+        toast.error(getApiError(error).message ?? "Couldn’t share this post");
+      }
     },
   });
 
@@ -116,7 +123,14 @@ export const PostActions = ({ post, onCommentClick }: PostActionsProps) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => copyLink.mutate(post.id)}>
+          <DropdownMenuItem
+            onClick={() =>
+              copyLink.mutate(post.id, {
+                onSuccess: () => toast.success("Link copied"),
+                onError: () => toast.error("Couldn’t copy the link"),
+              })
+            }
+          >
             <Copy />
             Copy link
           </DropdownMenuItem>

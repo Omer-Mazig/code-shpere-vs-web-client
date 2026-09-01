@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { useFollowTopic } from "../hooks/use-follow-topic";
+import { getApiError } from "@/lib/errors";
+import { toast } from "sonner";
 
 type TopicFollowButtonProps = {
   topicId: string;
@@ -30,7 +32,14 @@ export const TopicFollowButton = ({
             openSignIn();
             return;
           }
-          unfollowMutation.mutate();
+          unfollowMutation.mutate(undefined, {
+            onError: (error) => {
+              if (getApiError(error).errorCode === "TOPIC_NOT_FOLLOWED") {
+                return;
+              }
+              toast.error("Could not unfollow topic.");
+            },
+          });
         }}
       >
         Following
@@ -40,17 +49,24 @@ export const TopicFollowButton = ({
 
   return (
     <Button
-        type="button"
-        variant="secondary"
-        size="xs"
-        className="w-full sm:w-auto"
+      type="button"
+      variant="secondary"
+      size="xs"
+      className="w-full sm:w-auto"
       disabled={busy}
       onClick={() => {
         if (!isAuthenticated) {
           openSignIn();
           return;
         }
-        followMutation.mutate();
+        followMutation.mutate(undefined, {
+          onError: (error) => {
+            if (getApiError(error).errorCode === "TOPIC_ALREADY_FOLLOWED") {
+              return;
+            }
+            toast.error("Could not follow topic.");
+          },
+        });
       }}
     >
       Follow

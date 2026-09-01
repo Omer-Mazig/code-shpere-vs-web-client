@@ -5,7 +5,6 @@ import { postsQueryOptionsFactory } from "../posts-query-options-factory";
 import { updateShareInData } from "@/features/interactions/share-cache";
 import { prependToInfiniteList } from "@/lib/infinite-query-cache";
 import type { CreatePostDto, Post } from "../types";
-import { toast } from "sonner";
 
 const markPostShared = (queryClient: ReturnType<typeof useQueryClient>, postId: string) => {
   const previousQueries = queryClient.getQueriesData({
@@ -48,10 +47,6 @@ export function useCopyPostLink() {
           queryClient.setQueryData(key, data);
         }
       }
-      toast.error("Couldn’t copy the link");
-    },
-    onSuccess: () => {
-      toast.success("Link copied");
     },
     onSettled: () => {
       queryClient.invalidateQueries({
@@ -75,11 +70,6 @@ export function useResharePost() {
       if (dto.sharedPostId) {
         markPostShared(queryClient, dto.sharedPostId);
       }
-
-      toast.success("Post shared");
-    },
-    onError: () => {
-      toast.error("Couldn’t share this post");
     },
     onSettled: () => {
       queryClient.invalidateQueries({

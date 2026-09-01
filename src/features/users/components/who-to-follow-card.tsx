@@ -11,6 +11,8 @@ import { useFollowUser } from "../hooks/use-follow-user";
 import { usersQueryOptionsFactory } from "../users-query-options-factory";
 import { FollowingBadge } from "./follow-button";
 import type { SuggestedUser } from "../types";
+import { getApiError } from "@/lib/errors";
+import { toast } from "sonner";
 
 const SUGGESTIONS_LIMIT = 4;
 
@@ -22,7 +24,13 @@ const SuggestedUserRow = ({ user }: { user: SuggestedUser }) => {
   const handleFollow = () => {
     setIsFollowing(true);
     followMutation.mutate(undefined, {
-      onError: () => setIsFollowing(false),
+      onError: (error) => {
+        if (getApiError(error).errorCode === "USER_ALREADY_FOLLOWED") {
+          return;
+        }
+        setIsFollowing(false);
+        toast.error("Failed to follow user");
+      },
     });
   };
 

@@ -16,7 +16,9 @@ import { useViewer } from "@/features/users/hooks/use-viewer";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { commentSchema } from "@/lib/form-schemas";
 import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type CommentFormProps = {
   targetId: string;
@@ -82,7 +84,12 @@ export const CommentForm = ({
               onSuccess?.();
               resolve();
             },
-            onError: (error) => reject(error),
+            onError: (error) => {
+              toast.error(
+                getApiError(error).message ?? "Could not post comment",
+              );
+              reject(error);
+            },
             onSettled: () => {
               setPendingParentId(undefined);
             },

@@ -2,11 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { interactionsApi } from "../interactions.api";
 import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-factory";
 import { articlesQueryOptionsFactory } from "@/features/articles/articles-query-options-factory";
-import { toast } from "sonner";
 import { commentsQueryOptionsFactory } from "@/features/comments/comments-query-options-factory";
 import { updateLikeInData } from "../like-cache";
 import { getApiError } from "@/lib/errors";
 import type { LikeTargetType } from "../types";
+
+type LikeAction = { action: "like" | "unlike" };
 
 export function useToggleLike(
   targetId: string,
@@ -22,7 +23,7 @@ export function useToggleLike(
         : commentsQueryOptionsFactory.all().queryKey;
 
   const mutation = useMutation({
-    mutationFn: ({ action }: { action: "like" | "unlike" }) => {
+    mutationFn: ({ action }: LikeAction) => {
       if (action === "like") {
         return interactionsApi.like(targetId, targetType);
       }
@@ -48,30 +49,31 @@ export function useToggleLike(
 
       return { previousQueries };
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       const errorCode = getApiError(error).errorCode;
       if (errorCode === "ALREADY_LIKED" || errorCode === "NOT_LIKED") {
         return;
       }
 
-      // Roll back all caches
       if (context?.previousQueries) {
         for (const [key, data] of context.previousQueries) {
           queryClient.setQueryData(key, data);
         }
       }
-
-      toast.error(
-        `Failed to ${variables.action} this ${targetType.toLowerCase()}`,
-      );
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: rootQueryKey });
     },
   });
 
-  const toggle = (isCurrentlyLiked: boolean) => {
-    mutation.mutate({ action: isCurrentlyLiked ? "unlike" : "like" });
+  const toggle = (
+    isCurrentlyLiked: boolean,
+    options?: Parameters<typeof mutation.mutate>[1],
+  ) => {
+    mutation.mutate(
+      { action: isCurrentlyLiked ? "unlike" : "like" },
+      options,
+    );
   };
 
   return { toggle, isPending: mutation.isPending };
