@@ -135,7 +135,7 @@ export const ArticleEditor = ({
         content: value.body.trim(),
         coverImageUrl: value.coverImageUrl.trim() || undefined,
         isPublished: publishIntentRef.current,
-        topicIds: value.topicIds.length > 0 ? value.topicIds : undefined,
+        topicIds: value.topicIds,
       });
     },
   });

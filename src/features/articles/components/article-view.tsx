@@ -7,14 +7,18 @@ import { RelativeTime } from "@/components/shared/relative-time";
 import { FollowButton } from "@/features/users/components/follow-button";
 import { TopicChips } from "@/features/topics/components/topic-chips";
 import { ArticleMarkdown } from "./article-markdown";
+import { ArticleOwnerMenu } from "./article-owner-menu";
 import { estimateReadTimeMinutes } from "../article-body";
+import { useAuth } from "@/features/auth/auth.context";
 
 type ArticleViewProps = {
   article: Article;
 };
 
 export const ArticleView = ({ article }: ArticleViewProps) => {
+  const { user } = useAuth();
   const readTime = estimateReadTimeMinutes(article.content);
+  const isOwner = Boolean(user && article.author?.id === user.id);
 
   return (
     <article className="mx-auto w-full max-w-3xl">
@@ -64,10 +68,14 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
               </span>
             </p>
           </div>
-          <FollowButton
-            userId={article.author.id}
-            isFollowing={article.author.isFollowing}
-          />
+          {isOwner ? (
+            <ArticleOwnerMenu article={article} />
+          ) : (
+            <FollowButton
+              userId={article.author.id}
+              isFollowing={article.author.isFollowing}
+            />
+          )}
         </div>
       )}
 

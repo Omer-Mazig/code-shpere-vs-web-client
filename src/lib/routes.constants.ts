@@ -43,3 +43,11 @@ export const TOPIC_PATHS = {
 export function topicDetailPath(slug: string) {
   return `/topics/${slug}`;
 }
+
+export function articleDetailPath(slug: string) {
+  return `/articles/${slug}`;
+}
+
+export function articleEditPath(slug: string) {
+  return `/articles/${slug}/edit`;
+}
