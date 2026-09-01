@@ -4,33 +4,17 @@ import type { Article } from "../types";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { TopicChips } from "@/features/topics/components/topic-chips";
+import {
+  estimateReadTimeMinutes,
+  excerptFromMarkdown,
+} from "../article-body";
 
 type ArticleCardProps = {
   article: Article;
 };
 
-const getArticleExcerpt = (content: Record<string, unknown>[]): string => {
-  for (const block of content) {
-    if (block.type === "paragraph" && typeof block.content === "string") {
-      const text = block.content.trim();
-      if (text) return text;
-    }
-  }
-  return "";
-};
-
-const estimateReadTimeMinutes = (content: Record<string, unknown>[]): number => {
-  const words = content.reduce((sum, block) => {
-    if (typeof block.content === "string") {
-      return sum + block.content.split(/\s+/).filter(Boolean).length;
-    }
-    return sum;
-  }, 0);
-  return Math.max(1, Math.round(words / 200) || 1);
-};
-
 export const ArticleCard = ({ article }: ArticleCardProps) => {
-  const excerpt = getArticleExcerpt(article.content);
+  const excerpt = excerptFromMarkdown(article.content);
   const readTime = estimateReadTimeMinutes(article.content);
   const commentsCount = article.commentsCount ?? 0;
 

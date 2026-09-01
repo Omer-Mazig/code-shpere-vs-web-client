@@ -13,8 +13,11 @@ export const CreateArticlePage = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Write an Article</h1>
+    <div className="container mx-auto max-w-6xl px-4 py-6">
+      <h1 className="mb-2 text-2xl font-bold tracking-tight">Write an article</h1>
+      <p className="mb-6 text-sm text-muted-foreground">
+        Markdown with a live preview — headings, lists, code, and images from URLs.
+      </p>
       <ArticleEditor
         onSubmit={handleSubmit}
         isSubmitting={createArticle.isPending}

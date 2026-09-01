@@ -1259,9 +1259,12 @@ export interface components {
             id: string;
             title: string;
             slug: string;
-            content: {
-                [key: string]: unknown;
-            }[];
+            /**
+             * @example ## Why Generics?
+             *
+             *     They let you write reusable, type-safe code.
+             */
+            content: string;
             coverImageUrl: string | null;
             isPublished: boolean;
             author: components["schemas"]["ArticleAuthorResponseDto"] | null;
@@ -1278,16 +1281,17 @@ export interface components {
             /** @example Understanding TypeScript Generics */
             title: string;
             /**
-             * @example [
-             *       {
-             *         "type": "paragraph",
-             *         "content": "This is the article body..."
-             *       }
-             *     ]
+             * @example ## Why Generics?
+             *
+             *     They let you write reusable, type-safe code.
+             *
+             *     ```ts
+             *     function identity<T>(value: T): T {
+             *       return value;
+             *     }
+             *     ```
              */
-            content: {
-                [key: string]: unknown;
-            }[];
+            content: string;
             /** @example https://example.com/cover.jpg */
             coverImageUrl?: string;
             /** @default false */
@@ -1298,9 +1302,12 @@ export interface components {
         UpdateArticleDto: {
             /** @example Updated Title */
             title?: string;
-            content?: {
-                [key: string]: unknown;
-            }[];
+            /**
+             * @example ## Updated heading
+             *
+             *     Updated markdown body.
+             */
+            content?: string;
             /** @example https://example.com/cover.jpg */
             coverImageUrl?: string;
             isPublished?: boolean;
