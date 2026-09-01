@@ -7,14 +7,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import type { useCreatePost } from "../hooks/use-create-post";
+import type { PostQueryDto } from "../types";
 
 type PostFeedProps = {
-  createPost: ReturnType<typeof useCreatePost>;
+  createPost?: ReturnType<typeof useCreatePost>;
+  queryDto?: Partial<Omit<PostQueryDto, "page">>;
 };
 
-export const PostFeed = ({ createPost }: PostFeedProps) => {
+export const PostFeed = ({ createPost, queryDto }: PostFeedProps) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery(postsQueryOptionsFactory.feedList());
+    useSuspenseInfiniteQuery(postsQueryOptionsFactory.feedList(queryDto));
 
   const { ref: loadMoreRef, isIntersecting } = useIntersectionObserver({
     rootMargin: "200px",
@@ -32,15 +34,19 @@ export const PostFeed = ({ createPost }: PostFeedProps) => {
     return (
       <EmptyState
         icon={PenLine}
-        title="The feed is quiet"
-        description="Share a snippet, a win, or a question — be the first post this community sees."
+        title={queryDto?.topicId ? "No posts tagged yet" : "The feed is quiet"}
+        description={
+          queryDto?.topicId
+            ? "Be the first to tag a post with this topic from the composer."
+            : "Share a snippet, a win, or a question — be the first post this community sees."
+        }
       />
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {createPost.isPending && (
+      {createPost?.isPending && (
         <div className="opacity-80">
           <FeedSkeleton count={1} />
         </div>
@@ -49,7 +55,7 @@ export const PostFeed = ({ createPost }: PostFeedProps) => {
         <PostFeedCard
           key={post.id}
           post={post}
-          isNew={post.id === createPost.lastCreatedPostId}
+          isNew={post.id === createPost?.lastCreatedPostId}
         />
       ))}
 

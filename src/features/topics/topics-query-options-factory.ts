@@ -14,4 +14,16 @@ export const topicsQueryOptionsFactory = {
       queryFn: () => topicsApi.list(),
       staleTime: 1000 * 60 * 5,
     }),
+
+  bySlug: (slug: string, viewerId?: string) =>
+    queryOptions({
+      queryKey: [
+        ...topicsQueryOptionsFactory.all().queryKey,
+        "detail",
+        slug,
+        viewerId ?? "guest",
+      ],
+      queryFn: () => topicsApi.getBySlug(slug),
+      staleTime: 1000 * 60 * 5,
+    }),
 };

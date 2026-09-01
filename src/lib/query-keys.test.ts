@@ -119,5 +119,17 @@ describe("query option factories", () => {
       "list",
       "u1",
     ]);
+    expect(topicsQueryOptionsFactory.bySlug("react").queryKey).toEqual([
+      "topics",
+      "detail",
+      "react",
+      "guest",
+    ]);
+    expect(topicsQueryOptionsFactory.bySlug("react", "u1").queryKey).toEqual([
+      "topics",
+      "detail",
+      "react",
+      "u1",
+    ]);
   });
 });

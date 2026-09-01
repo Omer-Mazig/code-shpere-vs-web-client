@@ -6,53 +6,55 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { SideCard } from "@/components/shared/side-card";
 import { useAuth } from "@/features/auth/auth.context";
-import { TopicsDialog } from "@/features/topics/components/topics-dialog";
-import { useState } from "react";
+import { TOPIC_PATHS } from "@/lib/routes.constants";
 
-/* Dummy quick actions below the profile card — real features come later */
-
-const SHORTCUTS: { icon: LucideIcon; label: string }[] = [
+const SHORTCUTS: { icon: LucideIcon; label: string; to?: string }[] = [
   { icon: Bookmark, label: "Saved items" },
   { icon: FileText, label: "My drafts" },
-  { icon: Hash, label: "Topics" },
+  { icon: Hash, label: "Topics", to: TOPIC_PATHS.TOPICS },
   { icon: CalendarDays, label: "Events" },
 ];
 
 export const ShortcutsCard = () => {
-  const [topicsOpen, setTopicsOpen] = useState(false);
-
   return (
-    <>
-      <SideCard
-        kicker="shortcuts"
-        contentClassName="-mx-2 flex flex-col"
-      >
-        {SHORTCUTS.map(({ icon: Icon, label }) => (
+    <SideCard
+      kicker="shortcuts"
+      contentClassName="-mx-2 flex flex-col"
+    >
+      {SHORTCUTS.map(({ icon: Icon, label, to }) => {
+        const className =
+          "flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
+
+        if (to) {
+          return (
+            <Link
+              key={label}
+              to={to}
+              className={className}
+            >
+              <Icon className="size-4" />
+              {label}
+            </Link>
+          );
+        }
+
+        return (
           <button
             key={label}
             type="button"
-            onClick={() => {
-              if (label === "Topics") {
-                setTopicsOpen(true);
-                return;
-              }
-              toast(`${label} is coming soon`);
-            }}
-            className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            onClick={() => toast(`${label} is coming soon`)}
+            className={className}
           >
             <Icon className="size-4" />
             {label}
           </button>
-        ))}
-      </SideCard>
-      <TopicsDialog
-        open={topicsOpen}
-        onOpenChange={setTopicsOpen}
-      />
-    </>
+        );
+      })}
+    </SideCard>
   );
 };
 

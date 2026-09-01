@@ -5,9 +5,11 @@ import { ArticleCard } from "./article-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import type { ArticleQueryDto } from "../types";
+import { cn } from "@/lib/utils";
 
 type ArticleListProps = {
   queryDto?: Partial<ArticleQueryDto>;
+  className?: string;
 };
 
 export const ArticleListSkeleton = () => (
@@ -28,7 +30,7 @@ export const ArticleListSkeleton = () => (
   </div>
 );
 
-export const ArticleList = ({ queryDto }: ArticleListProps) => {
+export const ArticleList = ({ queryDto, className }: ArticleListProps) => {
   const { data } = useSuspenseQuery(
     articlesQueryOptionsFactory.list(queryDto),
   );
@@ -37,9 +39,11 @@ export const ArticleList = ({ queryDto }: ArticleListProps) => {
     return (
       <EmptyState
         icon={BookOpen}
-        title="No articles yet"
+        title={queryDto?.topicId ? "No articles tagged yet" : "No articles yet"}
         description={
-          queryDto?.authorId
+          queryDto?.topicId
+            ? "No published articles are tagged with this topic yet."
+            : queryDto?.authorId
             ? "Published writing will appear here."
             : "Be the first to publish a long-form piece for the community."
         }
@@ -48,7 +52,7 @@ export const ArticleList = ({ queryDto }: ArticleListProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", className)}>
       {data.items.map((article) => (
         <ArticleCard
           key={article.id}

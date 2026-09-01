@@ -1,7 +1,9 @@
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { SideCard } from "@/components/shared/side-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/auth.context";
+import { TOPIC_PATHS, topicDetailPath } from "@/lib/routes.constants";
 import { topicsQueryOptionsFactory } from "../topics-query-options-factory";
 import { TopicFollowButton } from "./topic-follow-button";
 
@@ -30,23 +32,40 @@ export const TopicsToFollowCard = () => {
     topicsQueryOptionsFactory.list(user?.id),
   );
 
-  const items = (data ?? []).filter((topic) => !topic.isFollowed).slice(0, SUGGESTIONS_LIMIT);
+  const items = (data ?? [])
+    .filter((topic) => !topic.isFollowed)
+    .slice(0, SUGGESTIONS_LIMIT);
 
   if (items.length > 0) {
     return (
-      <SideCard kicker="topics">
+      <SideCard
+        kicker="topics"
+        action={
+          <Link
+            to={TOPIC_PATHS.TOPICS}
+            className="text-xs font-medium text-muted-foreground hover:text-primary"
+          >
+            Browse all
+          </Link>
+        }
+      >
         <div className="flex flex-col gap-3">
           {items.map((topic) => (
             <div
               key={topic.id}
               className="flex items-start gap-2"
             >
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{topic.name}</p>
+              <Link
+                to={topicDetailPath(topic.slug)}
+                className="min-w-0 flex-1"
+              >
+                <p className="truncate text-sm font-medium hover:text-primary">
+                  #{topic.name}
+                </p>
                 <p className="line-clamp-2 text-xs text-muted-foreground">
                   {topic.description}
                 </p>
-              </div>
+              </Link>
               <TopicFollowButton
                 topicId={topic.id}
                 isFollowed={topic.isFollowed}

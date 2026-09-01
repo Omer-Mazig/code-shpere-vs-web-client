@@ -34,3 +34,12 @@ export const SETTINGS_PATHS = {
 export const NOTIFICATION_PATHS = {
   NOTIFICATIONS: "/notifications",
 } as const;
+
+export const TOPIC_PATHS = {
+  TOPICS: "/topics",
+  TOPIC_DETAIL: "/topics/:slug",
+} as const;
+
+export function topicDetailPath(slug: string) {
+  return `/topics/${slug}`;
+}

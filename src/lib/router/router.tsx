@@ -11,7 +11,12 @@ import { feedRoutes } from "./feed.router";
 import { articleRoutes } from "./article.router";
 import { profileRoutes } from "./profile.router";
 import { settingsRoutes } from "./settings.router";
-import { AUTH_PATHS, ARTICLE_PATHS, FEED_PATHS } from "../routes.constants";
+import { topicsRoutes } from "./topics.router";
+import {
+  AUTH_PATHS,
+  ARTICLE_PATHS,
+  FEED_PATHS,
+} from "../routes.constants";
 
 const HomeIndexRedirect = () => {
   const { isAuthenticated } = useAuth();
@@ -44,6 +49,7 @@ export const router = createBrowserRouter([
           },
           ...feedRoutes,
           ...articleRoutes,
+          ...topicsRoutes,
           ...profileRoutes,
           ...settingsRoutes,
         ],

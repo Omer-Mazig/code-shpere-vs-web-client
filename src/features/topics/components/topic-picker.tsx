@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import { ChevronsUpDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -50,7 +50,7 @@ export const TopicPicker = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
       {selected.length > 0 ? (
         <ul className="flex flex-wrap gap-1.5">
           {selected.map((topic) => (
@@ -59,7 +59,7 @@ export const TopicPicker = ({
                 variant="secondary"
                 className="gap-1"
               >
-                {topic.name}
+                #{topic.name}
                 <button
                   type="button"
                   className="rounded-full outline-none hover:bg-muted"
@@ -82,7 +82,7 @@ export const TopicPicker = ({
             variant="outline"
             size="sm"
             disabled={disabled}
-            className="w-full justify-between font-normal sm:w-64"
+            className="w-full justify-between font-normal"
           >
             {value.length > 0
               ? `${value.length} of ${MAX_TOPICS_PER_ITEM} topics`
@@ -92,9 +92,10 @@ export const TopicPicker = ({
         </PopoverTrigger>
         <PopoverContent
           align="start"
-          className="w-72 p-0"
+          sideOffset={6}
+          className="w-[var(--radix-popover-trigger-width)] p-0"
         >
-          <Command>
+          <Command className="rounded-2xl">
             <CommandInput placeholder="Search topics…" />
             <CommandList>
               <CommandEmpty>No topics found.</CommandEmpty>
@@ -105,17 +106,19 @@ export const TopicPicker = ({
                   return (
                     <CommandItem
                       key={topic.id}
-                      value={`${topic.name} ${topic.slug}`}
+                      value={`${topic.name} ${topic.slug} ${topic.description}`}
                       disabled={locked}
+                      data-checked={isSelected}
                       onSelect={() => toggle(topic.id)}
                     >
-                      <Check
-                        className={cn(
-                          "size-4",
-                          isSelected ? "opacity-100" : "opacity-0",
-                        )}
-                      />
-                      <span>{topic.name}</span>
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className={cn("font-medium", isSelected && "text-foreground")}>
+                          #{topic.name}
+                        </span>
+                        <span className="line-clamp-1 text-xs text-muted-foreground">
+                          {topic.description}
+                        </span>
+                      </span>
                     </CommandItem>
                   );
                 })}
