@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { isNotFoundError } from "@/lib/errors";
+import { getDisplayErrorMessage, isNotFoundError } from "@/lib/errors";
 import { FEED_PATHS } from "@/lib/routes.constants";
 import type { FallbackProps } from "react-error-boundary";
 
@@ -26,8 +26,10 @@ export const PageErrorFallback = ({
     );
   }
 
-  const message =
-    error instanceof Error ? error.message : "An unexpected error occurred";
+  const message = getDisplayErrorMessage(
+    error,
+    "An unexpected error occurred",
+  );
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center gap-6 px-4 py-24">

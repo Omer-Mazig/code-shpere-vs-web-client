@@ -37,6 +37,26 @@ function readValidationDetails(
   return details.length > 0 ? details : undefined;
 }
 
+/**
+ * User-facing message for failed requests and thrown errors.
+ * Prefers the API envelope `message`, then `Error.message`, then `fallback`.
+ */
+export function getDisplayErrorMessage(
+  error: unknown,
+  fallback = "Something went wrong",
+): string {
+  const apiMessage = getApiError(error).message;
+  if (apiMessage) {
+    return apiMessage;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 export function getApiError(error: unknown): ParsedApiError {
   if (!axios.isAxiosError(error)) {
     return {};

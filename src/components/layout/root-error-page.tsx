@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button";
+import { getDisplayErrorMessage } from "@/lib/errors";
 
 interface RootErrorPageProps {
   error?: unknown;
 }
 
 export const RootErrorPage = ({ error }: RootErrorPageProps) => {
-  const errorMessage =
-    error instanceof Error ? error.message : "An unexpected error occurred";
+  const errorMessage = getDisplayErrorMessage(
+    error,
+    "An unexpected error occurred",
+  );
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-6">

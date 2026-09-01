@@ -2,6 +2,7 @@ import { Query, QueryClient, QueryCache } from "@tanstack/react-query";
 import { ZodError } from "zod";
 import axios from "axios";
 import { toast } from "sonner";
+import { getDisplayErrorMessage } from "@/lib/errors";
 
 /**
  * Query client instance
@@ -12,7 +13,9 @@ export const queryClientInstance = new QueryClient({
   queryCache: new QueryCache({
     onError: (error, query) => {
       if (query.state.data !== undefined) {
-        toast.error(`Something went wrong: ${error.message}`);
+        toast.error(
+          `Something went wrong: ${getDisplayErrorMessage(error)}`,
+        );
       }
 
       if (import.meta.env.DEV) {

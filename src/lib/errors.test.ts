@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getApiError, isNotFoundError } from "./errors";
+import { getApiError, getDisplayErrorMessage, isNotFoundError } from "./errors";
 import { makeAxiosError } from "@/test/make-axios-error";
 
 describe("isNotFoundError", () => {
@@ -83,5 +83,36 @@ describe("getApiError", () => {
       errorCode: "UNAUTHORIZED",
       message: "Nope",
     });
+  });
+});
+
+describe("getDisplayErrorMessage", () => {
+  it("prefers the API envelope message over Axios error.message", () => {
+    expect(
+      getDisplayErrorMessage(
+        makeAxiosError({
+          status: 500,
+          data: {
+            statusCode: 500,
+            errorCode: "INTERNAL_SERVER_ERROR",
+            message: "An unexpected error occurred",
+          },
+        }),
+      ),
+    ).toBe("An unexpected error occurred");
+  });
+
+  it("falls back to Error.message when the API body has no message", () => {
+    expect(
+      getDisplayErrorMessage(makeAxiosError({ status: 503 })),
+    ).toBe("Request failed");
+  });
+
+  it("falls back to Error.message for non-Axios errors", () => {
+    expect(getDisplayErrorMessage(new Error("boom"))).toBe("boom");
+  });
+
+  it("uses the provided fallback for unknown errors", () => {
+    expect(getDisplayErrorMessage("nope", "Try again.")).toBe("Try again.");
   });
 });

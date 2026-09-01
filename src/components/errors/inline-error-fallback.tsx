@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
+import { getDisplayErrorMessage } from "@/lib/errors";
 import type { FallbackProps } from "react-error-boundary";
 
 export const InlineErrorFallback = ({
   error,
   resetErrorBoundary,
 }: FallbackProps) => {
-  const message =
-    error instanceof Error ? error.message : "Something went wrong";
+  const message = getDisplayErrorMessage(error);
 
   return (
     <div className="rounded-lg border bg-card p-6 text-center">
