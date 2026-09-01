@@ -1,6 +1,4 @@
-import { ArticleList, ArticleListSkeleton } from "@/features/articles/components/article-list";
-import { QueryBoundary } from "@/components/errors/query-boundary";
-import { InlineErrorFallback } from "@/components/errors/inline-error-fallback";
+import { ArticlesDirectory } from "@/features/articles/components/articles-directory";
 
 export const ArticlesPage = () => {
   return (
@@ -11,12 +9,7 @@ export const ArticlesPage = () => {
           Discover in-depth articles from the developer community.
         </p>
       </div>
-      <QueryBoundary
-        fallback={<ArticleListSkeleton />}
-        ErrorFallback={InlineErrorFallback}
-      >
-        <ArticleList queryDto={{ isPublished: true }} />
-      </QueryBoundary>
+      <ArticlesDirectory />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { apiClient } from "@/lib/api-client";
 import type { ApiEnvelope, PaginatedResponse } from "@/lib/types";
 import type {
   Article,
+  ArticleListAuthor,
   CreateArticleDto,
   UpdateArticleDto,
   ArticleQueryDto,
@@ -14,6 +15,13 @@ export const articlesApi = {
     const response = await apiClient.get<ApiEnvelope<PaginatedResponse<Article>>>(
       "/articles",
       { params: query },
+    );
+    return response.data.payload;
+  },
+
+  listPublishedAuthors: async (): Promise<ArticleListAuthor[]> => {
+    const response = await apiClient.get<ApiEnvelope<ArticleListAuthor[]>>(
+      "/articles/authors",
     );
     return response.data.payload;
   },

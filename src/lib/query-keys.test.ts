@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { articlesQueryOptionsFactory } from "@/features/articles/articles-query-options-factory";
 import { authQueryOptionsFactory } from "@/features/auth/auth-query-options-factory";
 import { commentsQueryOptionsFactory } from "@/features/comments/comments-query-options-factory";
 import { notificationsQueryOptionsFactory } from "@/features/notifications/notifications-query-options-factory";
@@ -125,11 +126,28 @@ describe("query option factories", () => {
       "react",
       "guest",
     ]);
-    expect(topicsQueryOptionsFactory.bySlug("react", "u1").queryKey).toEqual([
-      "topics",
-      "detail",
-      "react",
-      "u1",
+    expect(
+      topicsQueryOptionsFactory.bySlug("react", "u1").queryKey,
+    ).toEqual(["topics", "detail", "react", "u1"]);
+  });
+
+  it("nests article keys under articles", () => {
+    expect(articlesQueryOptionsFactory.all().queryKey).toEqual(["articles"]);
+    expect(articlesQueryOptionsFactory.lists().queryKey).toEqual([
+      "articles",
+      "list",
+    ]);
+    expect(
+      articlesQueryOptionsFactory.list({ search: "hooks", page: 2 }).queryKey,
+    ).toEqual(["articles", "list", { search: "hooks", page: 2 }]);
+    expect(articlesQueryOptionsFactory.publishedAuthors().queryKey).toEqual([
+      "articles",
+      "authors",
+    ]);
+    expect(articlesQueryOptionsFactory.details("slug-1").queryKey).toEqual([
+      "articles",
+      "details",
+      "slug-1",
     ]);
   });
 });
