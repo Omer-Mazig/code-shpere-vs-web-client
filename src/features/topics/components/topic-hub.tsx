@@ -48,7 +48,7 @@ export const TopicHub = ({ topic }: TopicHubProps) => {
         defaultValue={defaultTab}
         className="gap-6"
       >
-        <TabsList>
+        <TabsList className="w-full">
           <TabsTrigger value="posts">Posts</TabsTrigger>
           <TabsTrigger value="articles">Articles</TabsTrigger>
         </TabsList>

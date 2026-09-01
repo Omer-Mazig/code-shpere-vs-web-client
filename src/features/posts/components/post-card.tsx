@@ -375,15 +375,16 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
           onChange={setEditTopicIds}
           disabled={updatePost.isPending}
         />
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-muted-foreground">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-center text-xs text-muted-foreground sm:text-left">
             {editContent.length}/{POST_CONTENT_MAX_LENGTH}
           </p>
-          <div className="flex justify-end gap-2">
+          <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="ghost"
               size="sm"
+              className="w-full sm:w-auto"
               onClick={() => {
                 cancelEditing();
                 setEditContent(post.content);
@@ -395,6 +396,7 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
             <Button
               type="button"
               size="sm"
+              className="w-full sm:w-auto"
               disabled={!canSave}
               onClick={handleSaveEdit}
             >

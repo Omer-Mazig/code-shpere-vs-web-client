@@ -99,13 +99,14 @@ export const CreatePostForm = ({ createPost }: CreatePostFormProps) => {
           </div>
         )}
       />
-      <div className="mt-3 flex justify-end">
+      <div className="mt-3 flex sm:justify-end">
         <form.Subscribe
           selector={(state) => [state.values.content, state.isSubmitting] as const}
           children={([content, isSubmitting]) => (
             <Button
               type="submit"
               size="sm"
+              className="w-full sm:w-auto"
               disabled={!content.trim() || isSubmitting || createPost.isPending}
             >
               {isSubmitting || createPost.isPending ? "Posting..." : "Post"}

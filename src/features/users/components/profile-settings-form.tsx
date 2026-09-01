@@ -305,8 +305,12 @@ export const ProfileSettingsForm = ({ profile }: { profile: UserProfile }) => {
           </FieldGroup>
         </section>
 
-        <div className="flex justify-end">
-          <Button type="submit" disabled={!isDirty || isSaving}>
+        <div className="flex sm:justify-end">
+          <Button
+            type="submit"
+            className="w-full sm:w-auto"
+            disabled={!isDirty || isSaving}
+          >
             {isSaving ? "Saving..." : "Save changes"}
           </Button>
         </div>

@@ -68,18 +68,19 @@ export const PostActions = ({ post, onCommentClick }: PostActionsProps) => {
   });
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="grid w-full grid-cols-3">
       <LikeButton
         targetId={post.id}
         targetType="POST"
         isLiked={post.isLiked}
         likesCount={post.likesCount}
+        className="w-full justify-center"
       />
 
       <Button
         variant="ghost"
         size="sm"
-        className="gap-2 text-muted-foreground"
+        className="w-full justify-center gap-2 text-muted-foreground"
         aria-label={`Comments, ${post.commentsCount}`}
         onClick={() => onCommentClick?.()}
       >
@@ -103,7 +104,7 @@ export const PostActions = ({ post, onCommentClick }: PostActionsProps) => {
             variant="ghost"
             size="sm"
             className={cn(
-              "gap-2",
+              "w-full justify-center gap-2",
               post.isShared
                 ? "text-primary hover:text-primary"
                 : "text-muted-foreground",

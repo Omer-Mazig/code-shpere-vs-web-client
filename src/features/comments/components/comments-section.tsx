@@ -26,7 +26,7 @@ export const CommentsSection = ({
   const createComment = useCreateComment();
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs">
       <h3 className="text-lg font-semibold">Comments</h3>
       <CommentForm
         targetId={targetId}

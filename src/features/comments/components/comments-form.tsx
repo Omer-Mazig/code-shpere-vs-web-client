@@ -343,8 +343,8 @@ export const CommentForm = ({
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-muted-foreground">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-center text-xs text-muted-foreground sm:text-left">
             {isAuthenticated
               ? "Tip: type @ to mention someone"
               : "Sign in to comment"}
@@ -357,6 +357,7 @@ export const CommentForm = ({
               <Button
                 type="submit"
                 size="sm"
+                className="w-full sm:w-auto"
                 disabled={
                   !fieldContent.trim() ||
                   isSubmitting ||

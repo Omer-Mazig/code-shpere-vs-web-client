@@ -12,6 +12,7 @@ type LikeButtonProps = {
   targetType: LikeTargetType;
   isLiked: boolean;
   likesCount: number;
+  className?: string;
 };
 
 export const LikeButton = ({
@@ -19,6 +20,7 @@ export const LikeButton = ({
   targetType,
   isLiked,
   likesCount,
+  className,
 }: LikeButtonProps) => {
   const { isAuthenticated } = useAuth();
   const { open: openSignIn } = useSignInModal();
@@ -42,6 +44,7 @@ export const LikeButton = ({
       className={cn(
         "gap-2",
         isLiked ? "text-red-500 hover:text-red-600" : "text-muted-foreground",
+        className,
       )}
       aria-pressed={isLiked}
       aria-label={

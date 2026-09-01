@@ -99,17 +99,17 @@ const Header = ({ actions }: HeaderProps) => {
   const articlesCount = profile.articlesCount ?? 0;
 
   return (
-    <div className="px-5 pb-5">
-      <div className="-mt-10 flex flex-col gap-4 md:-mt-12">
-        <div className="flex items-end justify-between gap-4">
+    <div className="px-4 pb-5 sm:px-5">
+      <div className="-mt-10 flex flex-col items-center gap-4 text-center md:-mt-12 md:items-stretch md:text-left">
+        <div className="flex w-full flex-col items-center gap-3 md:flex-row md:items-end md:justify-between">
           <UserAvatar
             user={profile}
             className="size-24 border-4 border-card shadow-sm md:size-28"
           />
-          {actions && <div className="z-10 pb-1">{actions}</div>}
+          {actions && <div className="z-10 md:pb-1">{actions}</div>}
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex w-full flex-col items-center gap-3 md:items-start">
           <div>
             <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
               {displayName}
@@ -123,7 +123,7 @@ const Header = ({ actions }: HeaderProps) => {
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground md:justify-start">
             {profile.location && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-4 w-4" />
@@ -171,7 +171,7 @@ const Header = ({ actions }: HeaderProps) => {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+        <div className="flex w-full items-start justify-between gap-1 text-sm md:justify-start md:gap-x-5">
           <StatLink
             to={`/profile/${profile.id}/posts`}
             count={postsCount}
@@ -205,8 +205,11 @@ type StatLinkProps = {
 };
 
 const StatLink = ({ to, count, label }: StatLinkProps) => (
-  <NavLink to={to} className="hover:underline">
-    <strong className="text-foreground">{count}</strong>{" "}
+  <NavLink
+    to={to}
+    className="flex min-w-0 flex-1 flex-col items-center hover:underline md:flex-none md:flex-row md:gap-1"
+  >
+    <strong className="text-foreground">{count}</strong>
     <span className="text-muted-foreground">{label}</span>
   </NavLink>
 );
@@ -214,15 +217,15 @@ const StatLink = ({ to, count, label }: StatLinkProps) => (
 const TabNav = () => {
   const { tabs, activeTab } = useProfile();
   return (
-    <div className="border-t px-2">
-      <nav className="flex flex-wrap gap-1 py-2">
+    <div className="border-t px-1 sm:px-2">
+      <nav className="grid grid-cols-4 gap-1 py-2">
         {tabs.map((tab) => (
           <NavLink
             key={tab.key}
             to={tab.to}
             className={() =>
               cn(
-                "rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
+                "rounded-md px-1 py-1.5 text-center text-xs text-muted-foreground transition-colors hover:text-foreground sm:px-3 sm:text-sm",
                 activeTab === tab.key && "bg-muted text-foreground font-medium",
               )
             }
@@ -240,7 +243,7 @@ type TabContentProps = {
 };
 
 const TabContent = ({ children }: TabContentProps) => {
-  return <div className="border-t bg-muted/20 px-5 py-5">{children}</div>;
+  return <div className="border-t bg-muted/20 px-4 py-5 sm:px-5">{children}</div>;
 };
 
 export const ProfileShell = Object.assign(Root, {

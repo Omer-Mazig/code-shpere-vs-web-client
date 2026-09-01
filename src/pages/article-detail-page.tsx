@@ -24,9 +24,7 @@ export const ArticleDetailPage = () => {
 
       <div className="flex flex-col gap-8">
         <ArticleView article={article} />
-        <div className="border-t pt-8">
-          <CommentsSection targetId={article.id} targetType="ARTICLE" />
-        </div>
+        <CommentsSection targetId={article.id} targetType="ARTICLE" />
       </div>
     </div>
   );

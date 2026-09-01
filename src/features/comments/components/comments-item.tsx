@@ -234,11 +234,12 @@ export const CommentItem = ({
                 rows={2}
                 className="min-h-16 max-h-40 field-sizing-content"
               />
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() => {
                     setIsEditing(false);
                     setEditContent(comment.content);
@@ -249,6 +250,7 @@ export const CommentItem = ({
                 <Button
                   type="button"
                   size="sm"
+                  className="w-full sm:w-auto"
                   disabled={!editContent.trim() || updateComment.isPending}
                   onClick={handleSaveEdit}
                 >

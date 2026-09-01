@@ -38,6 +38,7 @@ export const DeactivateAccountSettings = ({
         <Button
           type="button"
           variant="destructive"
+          className="w-full sm:w-auto"
           disabled={disabled || isPending}
         >
           {isPending ? "Deactivating..." : "Deactivate account"}

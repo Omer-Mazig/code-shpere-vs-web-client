@@ -23,6 +23,7 @@ export const TopicFollowButton = ({
         type="button"
         variant="outline"
         size="xs"
+        className="w-full sm:w-auto"
         disabled={busy}
         onClick={() => {
           if (!isAuthenticated) {
@@ -39,9 +40,10 @@ export const TopicFollowButton = ({
 
   return (
     <Button
-      type="button"
-      variant="secondary"
-      size="xs"
+        type="button"
+        variant="secondary"
+        size="xs"
+        className="w-full sm:w-auto"
       disabled={busy}
       onClick={() => {
         if (!isAuthenticated) {

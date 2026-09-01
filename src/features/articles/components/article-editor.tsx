@@ -180,10 +180,11 @@ export const ArticleEditor = ({
             !title.trim() ||
             !body.trim();
           return (
-            <div className="flex gap-3 justify-end">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
               <Button
                 type="button"
                 variant="outline"
+                className="w-full sm:w-auto"
                 onClick={() => submitWithIntent(false)}
                 disabled={disabled}
               >
@@ -191,6 +192,7 @@ export const ArticleEditor = ({
               </Button>
               <Button
                 type="submit"
+                className="w-full sm:w-auto"
                 disabled={disabled}
               >
                 {isSubmitting || formSubmitting ? "Saving..." : submitLabel}

@@ -235,9 +235,10 @@ export const AccountSettingsForm = ({ profile }: { profile: UserProfile }) => {
           </p>
         </section>
 
-        <div className="flex justify-end">
+        <div className="flex sm:justify-end">
           <Button
             type="submit"
+            className="w-full sm:w-auto"
             disabled={!isDirty || isSaving || isDeactivating}
           >
             {isSaving ? "Saving..." : "Save changes"}
