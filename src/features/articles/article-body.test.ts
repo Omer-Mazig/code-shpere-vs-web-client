@@ -3,6 +3,7 @@ import {
   countMarkdownWords,
   estimateReadTimeMinutes,
   excerptFromMarkdown,
+  insertMarkdownImage,
   toSafeMarkdownUrl,
 } from "./article-body";
 
@@ -31,6 +32,22 @@ describe("estimateReadTimeMinutes", () => {
 describe("countMarkdownWords", () => {
   it("counts words", () => {
     expect(countMarkdownWords("one two three")).toBe(3);
+  });
+});
+
+describe("insertMarkdownImage", () => {
+  it("wraps the selection as alt text", () => {
+    expect(insertMarkdownImage("see diagram here", 4, 11, "/api/media/abc")).toEqual({
+      next: "see ![diagram](/api/media/abc) here",
+      cursor: 30,
+    });
+  });
+
+  it("uses a default alt when nothing is selected", () => {
+    expect(insertMarkdownImage("ab", 1, 1, "/api/media/x")).toEqual({
+      next: "a![image](/api/media/x)b",
+      cursor: 23,
+    });
   });
 });
 

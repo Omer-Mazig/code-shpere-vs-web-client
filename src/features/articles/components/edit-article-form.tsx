@@ -52,7 +52,7 @@ export const EditArticleForm = ({ slug }: EditArticleFormProps) => {
         dto: {
           title: data.title,
           content: data.content,
-          coverImageUrl: data.coverImageUrl,
+          coverImageUrl: data.coverImageUrl ?? null,
           isPublished: data.isPublished,
           topicIds: data.topicIds ?? [],
         },

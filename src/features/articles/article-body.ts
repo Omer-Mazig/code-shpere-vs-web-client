@@ -39,3 +39,17 @@ export function estimateReadTimeMinutes(markdown: string): number {
 export function countMarkdownWords(markdown: string): number {
   return markdown.trim().split(/\s+/).filter(Boolean).length;
 }
+
+export function insertMarkdownImage(
+  value: string,
+  selectionStart: number,
+  selectionEnd: number,
+  url: string,
+): { next: string; cursor: number } {
+  const selected = value.slice(selectionStart, selectionEnd).trim();
+  const alt = selected || "image";
+  const snippet = `![${alt}](${url})`;
+  const next =
+    value.slice(0, selectionStart) + snippet + value.slice(selectionEnd);
+  return { next, cursor: selectionStart + snippet.length };
+}

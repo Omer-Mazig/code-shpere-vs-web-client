@@ -29,4 +29,18 @@ describe("ArticleMarkdown", () => {
     expect(html.toLowerCase()).not.toContain("javascript:");
     expect(html).toContain("https://example.com");
   });
+
+  it("keeps uploaded media paths on images", () => {
+    const html = renderToStaticMarkup(
+      createElement(ArticleMarkdown, {
+        markdown:
+          "![diagram](/api/media/550e8400-e29b-41d4-a716-446655440000)",
+      }),
+    );
+
+    expect(html).toContain(
+      'src="/api/media/550e8400-e29b-41d4-a716-446655440000"',
+    );
+    expect(html).toContain('alt="diagram"');
+  });
 });

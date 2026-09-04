@@ -4,6 +4,7 @@ import {
   Bold,
   Code,
   Heading2,
+  ImagePlus,
   Italic,
   Link as LinkIcon,
   List,
@@ -25,14 +26,23 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 import { articleEditorSchema } from "@/lib/form-schemas";
 import { isFieldInvalid } from "@/lib/form";
+import { getApiError } from "@/lib/errors";
 import type { CreateArticleDto } from "../types";
 import { TopicPicker } from "@/features/topics/components/topic-picker";
+import {
+  IMAGE_UPLOAD_ACCEPT,
+  isAcceptedImageFile,
+} from "@/features/media/media.constants";
+import { useUploadMedia } from "@/features/media/hooks/use-upload-media";
+import { ArticleCoverField } from "./article-cover-field";
 import { ArticleMarkdown } from "./article-markdown";
 import {
   ARTICLE_CONTENT_MAX_LENGTH,
   countMarkdownWords,
+  insertMarkdownImage,
 } from "../article-body";
 
 const BODY_PLACEHOLDER = `Tell the story in Markdown.
@@ -40,7 +50,7 @@ const BODY_PLACEHOLDER = `Tell the story in Markdown.
 ## A section
 
 - Lists, **bold**, and \`inline code\`
-- Images from a URL: ![alt](https://…)
+- Images: toolbar, paste, or ![alt](/api/media/…)
 
 \`\`\`ts
 const greeting = "hello";
@@ -115,9 +125,14 @@ export const ArticleEditor = ({
 }: ArticleEditorProps) => {
   const publishIntentRef = React.useRef(true);
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const inlineImageInputRef = React.useRef<HTMLInputElement>(null);
+  const uploadMedia = useUploadMedia();
+  const [coverBusy, setCoverBusy] = React.useState(false);
+  const [inlineBusy, setInlineBusy] = React.useState(false);
   const [mobilePane, setMobilePane] = React.useState<"write" | "preview">(
     "write",
   );
+  const imagesBusy = coverBusy || inlineBusy || uploadMedia.isPending;
 
   const form = useForm({
     defaultValues: {
@@ -145,6 +160,44 @@ export const ArticleEditor = ({
     form.handleSubmit();
   };
 
+  const insertUploadedImages = async (
+    files: File[],
+    value: string,
+    onChange: (next: string) => void,
+  ) => {
+    const accepted = files.filter(isAcceptedImageFile);
+    if (accepted.length === 0) {
+      toast.error("Use a JPEG, PNG, GIF, or WebP image");
+      return;
+    }
+
+    const textarea = textareaRef.current;
+    let start = textarea?.selectionStart ?? value.length;
+    let end = textarea?.selectionEnd ?? value.length;
+    let current = value;
+    setInlineBusy(true);
+    try {
+      for (const file of accepted) {
+        try {
+          const media = await uploadMedia.mutateAsync(file);
+          const inserted = insertMarkdownImage(current, start, end, media.url);
+          current = inserted.next;
+          start = inserted.cursor;
+          end = inserted.cursor;
+          onChange(current);
+        } catch (error) {
+          toast.error(getApiError(error).message ?? "Could not upload image");
+        }
+      }
+      requestAnimationFrame(() => {
+        textareaRef.current?.focus();
+        textareaRef.current?.setSelectionRange(start, start);
+      });
+    } finally {
+      setInlineBusy(false);
+    }
+  };
+
   return (
     <form
       className="flex flex-col gap-6"
@@ -159,21 +212,15 @@ export const ArticleEditor = ({
           children={(field) => {
             const invalid = isFieldInvalid(field);
             return (
-              <Field data-invalid={invalid}>
-                <FieldLabel htmlFor={field.name}>
-                  Cover image URL (optional)
-                </FieldLabel>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  placeholder="https://example.com/cover.jpg"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  aria-invalid={invalid}
-                />
-                {invalid && <FieldError errors={field.state.meta.errors} />}
-              </Field>
+              <ArticleCoverField
+                id={field.name}
+                value={field.state.value}
+                invalid={invalid}
+                errors={field.state.meta.errors}
+                disabled={isSubmitting}
+                onChange={field.handleChange}
+                onBusyChange={setCoverBusy}
+              />
             );
           }}
         />
@@ -236,6 +283,20 @@ export const ArticleEditor = ({
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(event) => field.handleChange(event.target.value)}
+                onPaste={(event) => {
+                  const files = Array.from(event.clipboardData.files).filter(
+                    isAcceptedImageFile,
+                  );
+                  if (files.length === 0) {
+                    return;
+                  }
+                  event.preventDefault();
+                  void insertUploadedImages(
+                    files,
+                    field.state.value,
+                    field.handleChange,
+                  );
+                }}
                 aria-invalid={invalid}
                 aria-label="Article content"
                 maxLength={ARTICLE_CONTENT_MAX_LENGTH}
@@ -325,6 +386,33 @@ export const ArticleEditor = ({
                     >
                       <LinkIcon />
                     </ToolbarButton>
+                    <input
+                      ref={inlineImageInputRef}
+                      type="file"
+                      accept={IMAGE_UPLOAD_ACCEPT}
+                      multiple
+                      className="sr-only"
+                      disabled={isSubmitting || imagesBusy}
+                      onChange={(event) => {
+                        const files = Array.from(event.target.files ?? []);
+                        event.target.value = "";
+                        if (files.length === 0) {
+                          return;
+                        }
+                        void insertUploadedImages(
+                          files,
+                          field.state.value,
+                          field.handleChange,
+                        );
+                      }}
+                    />
+                    <ToolbarButton
+                      label="Image"
+                      disabled={isSubmitting || imagesBusy}
+                      onClick={() => inlineImageInputRef.current?.click()}
+                    >
+                      <ImagePlus />
+                    </ToolbarButton>
                   </div>
 
                   <Tabs
@@ -381,6 +469,7 @@ export const ArticleEditor = ({
           const disabled =
             isSubmitting ||
             formSubmitting ||
+            imagesBusy ||
             !title.trim() ||
             !body.trim();
           const words = countMarkdownWords(body);
@@ -422,10 +511,12 @@ export const ArticleEditor = ({
 const ToolbarButton = ({
   label,
   onClick,
+  disabled,
   children,
 }: {
   label: string;
   onClick: () => void;
+  disabled?: boolean;
   children: React.ReactNode;
 }) => (
   <Tooltip>
@@ -435,6 +526,7 @@ const ToolbarButton = ({
         variant="ghost"
         size="icon-xs"
         aria-label={label}
+        disabled={disabled}
         onClick={onClick}
       >
         {children}

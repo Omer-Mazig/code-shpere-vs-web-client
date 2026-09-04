@@ -1384,7 +1384,10 @@ export interface components {
              *     ```
              */
             content: string;
-            /** @example https://example.com/cover.jpg */
+            /**
+             * @description Uploaded media path from POST /media, or an https URL (seed/legacy).
+             * @example /api/media/550e8400-e29b-41d4-a716-446655440000
+             */
             coverImageUrl?: string;
             /** @default false */
             isPublished: boolean;
@@ -1400,8 +1403,11 @@ export interface components {
              *     Updated markdown body.
              */
             content?: string;
-            /** @example https://example.com/cover.jpg */
-            coverImageUrl?: string;
+            /**
+             * @description Uploaded media path from POST /media, an https URL, or null to clear.
+             * @example /api/media/550e8400-e29b-41d4-a716-446655440000
+             */
+            coverImageUrl?: string | null;
             isPublished?: boolean;
             /** @description Replace topics when sent (max 5). Empty array clears. */
             topicIds?: string[];

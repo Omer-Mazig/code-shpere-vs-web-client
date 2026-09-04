@@ -141,7 +141,7 @@ export const articleEditorSchema = z.object({
     .trim()
     .min(1, "Content is required")
     .max(100_000, "Article must be at most 100000 characters"),
-  coverImageUrl: emptyOrUrl,
+  coverImageUrl: emptyOrProfileImage,
   topicIds: z.array(z.string().uuid()).max(5),
 });
 
