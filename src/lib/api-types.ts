@@ -1142,15 +1142,67 @@ export interface components {
             /** Format: date-time */
             timestamp: string;
         };
+        ArticleLikedNotificationPayloadDto: {
+            /** @description Up to the last 3 unique actor ids, most recent first */
+            actorIds?: string[];
+            /** @description Display names aligned with actorIds */
+            actorNames?: string[];
+            /**
+             * @description Unique actor count for this unread collapsed row
+             * @example 10
+             */
+            actorCount?: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ARTICLE_LIKED";
+            actorId: string;
+            actorName: string;
+            actorAvatarUrl: string | null;
+            /** @enum {string} */
+            targetType: "ARTICLE";
+            articleSlug: string;
+            articleExcerpt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ArticleCommentedNotificationPayloadDto: {
+            /** @description Up to the last 3 unique actor ids, most recent first */
+            actorIds?: string[];
+            /** @description Display names aligned with actorIds */
+            actorNames?: string[];
+            /**
+             * @description Unique actor count for this unread collapsed row
+             * @example 10
+             */
+            actorCount?: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ARTICLE_COMMENTED";
+            actorId: string;
+            actorName: string;
+            actorAvatarUrl: string | null;
+            /** @enum {string} */
+            targetType: "ARTICLE";
+            articleSlug: string;
+            articleExcerpt: string;
+            commentId: string;
+            commentExcerpt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
         /** @enum {string} */
-        NotificationType: "POST_LIKED" | "POST_COMMENTED" | "COMMENT_REPLIED" | "NEW_FOLLOWER" | "USER_MENTIONED";
+        NotificationType: "POST_LIKED" | "POST_COMMENTED" | "ARTICLE_LIKED" | "ARTICLE_COMMENTED" | "COMMENT_REPLIED" | "NEW_FOLLOWER" | "USER_MENTIONED";
         /** @enum {string} */
         NotificationTargetType: "POST" | "ARTICLE" | "USER";
         NotificationResponseDto: {
             id: string;
             type: components["schemas"]["NotificationType"];
             targetType: components["schemas"]["NotificationTargetType"] | null;
-            payload: components["schemas"]["PostLikedNotificationPayloadDto"] | components["schemas"]["PostCommentedNotificationPayloadDto"] | components["schemas"]["CommentRepliedNotificationPayloadDto"] | components["schemas"]["NewFollowerNotificationPayloadDto"] | components["schemas"]["UserMentionedNotificationPayloadDto"];
+            payload: components["schemas"]["PostLikedNotificationPayloadDto"] | components["schemas"]["PostCommentedNotificationPayloadDto"] | components["schemas"]["ArticleLikedNotificationPayloadDto"] | components["schemas"]["ArticleCommentedNotificationPayloadDto"] | components["schemas"]["CommentRepliedNotificationPayloadDto"] | components["schemas"]["NewFollowerNotificationPayloadDto"] | components["schemas"]["UserMentionedNotificationPayloadDto"];
             isRead: boolean;
             /** Format: date-time */
             createdAt: string;

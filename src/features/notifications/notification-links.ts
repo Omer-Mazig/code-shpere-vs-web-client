@@ -1,17 +1,15 @@
-import type { NotificationPayload, NotificationType } from "./types";
+import type { NotificationPayload } from "./types";
 
 export type NotificationTargetInfo = {
   href: string;
   label: string;
 };
 
-const NOTIFICATION_VERBS: Record<NotificationType, string> = {
-  POST_LIKED: "liked your post",
-  POST_COMMENTED: "commented on your post",
-  COMMENT_REPLIED: "replied to your comment",
-  NEW_FOLLOWER: "started following you",
-  USER_MENTIONED: "mentioned you",
-};
+const articleHref = (slug: string | undefined) =>
+  slug ? `/articles/${slug}` : "/feed";
+
+const postHref = (postId: string | undefined) =>
+  postId ? `/feed/${postId}` : "/feed";
 
 export function getNotificationHref(payload: NotificationPayload): string {
   switch (payload.type) {
@@ -19,21 +17,24 @@ export function getNotificationHref(payload: NotificationPayload): string {
       return `/profile/${payload.actorId}`;
     case "POST_LIKED":
     case "POST_COMMENTED":
-      return `/feed/${payload.postId}`;
+      return postHref(payload.postId);
+    case "ARTICLE_LIKED":
+    case "ARTICLE_COMMENTED":
+      return articleHref(payload.articleSlug);
     case "COMMENT_REPLIED":
       if (payload.targetType === "POST") {
         return `/feed/${payload.targetId}`;
       }
-      if (payload.targetType === "ARTICLE" && payload.articleSlug) {
-        return `/articles/${payload.articleSlug}`;
+      if (payload.targetType === "ARTICLE") {
+        return articleHref(payload.articleSlug);
       }
       return "/feed";
     case "USER_MENTIONED":
       if (payload.targetType === "POST" && payload.postId) {
         return `/feed/${payload.postId}`;
       }
-      if (payload.targetType === "ARTICLE" && payload.articleSlug) {
-        return `/articles/${payload.articleSlug}`;
+      if (payload.targetType === "ARTICLE") {
+        return articleHref(payload.articleSlug);
       }
       return "/feed";
   }
@@ -45,13 +46,24 @@ export function getNotificationTargetInfo(
   switch (payload.type) {
     case "POST_LIKED":
       return {
-        href: `/feed/${payload.postId}`,
+        href: getNotificationHref(payload),
         label: payload.postExcerpt || "your post",
       };
     case "POST_COMMENTED":
       return {
-        href: `/feed/${payload.postId}`,
+        href: getNotificationHref(payload),
         label: payload.commentExcerpt || payload.postExcerpt || "your post",
+      };
+    case "ARTICLE_LIKED":
+      return {
+        href: getNotificationHref(payload),
+        label: payload.articleExcerpt || "your article",
+      };
+    case "ARTICLE_COMMENTED":
+      return {
+        href: getNotificationHref(payload),
+        label:
+          payload.commentExcerpt || payload.articleExcerpt || "your article",
       };
     case "COMMENT_REPLIED":
       if (payload.targetType === "POST") {
@@ -87,8 +99,23 @@ export function getNotificationTargetInfo(
   }
 }
 
-export function getNotificationVerb(type: NotificationType): string {
-  return NOTIFICATION_VERBS[type];
+export function getNotificationVerb(payload: NotificationPayload): string {
+  switch (payload.type) {
+    case "POST_LIKED":
+      return "liked your post";
+    case "POST_COMMENTED":
+      return "commented on your post";
+    case "ARTICLE_LIKED":
+      return "liked your article";
+    case "ARTICLE_COMMENTED":
+      return "commented on your article";
+    case "COMMENT_REPLIED":
+      return "replied to your comment";
+    case "NEW_FOLLOWER":
+      return "started following you";
+    case "USER_MENTIONED":
+      return "mentioned you";
+  }
 }
 
 export type NotificationCollapsedOthers =

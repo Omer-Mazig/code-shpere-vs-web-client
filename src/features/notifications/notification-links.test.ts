@@ -41,6 +41,40 @@ const postCommented = (
   ...overrides,
 });
 
+const articleLiked = (
+  overrides: Partial<
+    Extract<NotificationPayload, { type: "ARTICLE_LIKED" }>
+  > = {},
+): NotificationPayload => ({
+  type: "ARTICLE_LIKED",
+  actorId: "actor-1",
+  actorName: "Ada",
+  actorAvatarUrl: null,
+  targetType: "ARTICLE",
+  articleSlug: "hello-world",
+  articleExcerpt: "Hello world",
+  createdAt: CREATED_AT,
+  ...overrides,
+});
+
+const articleCommented = (
+  overrides: Partial<
+    Extract<NotificationPayload, { type: "ARTICLE_COMMENTED" }>
+  > = {},
+): NotificationPayload => ({
+  type: "ARTICLE_COMMENTED",
+  actorId: "actor-1",
+  actorName: "Ada",
+  actorAvatarUrl: null,
+  targetType: "ARTICLE",
+  articleSlug: "hello-world",
+  articleExcerpt: "Hello world",
+  commentId: "comment-1",
+  commentExcerpt: "nice",
+  createdAt: CREATED_AT,
+  ...overrides,
+});
+
 const commentReplied = (
   overrides: Partial<
     Extract<NotificationPayload, { type: "COMMENT_REPLIED" }>
@@ -99,6 +133,13 @@ describe("getNotificationHref", () => {
     expect(getNotificationHref(postCommented())).toBe("/feed/post-1");
   });
 
+  it("routes article like and comment notifications to the article", () => {
+    expect(getNotificationHref(articleLiked())).toBe("/articles/hello-world");
+    expect(getNotificationHref(articleCommented())).toBe(
+      "/articles/hello-world",
+    );
+  });
+
   it("routes comment replies by target type", () => {
     expect(getNotificationHref(commentReplied())).toBe("/feed/post-2");
     expect(
@@ -149,6 +190,16 @@ describe("getNotificationTargetInfo", () => {
       href: "/feed/post-1",
       label: "nice",
     });
+
+    expect(getNotificationTargetInfo(articleLiked())).toEqual({
+      href: "/articles/hello-world",
+      label: "Hello world",
+    });
+
+    expect(getNotificationTargetInfo(articleCommented())).toEqual({
+      href: "/articles/hello-world",
+      label: "nice",
+    });
   });
 
   it("returns null when there is no target", () => {
@@ -162,15 +213,17 @@ describe("getNotificationTargetInfo", () => {
 
 describe("getNotificationVerb", () => {
   it("returns copy for each notification type", () => {
-    expect(getNotificationVerb("POST_LIKED")).toBe("liked your post");
-    expect(getNotificationVerb("POST_COMMENTED")).toBe(
-      "commented on your post",
+    expect(getNotificationVerb(postLiked())).toBe("liked your post");
+    expect(getNotificationVerb(postCommented())).toBe("commented on your post");
+    expect(getNotificationVerb(articleLiked())).toBe("liked your article");
+    expect(getNotificationVerb(articleCommented())).toBe(
+      "commented on your article",
     );
-    expect(getNotificationVerb("COMMENT_REPLIED")).toBe(
+    expect(getNotificationVerb(commentReplied())).toBe(
       "replied to your comment",
     );
-    expect(getNotificationVerb("NEW_FOLLOWER")).toBe("started following you");
-    expect(getNotificationVerb("USER_MENTIONED")).toBe("mentioned you");
+    expect(getNotificationVerb(newFollower())).toBe("started following you");
+    expect(getNotificationVerb(userMentioned())).toBe("mentioned you");
   });
 });
 

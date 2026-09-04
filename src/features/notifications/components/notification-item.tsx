@@ -114,7 +114,7 @@ export const NotificationItem = ({
               {collapsedOthers.count === 1 ? "other" : "others"}
             </>
           ) : null}{" "}
-          {getNotificationVerb(notification.type)}
+          {getNotificationVerb(payload)}
           {targetInfo ? (
             <>
               :{" "}
