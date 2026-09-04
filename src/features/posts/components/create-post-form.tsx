@@ -1,9 +1,10 @@
+import React from "react";
 import { useForm } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldError } from "@/components/ui/field";
 import type { useCreatePost } from "../hooks/use-create-post";
-import type { Post } from "../types";
+import type { Post, PostImage, PostImageLayout } from "../types";
 import { useAuth } from "@/features/auth/auth.context";
 import { useViewer } from "@/features/users/hooks/use-viewer";
 import { TopicPicker } from "@/features/topics/components/topic-picker";
@@ -13,6 +14,7 @@ import { UserAvatar } from "@/components/shared/user-avatar";
 import { createPostSchema } from "@/lib/form-schemas";
 import { isFieldInvalid } from "@/lib/form";
 import { getApiError } from "@/lib/errors";
+import { PostImagePicker } from "./post-image-picker";
 
 type CreatePostFormProps = {
   createPost: ReturnType<typeof useCreatePost>;
@@ -26,11 +28,15 @@ export const CreatePostForm = ({
   const { user, isAuthenticated } = useAuth();
   const viewer = useViewer();
   const { open: openSignIn } = useSignInModal();
+  const [attached, setAttached] = React.useState<PostImage[]>([]);
+  const [imagesBusy, setImagesBusy] = React.useState(false);
 
   const form = useForm({
     defaultValues: {
       content: "",
       topicIds: [] as string[],
+      imageMediaIds: [] as string[],
+      imageLayout: "GALLERY" as PostImageLayout,
     },
     validators: {
       onSubmit: createPostSchema,
@@ -43,11 +49,15 @@ export const CreatePostForm = ({
 
       try {
         const post = await createPost.mutateAsync({
-          content: value.content.trim(),
+          content: value.content.trim() || undefined,
           topicIds: value.topicIds.length > 0 ? value.topicIds : undefined,
+          imageMediaIds:
+            value.imageMediaIds.length > 0 ? value.imageMediaIds : undefined,
+          imageLayout: value.imageLayout,
         });
         toast.success("Post created!");
         onCreated?.(post);
+        setAttached([]);
         form.reset();
       } catch (error) {
         toast.error(getApiError(error).message ?? "Could not create post");
@@ -99,6 +109,29 @@ export const CreatePostForm = ({
         />
       </div>
       <form.Field
+        name="imageLayout"
+        children={(layoutField) => (
+          <form.Field
+            name="imageMediaIds"
+            children={(idsField) => (
+              <div className="mt-3">
+                <PostImagePicker
+                  images={attached}
+                  layout={layoutField.state.value}
+                  disabled={createPost.isPending}
+                  onBusyChange={setImagesBusy}
+                  onLayoutChange={layoutField.handleChange}
+                  onImagesChange={(next) => {
+                    setAttached(next);
+                    idsField.handleChange(next.map((image) => image.id));
+                  }}
+                />
+              </div>
+            )}
+          />
+        )}
+      />
+      <form.Field
         name="topicIds"
         children={(field) => (
           <div className="mt-3">
@@ -112,13 +145,24 @@ export const CreatePostForm = ({
       />
       <div className="mt-3 flex sm:justify-end">
         <form.Subscribe
-          selector={(state) => [state.values.content, state.isSubmitting] as const}
-          children={([content, isSubmitting]) => (
+          selector={(state) =>
+            [
+              state.values.content,
+              state.values.imageMediaIds,
+              state.isSubmitting,
+            ] as const
+          }
+          children={([content, imageMediaIds, isSubmitting]) => (
             <Button
               type="submit"
               size="sm"
               className="w-full sm:w-auto"
-              disabled={!content.trim() || isSubmitting || createPost.isPending}
+              disabled={
+                (!content.trim() && imageMediaIds.length === 0) ||
+                isSubmitting ||
+                createPost.isPending ||
+                imagesBusy
+              }
             >
               {isSubmitting || createPost.isPending ? "Posting..." : "Post"}
             </Button>

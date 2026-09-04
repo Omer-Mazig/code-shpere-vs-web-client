@@ -95,14 +95,22 @@ export const accountSettingsSchema = settingsPasswordFieldsSchema.superRefine(
 
 export type AccountSettingsFormValues = z.infer<typeof accountSettingsSchema>;
 
-export const createPostSchema = z.object({
-  content: z
-    .string()
-    .trim()
-    .min(1, "Write something before posting")
-    .max(5000, "Post must be at most 5000 characters"),
-  topicIds: z.array(z.string().uuid()).max(5),
-});
+export const createPostSchema = z
+  .object({
+    content: z
+      .string()
+      .max(5000, "Post must be at most 5000 characters"),
+    topicIds: z.array(z.string().uuid()).max(5),
+    imageMediaIds: z.array(z.string().uuid()).max(10),
+    imageLayout: z.enum(["GALLERY", "CAROUSEL"]),
+  })
+  .refine(
+    (value) => value.content.trim().length > 0 || value.imageMediaIds.length > 0,
+    {
+      message: "Write something or attach an image",
+      path: ["content"],
+    },
+  );
 
 export type CreatePostFormValues = z.infer<typeof createPostSchema>;
 

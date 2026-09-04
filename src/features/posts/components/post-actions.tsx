@@ -39,6 +39,7 @@ const toPreview = (post: PostType): SharedPostPreview => ({
   id: post.id,
   content: post.content,
   author: post.author,
+  images: post.images,
   createdAt: post.createdAt,
 });
 

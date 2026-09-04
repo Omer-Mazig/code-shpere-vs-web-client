@@ -780,7 +780,7 @@ export interface components {
          * @description Domain error code emitted by the backend.
          * @enum {string}
          */
-        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED" | "MEDIA_NOT_FOUND" | "MEDIA_INVALID_TYPE" | "MEDIA_TOO_LARGE" | "MEDIA_FILE_REQUIRED" | "MEDIA_STORAGE_NOT_CONFIGURED" | "TOPIC_NOT_FOUND" | "TOPIC_ALREADY_FOLLOWED" | "TOPIC_NOT_FOLLOWED" | "TOPIC_TOO_MANY" | "SEED_DISABLED";
+        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "POST_IMAGES_LIMIT" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED" | "MEDIA_NOT_FOUND" | "MEDIA_INVALID_TYPE" | "MEDIA_TOO_LARGE" | "MEDIA_FILE_REQUIRED" | "MEDIA_STORAGE_NOT_CONFIGURED" | "TOPIC_NOT_FOUND" | "TOPIC_ALREADY_FOLLOWED" | "TOPIC_NOT_FOLLOWED" | "TOPIC_TOO_MANY" | "SEED_DISABLED";
         ValidationFieldErrorDto: {
             /** @example password */
             field: string;
@@ -1246,6 +1246,14 @@ export interface components {
             slug: string;
             name: string;
         };
+        PostImageResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example /api/media/550e8400-e29b-41d4-a716-446655440000 */
+            url: string;
+        };
+        /** @enum {string} */
+        PostImageLayout: "GALLERY" | "CAROUSEL";
         PostCommentPreviewResponseDto: {
             id: string;
             content: string;
@@ -1257,6 +1265,7 @@ export interface components {
             id: string;
             content: string;
             author: components["schemas"]["PostAuthorResponseDto"] | null;
+            images: components["schemas"]["PostImageResponseDto"][];
             /** Format: date-time */
             createdAt: string;
         };
@@ -1265,6 +1274,8 @@ export interface components {
             content: string;
             author: components["schemas"]["PostAuthorResponseDto"] | null;
             topics: components["schemas"]["TopicPreviewResponseDto"][];
+            images: components["schemas"]["PostImageResponseDto"][];
+            imageLayout: components["schemas"]["PostImageLayout"];
             likesCount: number;
             isLiked: boolean;
             commentsCount: number;
@@ -1282,12 +1293,19 @@ export interface components {
             content?: string;
             /** @description Original post to reshare. Commentary may be empty. */
             sharedPostId?: string;
+            /** @description Ordered MEDIA-001 object ids (max 10) */
+            imageMediaIds?: string[];
+            /** @description How attached images are shown. Defaults to GALLERY. */
+            imageLayout?: components["schemas"]["PostImageLayout"];
             /** @description Curated topic ids (max 5) */
             topicIds?: string[];
         };
         UpdatePostDto: {
             /** @example Updated post content */
             content: string;
+            /** @description Replace images when sent (max 10). Empty array clears. */
+            imageMediaIds?: string[];
+            imageLayout?: components["schemas"]["PostImageLayout"];
             /** @description Replace topics when sent (max 5). Empty array clears. */
             topicIds?: string[];
         };

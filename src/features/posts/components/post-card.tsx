@@ -35,6 +35,9 @@ import { TopicPicker } from "@/features/topics/components/topic-picker";
 import { toast } from "sonner";
 import { getApiError } from "@/lib/errors";
 import { SharedPostEmbed } from "./shared-post-embed";
+import { PostImages } from "./post-images";
+import { PostImagePicker } from "./post-image-picker";
+import type { PostImage, PostImageLayout } from "../types";
 
 const POST_CONTENT_MAX_LENGTH = 5000;
 
@@ -308,11 +311,20 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
   const [editTopicIds, setEditTopicIds] = React.useState(
     () => post.topics.map((topic) => topic.id),
   );
+  const [editImages, setEditImages] = React.useState<PostImage[]>(
+    () => post.images,
+  );
+  const [editLayout, setEditLayout] = React.useState<PostImageLayout>(
+    post.imageLayout,
+  );
+  const [imagesBusy, setImagesBusy] = React.useState(false);
 
   React.useEffect(() => {
     setEditContent(post.content);
     setEditTopicIds(post.topics.map((topic) => topic.id));
-  }, [post.content, post.topics, isEditing]);
+    setEditImages(post.images);
+    setEditLayout(post.imageLayout);
+  }, [post.content, post.topics, post.images, post.imageLayout, isEditing]);
 
   const handleSaveEdit = () => {
     const nextContent = editContent.trim();
@@ -320,15 +332,28 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
     const topicsChanged =
       editTopicIds.length !== currentTopicIds.length ||
       editTopicIds.some((id) => !currentTopicIds.includes(id));
+    const currentImageIds = post.images.map((image) => image.id);
+    const nextImageIds = editImages.map((image) => image.id);
+    const imagesChanged =
+      nextImageIds.length !== currentImageIds.length ||
+      nextImageIds.some((id, index) => id !== currentImageIds[index]);
+    const layoutChanged = editLayout !== post.imageLayout;
 
-    if (!nextContent) {
+    if (!nextContent && nextImageIds.length === 0 && !post.sharedPost) {
       return;
     }
 
-    if (nextContent === post.content && !topicsChanged) {
+    if (
+      nextContent === post.content.trim() &&
+      !topicsChanged &&
+      !imagesChanged &&
+      !layoutChanged
+    ) {
       cancelEditing();
       setEditContent(post.content);
       setEditTopicIds(currentTopicIds);
+      setEditImages(post.images);
+      setEditLayout(post.imageLayout);
       return;
     }
 
@@ -339,7 +364,12 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
     updatePost.mutate(
       {
         id: post.id,
-        dto: { content: nextContent, topicIds: editTopicIds },
+        dto: {
+          content: nextContent,
+          topicIds: editTopicIds,
+          imageMediaIds: nextImageIds,
+          imageLayout: editLayout,
+        },
       },
       {
         onSuccess: () => cancelEditing(),
@@ -355,11 +385,22 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
     const topicsChanged =
       editTopicIds.length !== currentTopicIds.length ||
       editTopicIds.some((id) => !currentTopicIds.includes(id));
+    const currentImageIds = post.images.map((image) => image.id);
+    const nextImageIds = editImages.map((image) => image.id);
+    const imagesChanged =
+      nextImageIds.length !== currentImageIds.length ||
+      nextImageIds.some((id, index) => id !== currentImageIds[index]);
+    const layoutChanged = editLayout !== post.imageLayout;
+    const hasBody = Boolean(editContent.trim()) || nextImageIds.length > 0 || Boolean(post.sharedPost);
     const canSave =
-      Boolean(editContent.trim()) &&
+      hasBody &&
       editContent.trim().length <= POST_CONTENT_MAX_LENGTH &&
-      (editContent.trim() !== post.content || topicsChanged) &&
-      !updatePost.isPending;
+      (editContent.trim() !== post.content.trim() ||
+        topicsChanged ||
+        imagesChanged ||
+        layoutChanged) &&
+      !updatePost.isPending &&
+      !imagesBusy;
 
     return (
       <div className="space-y-2">
@@ -376,6 +417,14 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
             className="pointer-events-none"
           />
         )}
+        <PostImagePicker
+          images={editImages}
+          layout={editLayout}
+          disabled={updatePost.isPending}
+          onBusyChange={setImagesBusy}
+          onImagesChange={setEditImages}
+          onLayoutChange={setEditLayout}
+        />
         <TopicPicker
           value={editTopicIds}
           onChange={setEditTopicIds}
@@ -395,6 +444,8 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
                 cancelEditing();
                 setEditContent(post.content);
                 setEditTopicIds(currentTopicIds);
+                setEditImages(post.images);
+                setEditLayout(post.imageLayout);
               }}
             >
               Cancel
@@ -436,13 +487,25 @@ const Content = ({ linkToDetail = true }: PostContentProps) => {
       commentary
     );
 
-  if (!linkedCommentary && !embed && post.topics.length === 0) {
+  if (
+    !linkedCommentary &&
+    !embed &&
+    post.topics.length === 0 &&
+    post.images.length === 0
+  ) {
     return null;
   }
 
   return (
     <div>
       {linkedCommentary}
+      {post.images.length > 0 ? (
+        <PostImages
+          images={post.images}
+          layout={post.imageLayout}
+          className={linkedCommentary ? "mt-3" : undefined}
+        />
+      ) : null}
       {embed}
       <TopicChips
         topics={post.topics}

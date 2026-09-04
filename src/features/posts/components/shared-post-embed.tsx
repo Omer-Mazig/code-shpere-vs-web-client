@@ -14,6 +14,7 @@ export const SharedPostEmbed = ({ post, className }: SharedPostEmbedProps) => {
   const displayName = author
     ? (author.displayName ?? author.username)
     : "Unknown author";
+  const previewImage = post.images[0];
 
   return (
     <Link
@@ -38,11 +39,18 @@ export const SharedPostEmbed = ({ post, className }: SharedPostEmbedProps) => {
           </div>
         </div>
       </div>
+      {previewImage ? (
+        <img
+          src={previewImage.url}
+          alt=""
+          className="mb-2 max-h-40 w-full rounded-lg object-cover"
+        />
+      ) : null}
       {post.content.trim() ? (
         <p className="line-clamp-4 whitespace-pre-wrap text-sm leading-relaxed">
           {post.content}
         </p>
-      ) : (
+      ) : previewImage ? null : (
         <p className="text-sm text-muted-foreground italic">Original post</p>
       )}
     </Link>

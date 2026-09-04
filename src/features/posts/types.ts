@@ -5,6 +5,8 @@ export type PostCommentPreview =
   components["schemas"]["PostCommentPreviewResponseDto"];
 export type SharedPostPreview =
   components["schemas"]["SharedPostPreviewResponseDto"];
+export type PostImage = components["schemas"]["PostImageResponseDto"];
+export type PostImageLayout = components["schemas"]["PostImageLayout"];
 export type Post = components["schemas"]["PostResponseDto"];
 export type CreatePostDto = components["schemas"]["CreatePostDto"];
 export type UpdatePostDto = components["schemas"]["UpdatePostDto"];
