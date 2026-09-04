@@ -47,4 +47,11 @@ function ResizableHandle({
   )
 }
 
-export { ResizableHandle, ResizablePanel, ResizablePanelGroup }
+const useResizableLayout = ResizablePrimitive.useDefaultLayout
+
+export {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+  useResizableLayout,
+}

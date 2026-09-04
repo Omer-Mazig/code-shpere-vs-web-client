@@ -45,22 +45,39 @@ export const EditArticleForm = ({ slug }: EditArticleFormProps) => {
     );
   }
 
+  const toUpdateDto = (data: CreateArticleDto) => ({
+    title: data.title,
+    content: data.content,
+    coverImageUrl: data.coverImageUrl ?? null,
+    isPublished: data.isPublished,
+    topicIds: data.topicIds ?? [],
+  });
+
   const handleSubmit = async (data: CreateArticleDto) => {
     try {
       const updated = await updateArticle.mutateAsync({
         id: article.id,
-        dto: {
-          title: data.title,
-          content: data.content,
-          coverImageUrl: data.coverImageUrl ?? null,
-          isPublished: data.isPublished,
-          topicIds: data.topicIds ?? [],
-        },
+        dto: toUpdateDto(data),
       });
       toast.success("Article updated!");
       navigate(articleDetailPath(updated.slug));
     } catch (error) {
       toast.error(getApiError(error).message ?? "Could not update article");
+      throw error;
+    }
+  };
+
+  // Saves from the leave dialog: the editor resumes the blocked navigation.
+  const handleSaveDraft = async (data: CreateArticleDto) => {
+    try {
+      await updateArticle.mutateAsync({
+        id: article.id,
+        dto: toUpdateDto(data),
+      });
+      toast.success("Draft saved");
+    } catch (error) {
+      toast.error(getApiError(error).message ?? "Could not save draft");
+      throw error;
     }
   };
 
@@ -73,6 +90,7 @@ export const EditArticleForm = ({ slug }: EditArticleFormProps) => {
         initialCoverImageUrl={article.coverImageUrl ?? ""}
         initialTopicIds={article.topics.map((topic) => topic.id)}
         onSubmit={handleSubmit}
+        onSaveDraft={article.isPublished ? undefined : handleSaveDraft}
         isSubmitting={updateArticle.isPending}
         submitLabel={article.isPublished ? "Save" : "Publish"}
       />

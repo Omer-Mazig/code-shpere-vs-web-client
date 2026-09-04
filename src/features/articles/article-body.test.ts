@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyMarkdownWrap,
   countMarkdownWords,
   estimateReadTimeMinutes,
   excerptFromMarkdown,
@@ -47,6 +48,44 @@ describe("insertMarkdownImage", () => {
     expect(insertMarkdownImage("ab", 1, 1, "/api/media/x")).toEqual({
       next: "a![image](/api/media/x)b",
       cursor: 23,
+    });
+  });
+});
+
+describe("applyMarkdownWrap", () => {
+  it("wraps the selection and keeps it selected", () => {
+    expect(applyMarkdownWrap("make me bold", 8, 12, { prefix: "**" })).toEqual({
+      next: "make me **bold**",
+      selectionStart: 10,
+      selectionEnd: 14,
+    });
+  });
+
+  it("inserts a placeholder when nothing is selected", () => {
+    expect(
+      applyMarkdownWrap("", 0, 0, {
+        prefix: "[",
+        suffix: "](https://)",
+        placeholder: "label",
+      }),
+    ).toEqual({
+      next: "[label](https://)",
+      selectionStart: 1,
+      selectionEnd: 6,
+    });
+  });
+
+  it("prefixes the current line for block markers", () => {
+    expect(
+      applyMarkdownWrap("intro\ntitle", 8, 8, {
+        prefix: "## ",
+        suffix: "",
+        asLinePrefix: true,
+      }),
+    ).toEqual({
+      next: "intro\n## title",
+      selectionStart: 11,
+      selectionEnd: 11,
     });
   });
 });

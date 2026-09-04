@@ -17,6 +17,18 @@ export const CreateArticlePage = () => {
       navigate(articleDetailPath(article.slug));
     } catch (error) {
       toast.error(getApiError(error).message ?? "Could not create article");
+      throw error;
+    }
+  };
+
+  // Saves from the leave dialog: the editor resumes the blocked navigation.
+  const handleSaveDraft = async (data: CreateArticleDto) => {
+    try {
+      await createArticle.mutateAsync(data);
+      toast.success("Draft saved");
+    } catch (error) {
+      toast.error(getApiError(error).message ?? "Could not save draft");
+      throw error;
     }
   };
 
@@ -28,6 +40,7 @@ export const CreateArticlePage = () => {
       </p>
       <ArticleEditor
         onSubmit={handleSubmit}
+        onSaveDraft={handleSaveDraft}
         isSubmitting={createArticle.isPending}
       />
     </div>

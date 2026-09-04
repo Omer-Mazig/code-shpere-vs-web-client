@@ -53,3 +53,40 @@ export function insertMarkdownImage(
     value.slice(0, selectionStart) + snippet + value.slice(selectionEnd);
   return { next, cursor: selectionStart + snippet.length };
 }
+
+export type MarkdownWrap = {
+  prefix: string;
+  suffix?: string;
+  placeholder?: string;
+  asLinePrefix?: boolean;
+};
+
+export function applyMarkdownWrap(
+  value: string,
+  selectionStart: number,
+  selectionEnd: number,
+  { prefix, suffix = prefix, placeholder = "text", asLinePrefix }: MarkdownWrap,
+): { next: string; selectionStart: number; selectionEnd: number } {
+  if (asLinePrefix) {
+    const lineStart =
+      value.lastIndexOf("\n", Math.max(0, selectionStart - 1)) + 1;
+    return {
+      next: value.slice(0, lineStart) + prefix + value.slice(lineStart),
+      selectionStart: selectionStart + prefix.length,
+      selectionEnd: selectionEnd + prefix.length,
+    };
+  }
+
+  const selected = value.slice(selectionStart, selectionEnd) || placeholder;
+  const next =
+    value.slice(0, selectionStart) +
+    prefix +
+    selected +
+    suffix +
+    value.slice(selectionEnd);
+  return {
+    next,
+    selectionStart: selectionStart + prefix.length,
+    selectionEnd: selectionStart + prefix.length + selected.length,
+  };
+}
