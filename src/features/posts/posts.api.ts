@@ -24,7 +24,10 @@ export const postsApi = {
   },
 
   update: async (id: string, dto: UpdatePostDto): Promise<Post> => {
-    const response = await apiClient.patch<ApiEnvelope<Post>>(`/posts/${id}`, dto);
+    const response = await apiClient.patch<ApiEnvelope<Post>>(
+      `/posts/${id}`,
+      dto,
+    );
     return response.data.payload;
   },
 

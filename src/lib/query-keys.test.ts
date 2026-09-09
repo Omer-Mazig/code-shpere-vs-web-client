@@ -22,11 +22,9 @@ describe("query option factories", () => {
       "posts",
       "feed",
     ]);
-    expect(postsQueryOptionsFactory.feedList({ authorId: "u1" }).queryKey).toEqual([
-      "posts",
-      "feed",
-      { authorId: "u1" },
-    ]);
+    expect(
+      postsQueryOptionsFactory.feedList({ authorId: "u1" }).queryKey,
+    ).toEqual(["posts", "feed", { authorId: "u1" }]);
     expect(postsQueryOptionsFactory.details("post-1").queryKey).toEqual([
       "posts",
       "details",
@@ -36,12 +34,9 @@ describe("query option factories", () => {
 
   it("nests comment keys under comments", () => {
     expect(commentsQueryOptionsFactory.all().queryKey).toEqual(["comments"]);
-    expect(commentsQueryOptionsFactory.thread("post-1", "POST").queryKey).toEqual([
-      "comments",
-      "POST",
-      "post-1",
-      "thread",
-    ]);
+    expect(
+      commentsQueryOptionsFactory.thread("post-1", "POST").queryKey,
+    ).toEqual(["comments", "POST", "post-1", "thread"]);
     expect(commentsQueryOptionsFactory.replies("c1").queryKey).toEqual([
       "comments",
       "replies",
@@ -54,7 +49,14 @@ describe("query option factories", () => {
         undefined,
         "ad",
       ).queryKey,
-    ).toEqual(["comments", "mention-candidates", "POST", "post-1", undefined, "ad"]);
+    ).toEqual([
+      "comments",
+      "mention-candidates",
+      "POST",
+      "post-1",
+      undefined,
+      "ad",
+    ]);
   });
 
   it("nests notification keys under notifications", () => {
@@ -92,10 +94,9 @@ describe("query option factories", () => {
       "preview",
       "u1",
     ]);
-    expect(usersQueryOptionsFactory.notificationPreferences().queryKey).toEqual([
-      "users",
-      "notification-preferences",
-    ]);
+    expect(usersQueryOptionsFactory.notificationPreferences().queryKey).toEqual(
+      ["users", "notification-preferences"],
+    );
     expect(usersQueryOptionsFactory.followers("u1").queryKey).toEqual([
       "users",
       "followers",
@@ -126,9 +127,12 @@ describe("query option factories", () => {
       "react",
       "guest",
     ]);
-    expect(
-      topicsQueryOptionsFactory.bySlug("react", "u1").queryKey,
-    ).toEqual(["topics", "detail", "react", "u1"]);
+    expect(topicsQueryOptionsFactory.bySlug("react", "u1").queryKey).toEqual([
+      "topics",
+      "detail",
+      "react",
+      "u1",
+    ]);
   });
 
   it("nests article keys under articles", () => {

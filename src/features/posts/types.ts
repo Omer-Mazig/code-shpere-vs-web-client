@@ -10,5 +10,6 @@ export type PostImageLayout = components["schemas"]["PostImageLayout"];
 export type Post = components["schemas"]["PostResponseDto"];
 export type CreatePostDto = components["schemas"]["CreatePostDto"];
 export type UpdatePostDto = components["schemas"]["UpdatePostDto"];
-export type PostQueryDto =
-  NonNullable<paths["/api/posts"]["get"]["parameters"]["query"]>;
+export type PostQueryDto = NonNullable<
+  paths["/api/posts"]["get"]["parameters"]["query"]
+>;

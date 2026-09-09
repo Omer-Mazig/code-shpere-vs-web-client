@@ -6,5 +6,6 @@ export type ArticleListAuthor =
 export type Article = components["schemas"]["ArticleResponseDto"];
 export type CreateArticleDto = components["schemas"]["CreateArticleDto"];
 export type UpdateArticleDto = components["schemas"]["UpdateArticleDto"];
-export type ArticleQueryDto =
-  NonNullable<paths["/api/articles"]["get"]["parameters"]["query"]>;
+export type ArticleQueryDto = NonNullable<
+  paths["/api/articles"]["get"]["parameters"]["query"]
+>;

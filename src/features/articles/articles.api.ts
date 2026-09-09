@@ -12,17 +12,17 @@ export const articlesApi = {
   list: async (
     query?: Partial<ArticleQueryDto>,
   ): Promise<PaginatedResponse<Article>> => {
-    const response = await apiClient.get<ApiEnvelope<PaginatedResponse<Article>>>(
-      "/articles",
-      { params: query },
-    );
+    const response = await apiClient.get<
+      ApiEnvelope<PaginatedResponse<Article>>
+    >("/articles", { params: query });
     return response.data.payload;
   },
 
   listPublishedAuthors: async (): Promise<ArticleListAuthor[]> => {
-    const response = await apiClient.get<ApiEnvelope<ArticleListAuthor[]>>(
-      "/articles/authors",
-    );
+    const response =
+      await apiClient.get<ApiEnvelope<ArticleListAuthor[]>>(
+        "/articles/authors",
+      );
     return response.data.payload;
   },
 
@@ -41,7 +41,10 @@ export const articlesApi = {
   },
 
   create: async (dto: CreateArticleDto): Promise<Article> => {
-    const response = await apiClient.post<ApiEnvelope<Article>>("/articles", dto);
+    const response = await apiClient.post<ApiEnvelope<Article>>(
+      "/articles",
+      dto,
+    );
     return response.data.payload;
   },
 

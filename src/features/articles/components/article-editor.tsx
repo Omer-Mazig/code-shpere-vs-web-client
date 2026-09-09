@@ -247,10 +247,7 @@ export const ArticleEditor = ({
   });
   const lastTypedAtRef = React.useRef(0);
 
-  const commitBody = (
-    snapshot: BodySnapshot,
-    source: "typing" | "command",
-  ) => {
+  const commitBody = (snapshot: BodySnapshot, source: "typing" | "command") => {
     const now = Date.now();
     const coalesce =
       source === "typing" && now - lastTypedAtRef.current < TYPING_COALESCE_MS;
@@ -350,7 +347,9 @@ export const ArticleEditor = ({
 
   const words = countMarkdownWords(values.body);
   const canSubmit =
-    !isSaving && !imagesBusy && Boolean(values.title.trim() && values.body.trim());
+    !isSaving &&
+    !imagesBusy &&
+    Boolean(values.title.trim() && values.body.trim());
 
   return (
     <form
@@ -486,7 +485,10 @@ export const ArticleEditor = ({
 
             return (
               <Field data-invalid={invalid}>
-                <FieldLabel htmlFor={field.name} className="sr-only">
+                <FieldLabel
+                  htmlFor={field.name}
+                  className="sr-only"
+                >
                   Article content
                 </FieldLabel>
                 <div className="overflow-hidden rounded-xl border bg-card">
@@ -515,7 +517,10 @@ export const ArticleEditor = ({
                     >
                       <Heading2 />
                     </ToolbarButton>
-                    <Separator orientation="vertical" className="mx-1 h-4" />
+                    <Separator
+                      orientation="vertical"
+                      className="mx-1 h-4"
+                    />
                     <ToolbarButton
                       label="List"
                       onClick={() =>
@@ -587,7 +592,10 @@ export const ArticleEditor = ({
                     >
                       <ImagePlus />
                     </ToolbarButton>
-                    <Separator orientation="vertical" className="mx-1 h-4" />
+                    <Separator
+                      orientation="vertical"
+                      className="mx-1 h-4"
+                    />
                     <ToolbarButton
                       label="Undo"
                       disabled={!history.canUndo}
@@ -695,7 +703,11 @@ export const ArticleEditor = ({
           >
             Save draft
           </Button>
-          <Button type="submit" className="w-full sm:w-auto" disabled={!canSubmit}>
+          <Button
+            type="submit"
+            className="w-full sm:w-auto"
+            disabled={!canSubmit}
+          >
             {isSaving ? "Saving..." : submitLabel}
           </Button>
         </div>
