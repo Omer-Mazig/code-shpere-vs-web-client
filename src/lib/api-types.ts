@@ -260,6 +260,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users/{id}/block": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["UsersController_blockUser"];
+        delete: operations["UsersController_unblockUser"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users/{id}/followers": {
         parameters: {
             query?: never;
@@ -436,22 +452,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/posts/me/drafts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["PostsController_getMyDrafts"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/posts/{id}": {
         parameters: {
             query?: never;
@@ -556,22 +556,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["ArticlesController_listPublishedAuthors"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/articles/me/drafts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ArticlesController_getMyDrafts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -756,6 +740,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chat/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ChatController_listConversations"];
+        put?: never;
+        post: operations["ChatController_createOrGet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/conversations/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ChatController_getUnreadCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/conversations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ChatController_getConversation"];
+        put?: never;
+        post?: never;
+        delete: operations["ChatController_deleteConversation"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/conversations/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ChatController_listMessages"];
+        put?: never;
+        post: operations["ChatController_sendMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chat/conversations/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["ChatController_markRead"];
+        trace?: never;
+    };
     "/api/dev/seed": {
         parameters: {
             query?: never;
@@ -812,7 +876,7 @@ export interface components {
          * @description Domain error code emitted by the backend.
          * @enum {string}
          */
-        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "POST_IMAGES_LIMIT" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED" | "MEDIA_NOT_FOUND" | "MEDIA_INVALID_TYPE" | "MEDIA_TOO_LARGE" | "MEDIA_FILE_REQUIRED" | "MEDIA_STORAGE_NOT_CONFIGURED" | "TOPIC_NOT_FOUND" | "TOPIC_ALREADY_FOLLOWED" | "TOPIC_NOT_FOLLOWED" | "TOPIC_TOO_MANY" | "SEED_DISABLED";
+        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "POST_IMAGES_LIMIT" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED" | "MEDIA_NOT_FOUND" | "MEDIA_INVALID_TYPE" | "MEDIA_TOO_LARGE" | "MEDIA_FILE_REQUIRED" | "MEDIA_STORAGE_NOT_CONFIGURED" | "TOPIC_NOT_FOUND" | "TOPIC_ALREADY_FOLLOWED" | "TOPIC_NOT_FOLLOWED" | "TOPIC_TOO_MANY" | "CANNOT_MESSAGE_SELF" | "CONVERSATION_NOT_FOUND" | "CONVERSATION_FORBIDDEN" | "CHAT_BLOCKED" | "CANNOT_BLOCK_SELF" | "USER_ALREADY_BLOCKED" | "USER_NOT_BLOCKED" | "SEED_DISABLED";
         ValidationFieldErrorDto: {
             /** @example password */
             field: string;
@@ -968,6 +1032,8 @@ export interface components {
             postsCount: number;
             articlesCount: number;
             isFollowing: boolean;
+            /** @description Whether the authenticated viewer has blocked this user. Always false on GET /users/me. */
+            isBlocked: boolean;
             /** Format: date-time */
             createdAt: string;
         };
@@ -1046,6 +1112,10 @@ export interface components {
             message: string;
         };
         FollowActionResponseDto: {
+            /** @example Operation completed successfully */
+            message: string;
+        };
+        BlockActionResponseDto: {
             /** @example Operation completed successfully */
             message: string;
         };
@@ -1308,7 +1378,6 @@ export interface components {
             topics: components["schemas"]["TopicPreviewResponseDto"][];
             images: components["schemas"]["PostImageResponseDto"][];
             imageLayout: components["schemas"]["PostImageLayout"];
-            isPublished: boolean;
             likesCount: number;
             isLiked: boolean;
             commentsCount: number;
@@ -1330,8 +1399,6 @@ export interface components {
             imageMediaIds?: string[];
             /** @description How attached images are shown. Defaults to GALLERY. */
             imageLayout?: components["schemas"]["PostImageLayout"];
-            /** @description When false, the post is a draft and is omitted from the public feed. Defaults to true. */
-            isPublished?: boolean;
             /** @description Curated topic ids (max 5) */
             topicIds?: string[];
         };
@@ -1341,8 +1408,6 @@ export interface components {
             /** @description Replace images when sent (max 10). Empty array clears. */
             imageMediaIds?: string[];
             imageLayout?: components["schemas"]["PostImageLayout"];
-            /** @description Set true to publish a draft. Set false to keep it unlisted. */
-            isPublished?: boolean;
             /** @description Replace topics when sent (max 5). Empty array clears. */
             topicIds?: string[];
         };
@@ -1518,6 +1583,51 @@ export interface components {
             message: string;
         };
         ShareActionResponseDto: {
+            /** @example Operation completed successfully */
+            message: string;
+        };
+        ChatMessageResponseDto: {
+            id: string;
+            conversationId: string;
+            senderId: string;
+            body: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ConversationResponseDto: {
+            id: string;
+            otherUser: components["schemas"]["UserPreviewResponseDto"];
+            lastMessage?: components["schemas"]["ChatMessageResponseDto"] | null;
+            unreadCount: number;
+            /** Format: date-time */
+            lastReadAt: string | null;
+            /**
+             * Format: date-time
+             * @description The other participant's last-read time, for receipts.
+             */
+            otherLastReadAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ChatUnreadCountResponseDto: {
+            /** @description Number of conversations with at least one unread message. */
+            count: number;
+        };
+        CreateConversationDto: {
+            /** @description The other participant. Creates the 1:1 thread if it does not exist. */
+            userId: string;
+        };
+        CreateChatMessageDto: {
+            /** @example Hey — are you around? */
+            body: string;
+        };
+        ConversationReadResponseDto: {
+            /** @example Operation completed successfully */
+            message: string;
+        };
+        ConversationDeletedResponseDto: {
             /** @example Operation completed successfully */
             message: string;
         };
@@ -3453,6 +3563,204 @@ export interface operations {
             };
         };
     };
+    UsersController_blockUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["BlockActionResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    UsersController_unblockUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["BlockActionResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     UsersController_getFollowers: {
         parameters: {
             query?: {
@@ -4645,109 +4953,6 @@ export interface operations {
             };
         };
     };
-    PostsController_getMyDrafts: {
-        parameters: {
-            query?: {
-                page?: number;
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        payload: {
-                            items: components["schemas"]["PostResponseDto"][];
-                            meta: components["schemas"]["PaginatedMetaDto"];
-                        };
-                        /**
-                         * @description Request identifier generated by the backend.
-                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
-                         */
-                        requestId: string;
-                        /**
-                         * Format: date-time
-                         * @description UTC timestamp when the response was generated.
-                         * @example 2026-02-15T21:10:35.120Z
-                         */
-                        timestamp: string;
-                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
-                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
-                    };
-                };
-            };
-            /** @description Request validation or domain validation failed. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Authentication failed or missing credentials. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description User is authenticated but not allowed to perform action. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Resource state conflict. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Rate limit exceeded. */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
     PostsController_getById: {
         parameters: {
             query?: never;
@@ -5773,109 +5978,6 @@ export interface operations {
                 content: {
                     "application/json": {
                         payload: components["schemas"]["ArticleListAuthorResponseDto"][];
-                        /**
-                         * @description Request identifier generated by the backend.
-                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
-                         */
-                        requestId: string;
-                        /**
-                         * Format: date-time
-                         * @description UTC timestamp when the response was generated.
-                         * @example 2026-02-15T21:10:35.120Z
-                         */
-                        timestamp: string;
-                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
-                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
-                    };
-                };
-            };
-            /** @description Request validation or domain validation failed. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Authentication failed or missing credentials. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description User is authenticated but not allowed to perform action. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Resource state conflict. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Rate limit exceeded. */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    ArticlesController_getMyDrafts: {
-        parameters: {
-            query?: {
-                page?: number;
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        payload: {
-                            items: components["schemas"]["ArticleResponseDto"][];
-                            meta: components["schemas"]["PaginatedMetaDto"];
-                        };
                         /**
                          * @description Request identifier generated by the backend.
                          * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
@@ -7396,6 +7498,812 @@ export interface operations {
                 content: {
                     "application/json": {
                         payload: components["schemas"]["CountResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ChatController_listConversations: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: {
+                            items: components["schemas"]["ConversationResponseDto"][];
+                            meta: components["schemas"]["PaginatedMetaDto"];
+                        };
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ChatController_createOrGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateConversationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["ConversationResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ChatController_getUnreadCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["ChatUnreadCountResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ChatController_getConversation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["ConversationResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ChatController_deleteConversation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["ConversationDeletedResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ChatController_listMessages: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: {
+                            items: components["schemas"]["ChatMessageResponseDto"][];
+                            meta: components["schemas"]["PaginatedMetaDto"];
+                        };
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ChatController_sendMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateChatMessageDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["ChatMessageResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ChatController_markRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["ConversationReadResponseDto"];
                         /**
                          * @description Request identifier generated by the backend.
                          * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Bell,
+  MessageCircle,
   BookOpen,
   Code2,
   Home,
@@ -33,11 +34,13 @@ import {
 import { useAuth } from "@/features/auth/auth.context";
 import { useViewer } from "@/features/users/hooks/use-viewer";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
+import { MessagesNavLink } from "@/features/chat/components/messages-nav-link";
 import {
   FEED_PATHS,
   ARTICLE_PATHS,
   AUTH_PATHS,
   NOTIFICATION_PATHS,
+  CHAT_PATHS,
 } from "@/lib/routes.constants";
 import { cn } from "@/lib/utils";
 
@@ -60,6 +63,11 @@ export const AppHeader = () => {
             label: "Notifications",
             path: NOTIFICATION_PATHS.NOTIFICATIONS,
             icon: Bell,
+          },
+          {
+            label: "Messages",
+            path: CHAT_PATHS.MESSAGES,
+            icon: MessageCircle,
           },
         ]
       : []),
@@ -103,7 +111,16 @@ export const AppHeader = () => {
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
+            {navItems.map((item) =>
+              item.path === CHAT_PATHS.MESSAGES ? (
+                <MessagesNavLink
+                  key={item.path}
+                  className={cn(
+                    "relative rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+                    isActive(item.path) && "text-foreground",
+                  )}
+                />
+              ) : (
               <Link
                 key={item.path}
                 to={item.path}
@@ -123,7 +140,8 @@ export const AppHeader = () => {
                   )}
                 />
               </Link>
-            ))}
+              ),
+            )}
           </nav>
         </div>
 
@@ -226,7 +244,17 @@ export const AppHeader = () => {
           </SheetHeader>
 
           <nav className="flex flex-1 flex-col gap-1 p-3">
-            {navItems.map((item) => (
+            {navItems.map((item) =>
+              item.path === CHAT_PATHS.MESSAGES ? (
+                <MessagesNavLink
+                  key={item.path}
+                  onNavigate={() => setMobileNavOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+                    isActive(item.path) && "bg-accent text-foreground",
+                  )}
+                />
+              ) : (
               <Link
                 key={item.path}
                 to={item.path}
@@ -239,7 +267,8 @@ export const AppHeader = () => {
                 <item.icon className="h-4 w-4" />
                 {item.label}
               </Link>
-            ))}
+              ),
+            )}
 
             {isAuthenticated && user && (
               <Link

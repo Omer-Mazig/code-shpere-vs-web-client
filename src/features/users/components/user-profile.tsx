@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import type { UserProfile as UserProfileType } from "../types";
 import { FollowButton } from "./follow-button";
+import { ProfileBlockMenu } from "./profile-block-menu";
+import { StartChatButton } from "@/features/chat/components/start-chat-button";
 import {
   ProfileShell,
   type ProfileActiveTab,
@@ -46,11 +48,19 @@ export const UserProfile = ({
       <ProfileShell.Cover />
       <ProfileShell.Header
         actions={
-          <FollowButton
-            userId={profile.id}
-            isFollowing={profile.isFollowing}
-            allowUnfollow
-          />
+          <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
+            <StartChatButton userId={profile.id} />
+            <FollowButton
+              userId={profile.id}
+              isFollowing={profile.isFollowing}
+              allowUnfollow
+            />
+            <ProfileBlockMenu
+              userId={profile.id}
+              displayName={profile.displayName || profile.username}
+              isBlocked={profile.isBlocked}
+            />
+          </div>
         }
       />
       <ProfileShell.TabNav />

@@ -6,6 +6,7 @@ import { notificationsQueryOptionsFactory } from "@/features/notifications/notif
 import { postsQueryOptionsFactory } from "@/features/posts/posts-query-options-factory";
 import { usersQueryOptionsFactory } from "@/features/users/users-query-options-factory";
 import { topicsQueryOptionsFactory } from "@/features/topics/topics-query-options-factory";
+import { chatQueryOptionsFactory } from "@/features/chat/chat-query-options-factory";
 
 describe("query option factories", () => {
   it("nests auth keys under auth", () => {
@@ -152,6 +153,30 @@ describe("query option factories", () => {
       "articles",
       "details",
       "slug-1",
+    ]);
+  });
+
+  it("nests chat keys under chat", () => {
+    expect(chatQueryOptionsFactory.all().queryKey).toEqual(["chat"]);
+    expect(chatQueryOptionsFactory.lists().queryKey).toEqual(["chat", "inbox"]);
+    expect(chatQueryOptionsFactory.inbox().queryKey).toEqual([
+      "chat",
+      "inbox",
+      undefined,
+    ]);
+    expect(chatQueryOptionsFactory.details("c1").queryKey).toEqual([
+      "chat",
+      "details",
+      "c1",
+    ]);
+    expect(chatQueryOptionsFactory.messages("c1").queryKey).toEqual([
+      "chat",
+      "messages",
+      "c1",
+    ]);
+    expect(chatQueryOptionsFactory.unreadCount().queryKey).toEqual([
+      "chat",
+      "unread-count",
     ]);
   });
 });

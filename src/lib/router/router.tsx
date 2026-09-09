@@ -12,6 +12,7 @@ import { articleRoutes } from "./article.router";
 import { profileRoutes } from "./profile.router";
 import { settingsRoutes } from "./settings.router";
 import { topicsRoutes } from "./topics.router";
+import { chatRoutes } from "./chat.router";
 import { AUTH_PATHS, ARTICLE_PATHS, FEED_PATHS } from "../routes.constants";
 
 const HomeIndexRedirect = () => {
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
           ...feedRoutes,
           ...articleRoutes,
           ...topicsRoutes,
+          ...chatRoutes,
           ...profileRoutes,
           ...settingsRoutes,
         ],

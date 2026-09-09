@@ -70,6 +70,14 @@ export const usersApi = {
     await apiClient.delete(`/users/${userId}/follow`);
   },
 
+  block: async (userId: string): Promise<void> => {
+    await apiClient.post(`/users/${userId}/block`);
+  },
+
+  unblock: async (userId: string): Promise<void> => {
+    await apiClient.delete(`/users/${userId}/block`);
+  },
+
   getSuggestions: async (
     limit = 5,
   ): Promise<PaginatedResponse<SuggestedUser>> => {

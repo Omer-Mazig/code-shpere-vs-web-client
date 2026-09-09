@@ -40,6 +40,11 @@ export const TOPIC_PATHS = {
   TOPIC_DETAIL: "/topics/:slug",
 } as const;
 
+export const CHAT_PATHS = {
+  MESSAGES: "/messages",
+  THREAD: "/messages/:conversationId",
+} as const;
+
 export function topicDetailPath(slug: string) {
   return `/topics/${slug}`;
 }
@@ -50,4 +55,12 @@ export function articleDetailPath(slug: string) {
 
 export function articleEditPath(slug: string) {
   return `/articles/${slug}/edit`;
+}
+
+export function chatThreadPath(conversationId: string) {
+  return `/messages/${conversationId}`;
+}
+
+export function profilePath(userId: string) {
+  return `/profile/${userId}`;
 }
