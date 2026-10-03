@@ -10,11 +10,11 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { SideCard } from "@/components/shared/side-card";
 import { useAuth } from "@/features/auth/auth.context";
-import { TOPIC_PATHS } from "@/lib/routes.constants";
+import { DRAFT_PATHS, TOPIC_PATHS } from "@/lib/routes.constants";
 
 const SHORTCUTS: { icon: LucideIcon; label: string; to?: string }[] = [
   { icon: Bookmark, label: "Saved items" },
-  { icon: FileText, label: "My drafts" },
+  { icon: FileText, label: "My drafts", to: DRAFT_PATHS.DRAFTS },
   { icon: Hash, label: "Topics", to: TOPIC_PATHS.TOPICS },
   { icon: CalendarDays, label: "Events" },
 ];

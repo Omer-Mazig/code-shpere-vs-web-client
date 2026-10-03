@@ -13,6 +13,10 @@ export const FEED_PATHS = {
   POST_DETAIL: "/feed/:id",
 } as const;
 
+export const DRAFT_PATHS = {
+  DRAFTS: "/drafts",
+} as const;
+
 export const ARTICLE_PATHS = {
   ARTICLES: "/articles",
   ARTICLE_DETAIL: "/articles/:slug",

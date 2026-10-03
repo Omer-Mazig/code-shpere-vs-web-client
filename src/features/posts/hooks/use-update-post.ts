@@ -10,7 +10,16 @@ export function useUpdatePost() {
     mutationKey: ["posts", "update"],
     mutationFn: ({ id, dto }: { id: string; dto: UpdatePostDto }) =>
       postsApi.update(id, dto),
-    onSuccess: () => {
+    onSuccess: (post) => {
+      queryClient.setQueryData(
+        postsQueryOptionsFactory.details(post.id).queryKey,
+        post,
+      );
+      if (!post.isPublished) {
+        return queryClient.invalidateQueries({
+          queryKey: postsQueryOptionsFactory.drafts().queryKey,
+        });
+      }
       return queryClient.invalidateQueries({
         queryKey: postsQueryOptionsFactory.all().queryKey,
       });

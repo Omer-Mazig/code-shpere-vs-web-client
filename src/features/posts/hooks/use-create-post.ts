@@ -11,8 +11,14 @@ export function useCreatePost() {
     mutationKey: ["posts", "create"],
     mutationFn: (dto: CreatePostDto) => postsApi.create(dto),
     onSuccess: (data: Post) => {
-      const feedOptions = postsQueryOptionsFactory.feedList();
+      if (!data.isPublished) {
+        void queryClient.invalidateQueries({
+          queryKey: postsQueryOptionsFactory.drafts().queryKey,
+        });
+        return;
+      }
 
+      const feedOptions = postsQueryOptionsFactory.feedList();
       queryClient.setQueryData(feedOptions.queryKey, (old) =>
         prependToInfiniteList(old, data),
       );

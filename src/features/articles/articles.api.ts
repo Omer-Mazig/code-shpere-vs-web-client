@@ -6,6 +6,7 @@ import type {
   CreateArticleDto,
   UpdateArticleDto,
   ArticleQueryDto,
+  ArticleDraftsQueryDto,
 } from "./types";
 
 export const articlesApi = {
@@ -30,6 +31,15 @@ export const articlesApi = {
     const response = await apiClient.get<
       ApiEnvelope<PaginatedResponse<Article>>
     >("/articles/suggestions", { params: { limit } });
+    return response.data.payload;
+  },
+
+  listDrafts: async (
+    query?: ArticleDraftsQueryDto,
+  ): Promise<PaginatedResponse<Article>> => {
+    const response = await apiClient.get<
+      ApiEnvelope<PaginatedResponse<Article>>
+    >("/articles/me/drafts", { params: query });
     return response.data.payload;
   },
 

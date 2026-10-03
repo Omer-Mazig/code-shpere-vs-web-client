@@ -11,13 +11,18 @@ export function useUpdateArticle() {
     mutationFn: ({ id, dto }: { id: string; dto: UpdateArticleDto }) =>
       articlesApi.update(id, dto),
     onSuccess: (article) => {
-      queryClient.invalidateQueries({
-        queryKey: articlesQueryOptionsFactory.all().queryKey,
-      });
       queryClient.setQueryData(
         articlesQueryOptionsFactory.details(article.slug).queryKey,
         article,
       );
+      if (!article.isPublished) {
+        return queryClient.invalidateQueries({
+          queryKey: articlesQueryOptionsFactory.drafts().queryKey,
+        });
+      }
+      return queryClient.invalidateQueries({
+        queryKey: articlesQueryOptionsFactory.all().queryKey,
+      });
     },
   });
 }

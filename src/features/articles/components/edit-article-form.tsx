@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useAuth } from "@/features/auth/auth.context";
 import { getApiError } from "@/lib/errors";
-import { articleDetailPath } from "@/lib/routes.constants";
+import { articleDetailPath, articleEditPath } from "@/lib/routes.constants";
 import { articlesQueryOptionsFactory } from "../articles-query-options-factory";
 import { useUpdateArticle } from "../hooks/use-update-article";
 import { ArticleDeleteDialog } from "./article-delete-dialog";
@@ -81,6 +81,21 @@ export const EditArticleForm = ({ slug }: EditArticleFormProps) => {
     }
   };
 
+  const handleAutosave = async (data: CreateArticleDto) => {
+    try {
+      const updated = await updateArticle.mutateAsync({
+        id: article.id,
+        dto: { ...toUpdateDto(data), isPublished: false },
+      });
+      if (updated.slug !== slug) {
+        navigate(articleEditPath(updated.slug), { replace: true });
+      }
+    } catch (error) {
+      toast.error(getApiError(error).message ?? "Could not save draft");
+      throw error;
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <ArticleEditor
@@ -91,6 +106,7 @@ export const EditArticleForm = ({ slug }: EditArticleFormProps) => {
         initialTopicIds={article.topics.map((topic) => topic.id)}
         onSubmit={handleSubmit}
         onSaveDraft={article.isPublished ? undefined : handleSaveDraft}
+        onAutosave={article.isPublished ? undefined : handleAutosave}
         isSubmitting={updateArticle.isPending}
         submitLabel={article.isPublished ? "Save" : "Publish"}
       />

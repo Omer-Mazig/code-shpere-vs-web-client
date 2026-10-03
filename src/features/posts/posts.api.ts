@@ -1,6 +1,12 @@
 import { apiClient } from "@/lib/api-client";
 import type { ApiEnvelope, PaginatedResponse } from "@/lib/types";
-import type { Post, CreatePostDto, UpdatePostDto, PostQueryDto } from "./types";
+import type {
+  Post,
+  CreatePostDto,
+  UpdatePostDto,
+  PostQueryDto,
+  PostDraftsQueryDto,
+} from "./types";
 
 export const postsApi = {
   getFeed: async (
@@ -8,6 +14,16 @@ export const postsApi = {
   ): Promise<PaginatedResponse<Post>> => {
     const response = await apiClient.get<ApiEnvelope<PaginatedResponse<Post>>>(
       "/posts",
+      { params: query },
+    );
+    return response.data.payload;
+  },
+
+  getDrafts: async (
+    query?: PostDraftsQueryDto,
+  ): Promise<PaginatedResponse<Post>> => {
+    const response = await apiClient.get<ApiEnvelope<PaginatedResponse<Post>>>(
+      "/posts/me/drafts",
       { params: query },
     );
     return response.data.payload;

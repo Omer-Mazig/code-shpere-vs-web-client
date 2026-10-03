@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Bell,
+  FileText,
   MessageCircle,
   BookOpen,
   Code2,
@@ -36,6 +37,7 @@ import { useViewer } from "@/features/users/hooks/use-viewer";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { MessagesNavLink } from "@/features/chat/components/messages-nav-link";
 import {
+  DRAFT_PATHS,
   FEED_PATHS,
   ARTICLE_PATHS,
   AUTH_PATHS,
@@ -59,6 +61,11 @@ export const AppHeader = () => {
     { label: "Articles", path: ARTICLE_PATHS.ARTICLES, icon: BookOpen },
     ...(isAuthenticated
       ? [
+          {
+            label: "Drafts",
+            path: DRAFT_PATHS.DRAFTS,
+            icon: FileText,
+          },
           {
             label: "Notifications",
             path: NOTIFICATION_PATHS.NOTIFICATIONS,

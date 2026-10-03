@@ -9,8 +9,14 @@ export function useCreateArticle() {
   return useMutation({
     mutationKey: ["articles", "create"],
     mutationFn: (dto: CreateArticleDto) => articlesApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onSuccess: (article) => {
+      if (!article.isPublished) {
+        void queryClient.invalidateQueries({
+          queryKey: articlesQueryOptionsFactory.drafts().queryKey,
+        });
+        return;
+      }
+      void queryClient.invalidateQueries({
         queryKey: articlesQueryOptionsFactory.lists().queryKey,
       });
     },

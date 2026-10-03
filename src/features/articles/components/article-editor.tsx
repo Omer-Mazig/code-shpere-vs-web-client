@@ -106,6 +106,8 @@ type ArticleEditorProps = {
    * dialog then offers Discard only.
    */
   onSaveDraft?: (data: CreateArticleDto) => Promise<void>;
+  /** Debounced save for an unpublished article. Must not navigate. */
+  onAutosave?: (data: CreateArticleDto) => Promise<void>;
   isSubmitting?: boolean;
   submitLabel?: string;
 };
@@ -117,6 +119,7 @@ export const ArticleEditor = ({
   initialTopicIds = [],
   onSubmit,
   onSaveDraft,
+  onAutosave,
   isSubmitting = false,
   submitLabel = "Publish",
 }: ArticleEditorProps) => {
@@ -181,6 +184,46 @@ export const ArticleEditor = ({
   const formSubmitting = useStore(form.store, (state) => state.isSubmitting);
   const isSaving = isSubmitting || formSubmitting;
   const isDirty = hasArticleEditorChanges(values, savedValues);
+  const [autosaveLabel, setAutosaveLabel] = React.useState<string | null>(null);
+  const onAutosaveRef = React.useRef(onAutosave);
+  onAutosaveRef.current = onAutosave;
+
+  React.useEffect(() => {
+    const save = onAutosaveRef.current;
+    if (!save || !isDirty || imagesBusy || savingRef.current) return;
+    if (!values.title.trim() || !values.body.trim()) return;
+
+    const timer = window.setTimeout(() => {
+      const nextSave = onAutosaveRef.current;
+      if (!nextSave || savingRef.current) return;
+      savingRef.current = true;
+      setAutosaveLabel("Saving draft…");
+      void nextSave({
+        title: values.title.trim(),
+        content: values.body.trim(),
+        coverImageUrl: values.coverImageUrl.trim() || undefined,
+        isPublished: false,
+        topicIds: values.topicIds,
+      })
+        .then(() => {
+          setSavedValues({
+            title: values.title,
+            body: values.body,
+            coverImageUrl: values.coverImageUrl,
+            topicIds: [...values.topicIds],
+          });
+          setAutosaveLabel("Draft saved");
+        })
+        .catch(() => {
+          setAutosaveLabel(null);
+        })
+        .finally(() => {
+          savingRef.current = false;
+        });
+    }, 800);
+
+    return () => window.clearTimeout(timer);
+  }, [imagesBusy, isDirty, values]);
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
@@ -690,7 +733,11 @@ export const ArticleEditor = ({
           <span className="text-muted-foreground/70">
             {" "}
             · Markdown · live preview
-            {isDirty ? " · unsaved changes" : ""}
+            {autosaveLabel
+              ? ` · ${autosaveLabel}`
+              : isDirty
+                ? " · unsaved changes"
+                : ""}
           </span>
         </p>
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">

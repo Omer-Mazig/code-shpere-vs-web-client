@@ -32,6 +32,12 @@ export const postsQueryOptionsFactory = {
       staleTime: 1000 * 60 * 5, // 5 minutes
     }),
 
+  drafts: () =>
+    queryOptions({
+      queryKey: [...postsQueryOptionsFactory.all().queryKey, "drafts"],
+      queryFn: () => postsApi.getDrafts({ page: 1, limit: 50 }),
+    }),
+
   // ["posts", "details"]
   allDetails: () =>
     queryOptions({

@@ -25,6 +25,12 @@ export const articlesQueryOptionsFactory = {
       staleTime: 1000 * 60 * 5, // 5 minutes
     }),
 
+  drafts: () =>
+    queryOptions({
+      queryKey: [...articlesQueryOptionsFactory.all().queryKey, "drafts"],
+      queryFn: () => articlesApi.listDrafts({ page: 1, limit: 50 }),
+    }),
+
   // ["articles", "authors"]
   publishedAuthors: () =>
     queryOptions({

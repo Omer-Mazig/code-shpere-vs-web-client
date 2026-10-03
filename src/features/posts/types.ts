@@ -1,4 +1,4 @@
-import type { components, paths } from "@/lib/api-types";
+import type { components, operations, paths } from "@/lib/api-types";
 
 export type PostAuthor = components["schemas"]["PostAuthorResponseDto"];
 export type PostCommentPreview =
@@ -12,4 +12,7 @@ export type CreatePostDto = components["schemas"]["CreatePostDto"];
 export type UpdatePostDto = components["schemas"]["UpdatePostDto"];
 export type PostQueryDto = NonNullable<
   paths["/api/posts"]["get"]["parameters"]["query"]
+>;
+export type PostDraftsQueryDto = NonNullable<
+  operations["PostsController_getMyDrafts"]["parameters"]["query"]
 >;

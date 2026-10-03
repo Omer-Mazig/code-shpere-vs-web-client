@@ -4,7 +4,7 @@ import { ArticleEditor } from "@/features/articles/components/article-editor";
 import { useCreateArticle } from "@/features/articles/hooks/use-create-article";
 import type { CreateArticleDto } from "@/features/articles/types";
 import { getApiError } from "@/lib/errors";
-import { articleDetailPath } from "@/lib/routes.constants";
+import { articleDetailPath, articleEditPath } from "@/lib/routes.constants";
 
 export const CreateArticlePage = () => {
   const navigate = useNavigate();
@@ -32,6 +32,19 @@ export const CreateArticlePage = () => {
     }
   };
 
+  const handleAutosave = async (data: CreateArticleDto) => {
+    try {
+      const article = await createArticle.mutateAsync({
+        ...data,
+        isPublished: false,
+      });
+      navigate(articleEditPath(article.slug), { replace: true });
+    } catch (error) {
+      toast.error(getApiError(error).message ?? "Could not save draft");
+      throw error;
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-6xl px-4 py-6">
       <h1 className="mb-2 text-2xl font-bold tracking-tight">
@@ -44,6 +57,7 @@ export const CreateArticlePage = () => {
       <ArticleEditor
         onSubmit={handleSubmit}
         onSaveDraft={handleSaveDraft}
+        onAutosave={handleAutosave}
         isSubmitting={createArticle.isPending}
       />
     </div>
