@@ -532,6 +532,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/saved": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SavedController_list"];
+        put?: never;
+        post: operations["SavedController_save"];
+        delete: operations["SavedController_unsave"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/articles": {
         parameters: {
             query?: never;
@@ -908,7 +924,7 @@ export interface components {
          * @description Domain error code emitted by the backend.
          * @enum {string}
          */
-        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "POST_IMAGES_LIMIT" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED" | "MEDIA_NOT_FOUND" | "MEDIA_INVALID_TYPE" | "MEDIA_TOO_LARGE" | "MEDIA_FILE_REQUIRED" | "MEDIA_STORAGE_NOT_CONFIGURED" | "TOPIC_NOT_FOUND" | "TOPIC_ALREADY_FOLLOWED" | "TOPIC_NOT_FOLLOWED" | "TOPIC_TOO_MANY" | "CANNOT_MESSAGE_SELF" | "CONVERSATION_NOT_FOUND" | "CONVERSATION_FORBIDDEN" | "CHAT_BLOCKED" | "CANNOT_BLOCK_SELF" | "USER_ALREADY_BLOCKED" | "USER_NOT_BLOCKED" | "SEED_DISABLED";
+        ErrorCode: "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR" | "INTERNAL_SERVER_ERROR" | "VALIDATION_ERROR" | "RESOURCE_NOT_FOUND" | "RATE_LIMIT_EXCEEDED" | "DUPLICATE_RESOURCE" | "EMAIL_NOT_VERIFIED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "PASSWORD_RESET_TOKEN_INVALID" | "PASSWORD_RESET_TOKEN_EXPIRED" | "POST_NOT_FOUND" | "POST_UPDATE_FORBIDDEN" | "POST_DELETE_FORBIDDEN" | "POST_IMAGES_LIMIT" | "ARTICLE_NOT_FOUND" | "ARTICLE_SLUG_EXISTS" | "ARTICLE_UPDATE_FORBIDDEN" | "ARTICLE_DELETE_FORBIDDEN" | "USER_NOT_FOUND" | "USER_EMAIL_EXISTS" | "USER_USERNAME_EXISTS" | "USER_ALREADY_FOLLOWED" | "USER_NOT_FOLLOWED" | "PROFILE_UPDATE_FORBIDDEN" | "CANNOT_FOLLOW_SELF" | "COMMENT_NOT_FOUND" | "COMMENT_UPDATE_FORBIDDEN" | "COMMENT_DELETE_FORBIDDEN" | "COMMENT_PARENT_INVALID" | "COMMENT_TARGET_INVALID" | "COMMENT_MENTION_NOT_ALLOWED" | "ALREADY_LIKED" | "NOT_LIKED" | "ALREADY_SAVED" | "NOT_SAVED" | "NOTIFICATION_NOT_FOUND" | "NOTIFICATION_UPDATE_FORBIDDEN" | "NOTIFICATION_STREAM_TOKEN_INVALID" | "NOTIFICATION_STREAM_TOKEN_EXPIRED" | "MEDIA_NOT_FOUND" | "MEDIA_INVALID_TYPE" | "MEDIA_TOO_LARGE" | "MEDIA_FILE_REQUIRED" | "MEDIA_STORAGE_NOT_CONFIGURED" | "TOPIC_NOT_FOUND" | "TOPIC_ALREADY_FOLLOWED" | "TOPIC_NOT_FOLLOWED" | "TOPIC_TOO_MANY" | "CANNOT_MESSAGE_SELF" | "CONVERSATION_NOT_FOUND" | "CONVERSATION_FORBIDDEN" | "CHAT_BLOCKED" | "CANNOT_BLOCK_SELF" | "USER_ALREADY_BLOCKED" | "USER_NOT_BLOCKED" | "SEED_DISABLED";
         ValidationFieldErrorDto: {
             /** @example password */
             field: string;
@@ -1413,6 +1429,7 @@ export interface components {
             imageLayout: components["schemas"]["PostImageLayout"];
             likesCount: number;
             isLiked: boolean;
+            isSaved: boolean;
             commentsCount: number;
             sharesCount: number;
             isShared: boolean;
@@ -1473,6 +1490,48 @@ export interface components {
             /** @example Operation completed successfully */
             message: string;
         };
+        /** @enum {string} */
+        SavedTargetType: "POST" | "ARTICLE" | "EVENT";
+        SavedAuthorPreviewDto: {
+            id: string;
+            username: string;
+            displayName: string | null;
+            avatarUrl: string | null;
+        };
+        SavedPostPreviewDto: {
+            id: string;
+            content: string;
+            author: components["schemas"]["SavedAuthorPreviewDto"] | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        SavedArticlePreviewDto: {
+            id: string;
+            title: string;
+            slug: string;
+            author: components["schemas"]["SavedAuthorPreviewDto"] | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        SavedItemResponseDto: {
+            id: string;
+            targetType: components["schemas"]["SavedTargetType"];
+            /** Format: uuid */
+            targetId: string;
+            post: components["schemas"]["SavedPostPreviewDto"] | null;
+            article: components["schemas"]["SavedArticlePreviewDto"] | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        SavedActionResponseDto: {
+            /** @example Operation completed successfully */
+            message: string;
+        };
+        SaveTargetDto: {
+            /** Format: uuid */
+            targetId: string;
+            targetType: components["schemas"]["SavedTargetType"];
+        };
         ArticleAuthorResponseDto: {
             id: string;
             username: string;
@@ -1497,6 +1556,7 @@ export interface components {
             likesCount: number;
             commentsCount: number;
             isLiked: boolean;
+            isSaved: boolean;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -5707,6 +5767,311 @@ export interface operations {
                 content: {
                     "application/json": {
                         payload: components["schemas"]["TopicFollowActionResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    SavedController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: {
+                            items: components["schemas"]["SavedItemResponseDto"][];
+                            meta: components["schemas"]["PaginatedMetaDto"];
+                        };
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    SavedController_save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveTargetDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["SavedActionResponseDto"];
+                        /**
+                         * @description Request identifier generated by the backend.
+                         * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431
+                         */
+                        requestId: string;
+                        /**
+                         * Format: date-time
+                         * @description UTC timestamp when the response was generated.
+                         * @example 2026-02-15T21:10:35.120Z
+                         */
+                        timestamp: string;
+                        meta?: components["schemas"]["ApiEnvelopeMetaDto"];
+                        warnings?: components["schemas"]["ApiEnvelopeWarningDto"][];
+                    };
+                };
+            };
+            /** @description Request validation or domain validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication failed or missing credentials. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description User is authenticated but not allowed to perform action. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Requested resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Resource state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Unexpected server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    SavedController_unsave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveTargetDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payload: components["schemas"]["SavedActionResponseDto"];
                         /**
                          * @description Request identifier generated by the backend.
                          * @example f95eeefc-71f3-4db2-8ad8-c8f4524f3431

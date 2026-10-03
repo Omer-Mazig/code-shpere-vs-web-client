@@ -17,6 +17,10 @@ export const DRAFT_PATHS = {
   DRAFTS: "/drafts",
 } as const;
 
+export const SAVED_PATHS = {
+  SAVED: "/saved",
+} as const;
+
 export const ARTICLE_PATHS = {
   ARTICLES: "/articles",
   ARTICLE_DETAIL: "/articles/:slug",

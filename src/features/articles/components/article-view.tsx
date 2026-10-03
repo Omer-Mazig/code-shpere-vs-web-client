@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Clock } from "lucide-react";
 import type { Article } from "../types";
 import { LikeButton } from "@/features/interactions/components/like-button";
+import { SaveButton } from "@/features/saved/components/save-button";
 import { UserAvatar, getUserDisplayName } from "@/components/shared/user-avatar";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { FollowButton } from "@/features/users/components/follow-button";
@@ -81,12 +82,17 @@ export const ArticleView = ({ article }: ArticleViewProps) => {
 
       <ArticleMarkdown markdown={article.content} />
 
-      <div className="mt-10 border-t pt-4">
+      <div className="mt-10 flex items-center gap-2 border-t pt-4">
         <LikeButton
           targetId={article.id}
           targetType="ARTICLE"
           isLiked={article.isLiked}
           likesCount={article.likesCount}
+        />
+        <SaveButton
+          targetId={article.id}
+          targetType="ARTICLE"
+          isSaved={article.isSaved}
         />
       </div>
     </article>

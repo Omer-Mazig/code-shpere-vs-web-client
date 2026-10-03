@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldError } from "@/components/ui/field";
 import { LikeButton } from "@/features/interactions/components/like-button";
+import { SaveButton } from "@/features/saved/components/save-button";
 import { useAuth } from "@/features/auth/auth.context";
 import { useSignInModal } from "@/features/auth/sign-in-modal.context";
 import { cn } from "@/lib/utils";
@@ -76,12 +77,19 @@ export const PostActions = ({ post, onCommentClick }: PostActionsProps) => {
   });
 
   return (
-    <div className="grid w-full grid-cols-3">
+    <div className="grid w-full grid-cols-4">
       <LikeButton
         targetId={post.id}
         targetType="POST"
         isLiked={post.isLiked}
         likesCount={post.likesCount}
+        className="w-full justify-center"
+      />
+
+      <SaveButton
+        targetId={post.id}
+        targetType="POST"
+        isSaved={post.isSaved}
         className="w-full justify-center"
       />
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Bell,
+  Bookmark,
   FileText,
   MessageCircle,
   BookOpen,
@@ -39,6 +40,7 @@ import { MessagesNavLink } from "@/features/chat/components/messages-nav-link";
 import {
   DRAFT_PATHS,
   FEED_PATHS,
+  SAVED_PATHS,
   ARTICLE_PATHS,
   AUTH_PATHS,
   NOTIFICATION_PATHS,
@@ -65,6 +67,11 @@ export const AppHeader = () => {
             label: "Drafts",
             path: DRAFT_PATHS.DRAFTS,
             icon: FileText,
+          },
+          {
+            label: "Saved",
+            path: SAVED_PATHS.SAVED,
+            icon: Bookmark,
           },
           {
             label: "Notifications",
